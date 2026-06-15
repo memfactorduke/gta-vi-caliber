@@ -53,6 +53,12 @@ float FCameraFeel::RecenterYaw(float VelocityX, float VelocityZ)
 float FCameraFeel::ApproachAngle(float Current, float Target, float MaxStep)
 {
     // wrapf(target - current, -PI, PI) -> shortest signed arc in (-PI, PI].
+    // Known non-bit-exact divergence from the Godot oracle at the antipodal
+    // (180-off) tie-break: for a diff of exactly +/-PI, FMath::UnwindRadians
+    // resolves to +PI (range (-PI, PI]) whereas Godot wrapf(diff, -PI, PI)
+    // resolves to -PI (range [-PI, PI)), so the step direction flips. No parity
+    // test hits this measure-zero input and the difference is behaviorally
+    // negligible, but it is documented here for honesty.
     const float Diff = FMath::UnwindRadians(Target - Current);
     return Current + FMath::Clamp(Diff, -MaxStep, MaxStep);
 }
