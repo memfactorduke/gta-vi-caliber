@@ -1,0 +1,23 @@
+{
+	"name": "mara-three-modeler",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"export:city-block": "node export_florida_city_block_pack.mjs",
+		"export:environment": "node export_florida_environment_pack.mjs",
+		"export:florida": "node export_florida_landmark_pack.mjs",
+		"export:infrastructure": "node export_florida_infrastructure_pack.mjs",
+		"export:neon-detail": "node export_florida_neon_detail_pack.mjs",
+		"export:proxy": "node export_mara_proxy.mjs",
+		"export:regional": "node export_florida_regional_pack.mjs",
+		"export:rigged": "node export_mara_rigged_proxy.mjs",
+		"export:streetlife": "node export_florida_streetlife_pack.mjs",
+		"export:traffic-marine": "node export_florida_traffic_marine_pack.mjs",
+		"export:vista": "node export_florida_vista_pack.mjs",
+		"check": "node --check main.js && node --check export_mara_proxy.mjs && node --check export_mara_rigged_proxy.mjs && node --check export_florida_landmark_pack.mjs && node --check export_florida_city_block_pack.mjs && node --check export_florida_neon_detail_pack.mjs && node --check export_florida_regional_pack.mjs && node --check export_florida_infrastructure_pack.mjs && node --check export_florida_environment_pack.mjs && node --check export_florida_traffic_marine_pack.mjs && node --check export_florida_vista_pack.mjs && node --check export_florida_streetlife_pack.mjs"
+	},
+	"dependencies": {
+		"three": "0.179.1"
+	}
+}

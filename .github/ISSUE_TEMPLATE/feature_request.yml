@@ -1,0 +1,28 @@
+name: Feature / task proposal
+description: Propose a feature, system, or roadmap item
+labels: ["enhancement"]
+body:
+  - type: textarea
+    attributes:
+      label: What & why
+      description: What should exist, and what does it make better for the player or for contributors?
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Roadmap fit
+      description: Which milestone in docs/ROADMAP.md does this belong to?
+      placeholder: "M2 — Vehicles"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Sketch of approach
+      description: Optional — scenes/scripts you'd touch, or whether this smells like an engine/ module (see docs/ARCHITECTURE.md).
+  - type: checkboxes
+    attributes:
+      label: Scope check
+      options:
+        - label: I checked docs/ROADMAP.md and open issues for duplicates
+          required: true
+        - label: I'm interested in implementing this myself

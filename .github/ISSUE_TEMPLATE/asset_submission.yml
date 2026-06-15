@@ -1,0 +1,35 @@
+name: Asset submission
+description: Propose or submit art / audio / models (license attestation required)
+labels: ["art"]
+body:
+  - type: textarea
+    attributes:
+      label: What asset(s)
+      description: What is it, and where in the game does it go?
+      placeholder: "Three palm tree models (LOD0-2), for the sandbox shoreline."
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Provenance
+      options:
+        - 100% original work by me
+        - Derived from CC0 source (link below)
+        - Derived from CC-BY source (link + attribution below)
+        - AI-generated (tool + prompt summary below)
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Source links / attribution / tool details
+      description: Required unless fully original. For AI, name the tool and confirm the prompt didn't target a specific game or artist.
+  - type: checkboxes
+    attributes:
+      label: License attestation
+      options:
+        - label: I have the right to contribute this work and license it under CC BY 4.0 (LICENSE-ASSETS)
+          required: true
+        - label: This contains no content from Grand Theft Auto or any other commercial game
+          required: true
+        - label: I will add a provenance row to docs/ASSETS.md in the PR
+          required: true

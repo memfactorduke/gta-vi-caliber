@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Mara Three.js Modeler</title>
+		<link rel="stylesheet" href="./style.css" />
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.module.js",
+					"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/"
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<main class="tool-shell">
+			<section class="viewport" aria-label="Mara 3D modeling viewport">
+				<canvas id="mara-canvas"></canvas>
+				<div class="status-strip">
+					<span id="asset-status">Loading Mara GLB</span>
+					<span id="mesh-stats">Mesh stats unavailable</span>
+				</div>
+			</section>
+			<aside class="controls" aria-label="Model controls">
+				<header>
+					<p class="eyebrow">Original hero character</p>
+					<h1>Mara Modeler</h1>
+				</header>
+				<div class="control-group">
+					<label for="asset-select">Source mesh</label>
+					<select id="asset-select">
+						<option value="/game/assets/characters/mara_three_proxy.glb">Three.js proxy</option>
+						<option value="/game/assets/characters/mara_three_rigged_proxy.glb">Three.js rigged proxy</option>
+						<option value="/game/assets/characters/char_textured.glb">Textured projection</option>
+						<option value="/game/assets/characters/char_textured_front.glb">Front projection</option>
+						<option value="/game/assets/characters/char_hunyuan.glb">Raw generated mesh</option>
+					</select>
+				</div>
+				<div class="control-row">
+					<label for="model-scale">Model scale</label>
+					<input id="model-scale" type="range" min="0.6" max="1.8" step="0.01" value="1" />
+				</div>
+				<div class="control-row">
+					<label for="key-light">Key light</label>
+					<input id="key-light" type="range" min="0.4" max="3" step="0.05" value="1.45" />
+				</div>
+				<div class="toggle-grid">
+					<label><input id="wireframe-toggle" type="checkbox" /> Wireframe</label>
+					<label><input id="rig-toggle" type="checkbox" checked /> Rig guide</label>
+					<label><input id="proxy-toggle" type="checkbox" checked /> Game proxy</label>
+					<label><input id="turntable-toggle" type="checkbox" checked /> Turntable</label>
+				</div>
+				<div class="readout" id="readout">
+					<p>Target: retopo, armature, skin weights, PBR cleanup.</p>
+				</div>
+			</aside>
+		</main>
+		<script type="module" src="./main.js"></script>
+	</body>
+</html>

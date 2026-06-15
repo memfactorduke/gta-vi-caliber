@@ -1,0 +1,30 @@
+name: Bug report
+description: Something broken in the game, tooling, or build
+labels: ["bug"]
+body:
+  - type: textarea
+    attributes:
+      label: What happened
+      description: What did you do, what did you expect, what happened instead?
+      placeholder: "Sprinting off the platform while looking straight down clips the camera through the ground."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. godot --path game
+        2. Walk onto the platform
+        3. ...
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Godot version & OS
+      placeholder: "Godot 4.6.3, macOS 15 (M2)"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Logs / screenshots
+      description: Console output, screenshots, or a short clip if visual.
