@@ -5,16 +5,16 @@
 #include "CoreMinimal.h"
 
 /**
- * Self-contained JSON value model for the save system.
+ * Insertion-ordered JSON value model for the save system.
  *
- * WHY NOT the engine `Json` module: the approved Wave 2 design permits "UE FJsonObject /
- * FJsonSerializer OR EQUIVALENT", and the Wave conventions forbid any *.Build.cs edit / new
- * module. In this installed UE 5.7, the `Json` module's out-of-line symbols are NOT on the
- * GTC_UE5 module's link line (Json is only a *transitive* public dep of Engine, headers
- * resolve but the archive does not link), so using FJsonObject would require adding "Json"
- * to PublicDependencyModuleNames — a forbidden Build.cs edit. This minimal, header-light
- * model is the sanctioned "equivalent": it lives entirely in-module, needs no new module
- * dependency, and mirrors Godot's Dictionary/Array/JSON semantics exactly.
+ * This is a thin ORDERED WRAPPER over the engine `Json` module. The serialize/parse layer
+ * (see SaveJson.cpp) is implemented on UE's `TJsonWriter` / `TJsonReader` (the `Json` module,
+ * a Private dependency added to GTC_UE5.Build.cs). The wrapper exists for one reason the
+ * engine type cannot satisfy on its own: engine `FJsonObject` stores fields in an UNORDERED
+ * `TMap`, but Godot's Dictionary key order is observable across the save round-trip, so this
+ * model keeps an explicit ordered key list alongside the map. Serialization walks that list
+ * (ordered `TJsonWriter` writes); parsing rebuilds it from the reader's in-document-order
+ * token stream — so serialize->parse preserves key order exactly.
  *
  * Semantics mirrored from Godot:
  *  - Objects are INSERTION-ORDERED (Godot Dictionary order is observable on save text).
