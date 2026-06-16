@@ -7,7 +7,7 @@
 #include "../VehicleModShop.h"
 
 // Each test below maps 1:1 to an assertion in the Godot parity oracle
-// game/tests/unit/test_vehicle_mod_shop.gd (24 tests).
+// game/tests/unit/test_vehicle_mod_shop.gd (22 tests).
 
 static constexpr double ModShopEps = 1.0e-4;
 
