@@ -5,14 +5,13 @@
 #if WITH_AUTOMATION_TESTS
 
 #include "../PaySpray.h"
+#include "../../../Tests/GtcTestTolerances.h"
+
+using GtcTest::Eps;
 
 // Each test below maps 1:1 to an assertion in the Godot parity oracle
 // game/tests/unit/test_pay_spray.gd. Float compares use Eps; ints/strings/bools
 // are exact; deny reasons use Reason.Contains(...).
-namespace
-{
-    constexpr float Eps = 1e-4f;
-}
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FPaySprayCanEnterInsideRadiusTest,
@@ -149,7 +148,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FPaySprayStartsIdleTest::RunTest(const FString& Parameters)
 {
     PaySpray Spray(3.0f);
-    TestEqual(TEXT("progress 0"), Spray.Progress(), 0.0f, Eps);
+    TestEqual(TEXT("progress 0"), (double)Spray.Progress(), 0.0, Eps);
     TestFalse(TEXT("not complete"), Spray.IsComplete());
     return true;
 }
@@ -162,7 +161,7 @@ bool FPaySprayTickBeforeBeginTest::RunTest(const FString& Parameters)
 {
     PaySpray Spray(3.0f);
     Spray.Tick(10.0f);
-    TestEqual(TEXT("progress 0"), Spray.Progress(), 0.0f, Eps);
+    TestEqual(TEXT("progress 0"), (double)Spray.Progress(), 0.0, Eps);
     TestFalse(TEXT("not complete"), Spray.IsComplete());
     return true;
 }
@@ -176,7 +175,7 @@ bool FPaySprayRampsTest::RunTest(const FString& Parameters)
     PaySpray Spray(4.0f);
     Spray.Begin();
     Spray.Tick(1.0f);
-    TestEqual(TEXT("progress 0.25"), Spray.Progress(), 0.25f, Eps);
+    TestEqual(TEXT("progress 0.25"), (double)Spray.Progress(), 0.25, Eps);
     TestFalse(TEXT("not complete"), Spray.IsComplete());
     return true;
 }
@@ -191,7 +190,7 @@ bool FPaySprayCompletesTest::RunTest(const FString& Parameters)
     Spray.Begin();
     Spray.Tick(3.0f);
     TestTrue(TEXT("complete"), Spray.IsComplete());
-    TestEqual(TEXT("progress 1"), Spray.Progress(), 1.0f, Eps);
+    TestEqual(TEXT("progress 1"), (double)Spray.Progress(), 1.0, Eps);
     return true;
 }
 
@@ -206,7 +205,7 @@ bool FPaySprayCompletesOnceHoldsTest::RunTest(const FString& Parameters)
     Spray.Tick(3.0f);
     Spray.Tick(5.0f);
     TestTrue(TEXT("complete"), Spray.IsComplete());
-    TestEqual(TEXT("progress 1"), Spray.Progress(), 1.0f, Eps);
+    TestEqual(TEXT("progress 1"), (double)Spray.Progress(), 1.0, Eps);
     return true;
 }
 
@@ -221,7 +220,7 @@ bool FPaySprayCancelAbortsTest::RunTest(const FString& Parameters)
     Spray.Tick(2.0f);
     Spray.Cancel();
     TestFalse(TEXT("not complete"), Spray.IsComplete());
-    TestEqual(TEXT("progress 0"), Spray.Progress(), 0.0f, Eps);
+    TestEqual(TEXT("progress 0"), (double)Spray.Progress(), 0.0, Eps);
     return true;
 }
 
@@ -236,7 +235,7 @@ bool FPaySprayResetIdleTest::RunTest(const FString& Parameters)
     Spray.Tick(3.0f);
     Spray.Reset();
     TestFalse(TEXT("not complete"), Spray.IsComplete());
-    TestEqual(TEXT("progress 0"), Spray.Progress(), 0.0f, Eps);
+    TestEqual(TEXT("progress 0"), (double)Spray.Progress(), 0.0, Eps);
     return true;
 }
 
@@ -249,7 +248,7 @@ bool FPaySprayTickIgnoresNegativeTest::RunTest(const FString& Parameters)
     PaySpray Spray(3.0f);
     Spray.Begin();
     Spray.Tick(-5.0f);
-    TestEqual(TEXT("progress 0"), Spray.Progress(), 0.0f, Eps);
+    TestEqual(TEXT("progress 0"), (double)Spray.Progress(), 0.0, Eps);
     return true;
 }
 

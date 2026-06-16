@@ -5,7 +5,10 @@
 #if WITH_AUTOMATION_TESTS
 
 #include "../GpsNavigation.h"
+#include "../../../Tests/GtcTestTolerances.h"
 #include "Math/UnrealMathUtility.h"
+
+using GtcTest::Eps;
 
 /**
  * Parity tests for FGpsNavigation, mapped 1:1 from the Godot oracle
@@ -22,8 +25,6 @@
 
 namespace
 {
-    constexpr double Eps = 1e-4;
-
     // A straight 20m route along +x with a midpoint waypoint.
     TArray<FVector> Straight()
     {

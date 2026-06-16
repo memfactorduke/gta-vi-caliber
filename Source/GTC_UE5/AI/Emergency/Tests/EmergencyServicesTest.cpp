@@ -5,7 +5,10 @@
 #if WITH_AUTOMATION_TESTS
 
 #include "../EmergencyServices.h"
+#include "../../../Tests/GtcTestTolerances.h"
 #include "Math/UnrealMathUtility.h"
+
+using GtcTest::Eps;
 
 /**
  * Parity tests for FEmergencyServices, mapped 1:1 from the Godot oracle
@@ -19,11 +22,6 @@
  * PURE-CORE boundary: responder spawning / world positioning / navmesh distance
  * / per-frame tick wiring are the deferred Wave-3 adapter and are NOT tested.
  */
-
-namespace
-{
-    constexpr double Eps = 1e-4;
-}
 
 // --- service_for mapping ----------------------------------------------------
 
