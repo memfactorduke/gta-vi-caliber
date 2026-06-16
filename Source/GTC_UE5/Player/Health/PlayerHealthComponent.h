@@ -129,12 +129,34 @@ public:
     /** Direct read access to the owned pure data (tests / sibling systems). */
     const FPlayerHealthModel& GetModel() const { return Model; }
 
+    // --- Replication -----------------------------------------------------------
+
+    /**
+     * Health is replicated COND_OwnerOnly (owner = PlayerState — see header
+     * resolution). Server-authoritative mutators are damage/heal/revive (no
+     * armor: armor is owned solely by UPlayerStatsComponent per the W3
+     * armor-ownership resolution).
+     */
+    virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
     virtual void BeginPlay() override;
 
 private:
-    /** The owned pure-data store carrying all parity maths. */
-    FPlayerHealthModel Model;
+    /**
+     * The owned pure-data store carrying all parity maths. Constructed with
+     * ArmorMax = 0 so the model's armor pool is NEUTRALIZED (W3 armor-ownership
+     * resolution): AddArmor clamps to 0 and Apply soaks 0 — this component is
+     * health-only. The 18 FPlayerHealthModel parity tests stay green untouched.
+     */
+    FPlayerHealthModel Model{100.0, 10.0, 5.0, /*ArmorMax=*/0.0};
+
+    /** Replicated mirror of Model.Health (COND_OwnerOnly). */
+    UPROPERTY(ReplicatedUsing = OnRep_Health)
+    float RepHealth = 100.0f;
+
+    UFUNCTION()
+    void OnRep_Health();
 
     void BroadcastHealth();
     void BroadcastArmor();

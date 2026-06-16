@@ -2,6 +2,8 @@
 
 #include "PlayerStats.h"
 
+#include "Net/UnrealNetwork.h"
+
 // ============================================================================
 // FPlayerStats — pure data / logic (1:1 with player_stats.gd)
 // ============================================================================
@@ -179,13 +181,36 @@ void UPlayerStatsComponent::ClearObjective()
     BroadcastObjective();
 }
 
+void UPlayerStatsComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    // Armor (the SOLE armor pool) + Money replicate to the owning client only.
+    DOREPLIFETIME_CONDITION(UPlayerStatsComponent, RepArmor, COND_OwnerOnly);
+    DOREPLIFETIME_CONDITION(UPlayerStatsComponent, RepMoney, COND_OwnerOnly);
+}
+
+void UPlayerStatsComponent::OnRep_Armor()
+{
+    Stats.Armor = static_cast<double>(RepArmor);
+    OnArmorChanged.Broadcast(static_cast<float>(Stats.Armor), static_cast<float>(Stats.MaxArmor));
+}
+
+void UPlayerStatsComponent::OnRep_Money()
+{
+    Stats.Money = RepMoney;
+    OnMoneyChanged.Broadcast(Stats.Money);
+}
+
 void UPlayerStatsComponent::BroadcastArmor()
 {
+    // Keep the replicated mirror in lock-step with the authoritative data.
+    RepArmor = static_cast<float>(Stats.Armor);
     OnArmorChanged.Broadcast(static_cast<float>(Stats.Armor), static_cast<float>(Stats.MaxArmor));
 }
 
 void UPlayerStatsComponent::BroadcastMoney()
 {
+    RepMoney = Stats.Money;
     OnMoneyChanged.Broadcast(Stats.Money);
 }
 

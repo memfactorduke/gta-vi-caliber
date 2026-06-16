@@ -222,6 +222,18 @@ public:
     /** Direct read access to the owned pure data (tests / sibling systems). */
     const FPlayerStats& GetStats() const { return Stats; }
 
+    // --- Replication -----------------------------------------------------------
+
+    /**
+     * Armor + Money replicated COND_OwnerOnly (owner = PlayerState — this
+     * component is owned by AGTCPlayerState per the W3 armor-ownership
+     * resolution). Armor is the SOLE armor pool (the health model's armor is
+     * neutralized with ArmorMax=0). Mutators are server-authoritative: the armor
+     * pool drains on the server (damage soak), money changes on the server
+     * (economy), and the clamped values replicate down to the owning client.
+     */
+    virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
     virtual void BeginPlay() override;
 
@@ -229,6 +241,20 @@ private:
     /** The owned pure-data store carrying all parity maths. */
     UPROPERTY()
     FPlayerStats Stats;
+
+    /** Replicated mirror of Stats.Armor (the SOLE armor pool), COND_OwnerOnly. */
+    UPROPERTY(ReplicatedUsing = OnRep_Armor)
+    float RepArmor = 0.0f;
+
+    /** Replicated mirror of Stats.Money, COND_OwnerOnly. */
+    UPROPERTY(ReplicatedUsing = OnRep_Money)
+    int32 RepMoney = 0;
+
+    UFUNCTION()
+    void OnRep_Armor();
+
+    UFUNCTION()
+    void OnRep_Money();
 
     void BroadcastArmor();
     void BroadcastMoney();

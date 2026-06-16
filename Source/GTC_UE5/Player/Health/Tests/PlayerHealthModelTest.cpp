@@ -325,25 +325,29 @@ bool FPlayerHealthComponentLifecycleTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("health announced on init"), Listener->HealthFires >= 1);
     TestTrue(TEXT("armor announced on init"), Listener->ArmorFires >= 1);
 
-    // AddArmor fires the armor delegate and updates the accessor.
+    // W3 ARMOR-OWNERSHIP RESOLUTION (docs/W3_WIRING_NOTES.md): the health
+    // component is now HEALTH-ONLY — its model is constructed with ArmorMax=0,
+    // so its armor pool is neutralized. AddArmor clamps to 0 (the SOLE armor
+    // pool now lives on UPlayerStatsComponent, owned by AGTCPlayerState). So
+    // AddArmor is a no-op here and must NOT move the accessor.
     const int32 ArmorFiresBefore = Listener->ArmorFires;
     Comp->AddArmor(40.0f);
-    TestEqual(TEXT("armor delegate fired once"), Listener->ArmorFires, ArmorFiresBefore + 1);
-    TestTrue(TEXT("armor accessor updated"), FMath::Abs(Comp->GetArmor() - 40.0f) < Eps);
+    TestTrue(TEXT("armor stays 0 (ArmorMax=0 neutralizes the pool)"), FMath::Abs(Comp->GetArmor()) < Eps);
+    TestEqual(TEXT("no armor broadcast (no-op, pool neutralized)"), Listener->ArmorFires, ArmorFiresBefore);
 
-    // AddArmor with a negative is a no-op -> must NOT broadcast.
-    const int32 ArmorFiresNoOp = Listener->ArmorFires;
+    // AddArmor with a negative is likewise a no-op.
     Comp->AddArmor(-5.0f);
-    TestEqual(TEXT("no armor broadcast on no-op"), Listener->ArmorFires, ArmorFiresNoOp);
+    TestEqual(TEXT("no armor broadcast on negative no-op"), Listener->ArmorFires, ArmorFiresBefore);
 
-    // Damage soaks armor first (40), spills 10 into health, fires both delegates.
+    // Damage hits health directly (no armor to soak), fires the health delegate.
+    // 50 damage -> health 50 (health-only model, no armor absorption).
     const int32 HealthFiresBefore = Listener->HealthFires;
     const bool bKilled = Comp->ApplyDamage(50.0f);
     TestFalse(TEXT("non-lethal hit"), bKilled);
-    TestTrue(TEXT("armor drained to 0"), FMath::Abs(Comp->GetArmor()) < Eps);
-    TestTrue(TEXT("health 90 after overflow"), FMath::Abs(Comp->GetHealth() - 90.0f) < Eps);
+    TestTrue(TEXT("armor still 0 (no second pool)"), FMath::Abs(Comp->GetArmor()) < Eps);
+    TestTrue(TEXT("health 50 (full damage hits health)"), FMath::Abs(Comp->GetHealth() - 50.0f) < Eps);
     TestTrue(TEXT("health delegate fired"), Listener->HealthFires > HealthFiresBefore);
-    TestTrue(TEXT("health delegate payload"), FMath::Abs(Listener->LastHealth - 90.0f) < Eps);
+    TestTrue(TEXT("health delegate payload"), FMath::Abs(Listener->LastHealth - 50.0f) < Eps);
 
     // Heal back up; over-heal caps and the accessor reflects it.
     Comp->Heal(999.0f);

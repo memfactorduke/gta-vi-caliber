@@ -2,9 +2,27 @@
 
 #include "PlayerHealthComponent.h"
 
+#include "Net/UnrealNetwork.h"
+
 // ============================================================================
 // UPlayerHealthComponent — thin owner + lifecycle + delegate broadcast
 // ============================================================================
+
+void UPlayerHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    // Health-only, COND_OwnerOnly (owner = PlayerState). Armor is NOT replicated
+    // here — it is owned solely by UPlayerStatsComponent (W3 armor resolution).
+    DOREPLIFETIME_CONDITION(UPlayerHealthComponent, RepHealth, COND_OwnerOnly);
+}
+
+void UPlayerHealthComponent::OnRep_Health()
+{
+    // Client applies the replicated authoritative health into the local model
+    // and announces it so the HUD/delegates update.
+    Model.Health = static_cast<double>(RepHealth);
+    BroadcastHealth();
+}
 
 UPlayerHealthComponent::UPlayerHealthComponent()
 {
@@ -80,6 +98,9 @@ void UPlayerHealthComponent::Revive()
 
 void UPlayerHealthComponent::BroadcastHealth()
 {
+    // Keep the replicated mirror in lock-step with the authoritative model so a
+    // server-side mutation propagates to owning clients via COND_OwnerOnly.
+    RepHealth = static_cast<float>(Model.Health);
     OnHealthChanged.Broadcast(static_cast<float>(Model.Health), static_cast<float>(Model.MaxHealth));
 }
 

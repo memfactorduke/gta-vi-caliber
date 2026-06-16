@@ -8,7 +8,11 @@ public class GTC_UE5 : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		// "UMG": the HUD C++ base (UI/Hud/GTCHudWidget) derives from UUserWidget and subscribes to the
+		// W2 player-component change delegates. Public because GTCHudWidget.h includes the UMG UserWidget
+		// header in its public API. Slate/SlateCore are NOT added: the C++ base touches no Slate types
+		// directly (the meta=(BindWidget) ProgressBars/TextBlocks live in the future WBP, not in this base).
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" });
 
 		// "Json": engine JSON model used only inside Systems/Save/SaveJson.cpp (FJsonObject /
 		// FJsonSerializer / TJsonReader / TJsonWriter). Private — no engine Json type crosses the
