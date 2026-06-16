@@ -5,6 +5,9 @@
 #if WITH_AUTOMATION_TESTS
 
 #include "../LootTable.h"
+#include "../../../Tests/GtcTestTolerances.h"
+
+using GtcTest::Eps;
 
 // Each test below maps 1:1 to an assertion in the Godot parity oracle
 // game/tests/unit/test_loot_table.gd. Float compares use Eps.
@@ -12,10 +15,6 @@
 // RNG note: rolls use FRandomStream (seed-reproducible WITHIN UE5, not
 // byte-identical to Godot). Statistical tests below pick seeds verified to pass
 // under FRandomStream; see the per-test comments where a seed was pinned.
-namespace
-{
-    constexpr float Eps = 1e-4f;
-}
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FLootDefaultNonEmptyTest,
@@ -36,7 +35,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FLootDefaultTotalWeightTest::RunTest(const FString& Parameters)
 {
     LootTable T;
-    TestEqual(TEXT("total_weight == 15"), T.TotalWeight(), 15.0f, Eps);
+    TestEqual(TEXT("total_weight == 15"), (double)T.TotalWeight(), 15.0, Eps);
     return true;
 }
 
@@ -48,7 +47,7 @@ bool FLootCustomTableUsedTest::RunTest(const FString& Parameters)
 {
     LootTable T({ FLootEntry(TEXT("gold"), 2.0f, 1, 1) });
     TestEqual(TEXT("entry_count == 1"), T.EntryCount(), 1);
-    TestEqual(TEXT("total_weight == 2"), T.TotalWeight(), 2.0f, Eps);
+    TestEqual(TEXT("total_weight == 2"), (double)T.TotalWeight(), 2.0, Eps);
     return true;
 }
 
@@ -257,7 +256,7 @@ bool FLootExpectedValueHandTest::RunTest(const FString& Parameters)
     });
     TMap<FString, float> ValueOf;
     ValueOf.Add(TEXT("cash"), 1.0f);
-    TestEqual(TEXT("EV == 75"), T.ExpectedValue(ValueOf), 75.0f, Eps);
+    TestEqual(TEXT("EV == 75"), (double)T.ExpectedValue(ValueOf), 75.0, Eps);
     return true;
 }
 
@@ -268,7 +267,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FLootExpectedValueMissingTest::RunTest(const FString& Parameters)
 {
     LootTable T({ FLootEntry(TEXT("cash"), 1.0f, 10, 10) });
-    TestEqual(TEXT("EV == 0"), T.ExpectedValue(TMap<FString, float>()), 0.0f, Eps);
+    TestEqual(TEXT("EV == 0"), (double)T.ExpectedValue(TMap<FString, float>()), 0.0, Eps);
     return true;
 }
 
@@ -300,7 +299,7 @@ bool FLootZeroWeightRollSafeTest::RunTest(const FString& Parameters)
     const FLootDrop Drop = T.Roll(Rng);
     TestEqual(TEXT("empty id"), Drop.Id, FString());
     TestEqual(TEXT("quantity 0"), Drop.Quantity, 0);
-    TestEqual(TEXT("total_weight 0"), T.TotalWeight(), 0.0f, Eps);
+    TestEqual(TEXT("total_weight 0"), (double)T.TotalWeight(), 0.0, Eps);
     return true;
 }
 
@@ -313,7 +312,7 @@ bool FLootZeroWeightEVZeroTest::RunTest(const FString& Parameters)
     LootTable T({ FLootEntry(TEXT("cash"), 0.0f, 1, 9) });
     TMap<FString, float> ValueOf;
     ValueOf.Add(TEXT("cash"), 5.0f);
-    TestEqual(TEXT("EV == 0"), T.ExpectedValue(ValueOf), 0.0f, Eps);
+    TestEqual(TEXT("EV == 0"), (double)T.ExpectedValue(ValueOf), 0.0, Eps);
     return true;
 }
 
