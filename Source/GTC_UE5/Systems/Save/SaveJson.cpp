@@ -2,6 +2,9 @@
 
 #include "SaveJson.h"
 
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonWriter.h"
+
 // ---- FGtcJsonObject ---------------------------------------------------------
 
 void FGtcJsonObject::Set(const FString& Key, const FGtcJsonValuePtr& Value)
@@ -140,104 +143,90 @@ FGtcJsonValuePtr FGtcJsonValue::DeepClone() const
     }
 }
 
-// ---- Serialize --------------------------------------------------------------
+// ---- Serialize (engine Json: ordered TJsonWriter) ---------------------------
 
 namespace
 {
-    void EscapeString(const FString& In, FString& Out)
-    {
-        Out.AppendChar(TEXT('"'));
-        for (const TCHAR C : In)
-        {
-            switch (C)
-            {
-            case TEXT('"'):  Out += TEXT("\\\""); break;
-            case TEXT('\\'): Out += TEXT("\\\\"); break;
-            case TEXT('\b'): Out += TEXT("\\b"); break;
-            case TEXT('\f'): Out += TEXT("\\f"); break;
-            case TEXT('\n'): Out += TEXT("\\n"); break;
-            case TEXT('\r'): Out += TEXT("\\r"); break;
-            case TEXT('\t'): Out += TEXT("\\t"); break;
-            default:
-                if (C < 0x20)
-                {
-                    Out += FString::Printf(TEXT("\\u%04x"), static_cast<int32>(C));
-                }
-                else
-                {
-                    Out.AppendChar(C);
-                }
-                break;
-            }
-        }
-        Out.AppendChar(TEXT('"'));
-    }
+    using FGtcJsonWriter = TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>;
 
-    // Shortest round-trippable double text. UE's SanitizeFloat on a double via %.17g
-    // preserves full precision; integral values render without a fractional part to keep
-    // version/count fields clean. Note: exact text is NOT contractual (tolerance contract).
-    void WriteNumber(double V, FString& Out)
+    void WriteValue(const FGtcJsonValuePtr& Value, const TSharedRef<FGtcJsonWriter>& Writer);
+
+    // Numbers carry one `double` type (Godot has no int/float split). Integral values that fit
+    // exactly are written through the int64 overload to keep version/count fields clean; all
+    // others go through the double overload (17 sig-digits). Exact text is NOT contractual
+    // (round-trip tolerance contract) — this only mirrors the prior writer's clean integers.
+    void WriteNumberValue(double V, const TSharedRef<FGtcJsonWriter>& Writer)
     {
         if (FMath::IsFinite(V) && V == FMath::TruncToDouble(V) && FMath::Abs(V) < 1e15)
         {
-            Out += FString::Printf(TEXT("%lld"), static_cast<int64>(V));
+            Writer->WriteValue(static_cast<int64>(V));
         }
         else
         {
-            Out += FString::Printf(TEXT("%.17g"), V);
+            Writer->WriteValue(V);
         }
     }
 
-    void WriteValue(const FGtcJsonValuePtr& Value, FString& Out);
-
-    void WriteObject(const TSharedRef<FGtcJsonObject>& Obj, FString& Out)
+    // Object fields are emitted in OrderedKeys() order — this is how Godot's observable
+    // Dictionary key order survives serialization on top of engine JSON.
+    void WriteObject(const TSharedRef<FGtcJsonObject>& Obj, const TSharedRef<FGtcJsonWriter>& Writer)
     {
-        Out.AppendChar(TEXT('{'));
-        const TArray<FString>& Keys = Obj->OrderedKeys();
-        for (int32 i = 0; i < Keys.Num(); ++i)
+        Writer->WriteObjectStart();
+        for (const FString& Key : Obj->OrderedKeys())
         {
-            if (i > 0)
+            const FGtcJsonValuePtr Field = Obj->Get(Key);
+            const EGtcJsonType Type = Field.IsValid() ? Field->GetType() : EGtcJsonType::Null;
+            switch (Type)
             {
-                Out.AppendChar(TEXT(','));
+            case EGtcJsonType::Object:
+                Writer->WriteIdentifierPrefix(Key);
+                WriteObject(Field->AsObject().IsValid() ? Field->AsObject().ToSharedRef()
+                    : MakeShared<FGtcJsonObject>(), Writer);
+                break;
+            case EGtcJsonType::Array:
+                Writer->WriteIdentifierPrefix(Key);
+                WriteValue(Field, Writer);
+                break;
+            case EGtcJsonType::Bool:   Writer->WriteValue(Key, Field->AsBool()); break;
+            case EGtcJsonType::String: Writer->WriteValue(Key, Field->AsString()); break;
+            case EGtcJsonType::Number:
+                Writer->WriteIdentifierPrefix(Key);
+                WriteNumberValue(Field->AsNumber(), Writer);
+                break;
+            default:
+                Writer->WriteNull(Key);
+                break;
             }
-            EscapeString(Keys[i], Out);
-            Out.AppendChar(TEXT(':'));
-            WriteValue(Obj->Get(Keys[i]), Out);
         }
-        Out.AppendChar(TEXT('}'));
+        Writer->WriteObjectEnd();
     }
 
-    void WriteValue(const FGtcJsonValuePtr& Value, FString& Out)
+    void WriteValue(const FGtcJsonValuePtr& Value, const TSharedRef<FGtcJsonWriter>& Writer)
     {
         if (!Value.IsValid())
         {
-            Out += TEXT("null");
+            Writer->WriteValue(nullptr);
             return;
         }
         switch (Value->GetType())
         {
-        case EGtcJsonType::Null:   Out += TEXT("null"); break;
-        case EGtcJsonType::Bool:   Out += Value->AsBool() ? TEXT("true") : TEXT("false"); break;
-        case EGtcJsonType::Number: WriteNumber(Value->AsNumber(), Out); break;
-        case EGtcJsonType::String: EscapeString(Value->AsString(), Out); break;
+        case EGtcJsonType::Null:   Writer->WriteValue(nullptr); break;
+        case EGtcJsonType::Bool:   Writer->WriteValue(Value->AsBool()); break;
+        case EGtcJsonType::Number: WriteNumberValue(Value->AsNumber(), Writer); break;
+        case EGtcJsonType::String: Writer->WriteValue(Value->AsString()); break;
         case EGtcJsonType::Array:
         {
-            Out.AppendChar(TEXT('['));
-            const TArray<FGtcJsonValuePtr>& Arr = Value->AsArray();
-            for (int32 i = 0; i < Arr.Num(); ++i)
+            Writer->WriteArrayStart();
+            for (const FGtcJsonValuePtr& Item : Value->AsArray())
             {
-                if (i > 0)
-                {
-                    Out.AppendChar(TEXT(','));
-                }
-                WriteValue(Arr[i], Out);
+                WriteValue(Item, Writer);
             }
-            Out.AppendChar(TEXT(']'));
+            Writer->WriteArrayEnd();
             break;
         }
         case EGtcJsonType::Object:
             WriteObject(Value->AsObject().IsValid() ? Value->AsObject().ToSharedRef()
-                : MakeShared<FGtcJsonObject>(), Out);
+                : MakeShared<FGtcJsonObject>(), Writer);
             break;
         }
     }
@@ -248,271 +237,110 @@ namespace GtcJson
     FString Serialize(const TSharedRef<FGtcJsonObject>& Object)
     {
         FString Out;
-        WriteObject(Object, Out);
+        const TSharedRef<FGtcJsonWriter> Writer =
+            TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Out);
+        WriteObject(Object, Writer);
+        Writer->Close();
         return Out;
     }
 }
 
-// ---- Parse ------------------------------------------------------------------
+// ---- Parse (engine Json: ordered TJsonReader token stream) ------------------
 
 namespace
 {
-    // A tiny recursive-descent JSON parser. Silent on error: any failure returns nullptr.
-    struct FJsonParser
+    using FGtcJsonReader = TJsonReader<TCHAR>;
+
+    // Build a value for the token the reader currently sits on. For containers, recurse and
+    // consume to the matching End. Object fields are appended in document order via Set(),
+    // so the ordered key list rebuilds exactly as written. Any malformed token / reader error
+    // surfaces as bOk = false (silent — Godot returns an invalid value, never logs).
+    FGtcJsonValuePtr ReadValue(const TSharedRef<FGtcJsonReader>& Reader, EJsonNotation Notation, bool& bOk);
+
+    FGtcJsonValuePtr ReadObject(const TSharedRef<FGtcJsonReader>& Reader, bool& bOk)
     {
-        const TCHAR* Ptr;
-        const TCHAR* End;
-
-        explicit FJsonParser(const FString& Text)
-            : Ptr(*Text)
-            , End(*Text + Text.Len())
+        TSharedRef<FGtcJsonObject> Obj = MakeShared<FGtcJsonObject>();
+        EJsonNotation Notation;
+        while (Reader->ReadNext(Notation))
         {
-        }
-
-        void SkipWhitespace()
-        {
-            while (Ptr < End && (*Ptr == TEXT(' ') || *Ptr == TEXT('\t') || *Ptr == TEXT('\n') || *Ptr == TEXT('\r')))
+            if (Notation == EJsonNotation::ObjectEnd)
             {
-                ++Ptr;
-            }
-        }
-
-        bool AtEnd() const { return Ptr >= End; }
-        TCHAR Peek() const { return Ptr < End ? *Ptr : TEXT('\0'); }
-
-        bool Match(const TCHAR* Literal)
-        {
-            const TCHAR* P = Ptr;
-            for (const TCHAR* L = Literal; *L; ++L, ++P)
-            {
-                if (P >= End || *P != *L)
-                {
-                    return false;
-                }
-            }
-            Ptr = P;
-            return true;
-        }
-
-        FGtcJsonValuePtr ParseValue()
-        {
-            SkipWhitespace();
-            if (AtEnd())
-            {
-                return nullptr;
-            }
-            const TCHAR C = Peek();
-            switch (C)
-            {
-            case TEXT('{'): return ParseObject();
-            case TEXT('['): return ParseArray();
-            case TEXT('"'):
-            {
-                FString S;
-                return ParseString(S) ? FGtcJsonValue::MakeString(S) : nullptr;
-            }
-            case TEXT('t'): return Match(TEXT("true")) ? FGtcJsonValue::MakeBool(true) : nullptr;
-            case TEXT('f'): return Match(TEXT("false")) ? FGtcJsonValue::MakeBool(false) : nullptr;
-            case TEXT('n'): return Match(TEXT("null")) ? FGtcJsonValue::MakeNull() : nullptr;
-            default: return ParseNumber();
-            }
-        }
-
-        bool ParseString(FString& Out)
-        {
-            if (Peek() != TEXT('"'))
-            {
-                return false;
-            }
-            ++Ptr; // opening quote
-            while (Ptr < End)
-            {
-                const TCHAR C = *Ptr++;
-                if (C == TEXT('"'))
-                {
-                    return true;
-                }
-                if (C == TEXT('\\'))
-                {
-                    if (Ptr >= End)
-                    {
-                        return false;
-                    }
-                    const TCHAR Esc = *Ptr++;
-                    switch (Esc)
-                    {
-                    case TEXT('"'):  Out.AppendChar(TEXT('"')); break;
-                    case TEXT('\\'): Out.AppendChar(TEXT('\\')); break;
-                    case TEXT('/'):  Out.AppendChar(TEXT('/')); break;
-                    case TEXT('b'):  Out.AppendChar(TEXT('\b')); break;
-                    case TEXT('f'):  Out.AppendChar(TEXT('\f')); break;
-                    case TEXT('n'):  Out.AppendChar(TEXT('\n')); break;
-                    case TEXT('r'):  Out.AppendChar(TEXT('\r')); break;
-                    case TEXT('t'):  Out.AppendChar(TEXT('\t')); break;
-                    case TEXT('u'):
-                    {
-                        if (Ptr + 4 > End)
-                        {
-                            return false;
-                        }
-                        int32 Code = 0;
-                        for (int32 i = 0; i < 4; ++i)
-                        {
-                            const TCHAR H = *Ptr++;
-                            int32 Digit;
-                            if (H >= TEXT('0') && H <= TEXT('9')) Digit = H - TEXT('0');
-                            else if (H >= TEXT('a') && H <= TEXT('f')) Digit = 10 + (H - TEXT('a'));
-                            else if (H >= TEXT('A') && H <= TEXT('F')) Digit = 10 + (H - TEXT('A'));
-                            else return false;
-                            Code = (Code << 4) | Digit;
-                        }
-                        Out.AppendChar(static_cast<TCHAR>(Code));
-                        break;
-                    }
-                    default:
-                        return false;
-                    }
-                }
-                else
-                {
-                    Out.AppendChar(C);
-                }
-            }
-            return false; // unterminated
-        }
-
-        FGtcJsonValuePtr ParseNumber()
-        {
-            const TCHAR* Start = Ptr;
-            if (Peek() == TEXT('-'))
-            {
-                ++Ptr;
-            }
-            bool AnyDigit = false;
-            while (Ptr < End && FChar::IsDigit(*Ptr)) { ++Ptr; AnyDigit = true; }
-            if (Ptr < End && *Ptr == TEXT('.'))
-            {
-                ++Ptr;
-                while (Ptr < End && FChar::IsDigit(*Ptr)) { ++Ptr; AnyDigit = true; }
-            }
-            if (Ptr < End && (*Ptr == TEXT('e') || *Ptr == TEXT('E')))
-            {
-                ++Ptr;
-                if (Ptr < End && (*Ptr == TEXT('+') || *Ptr == TEXT('-')))
-                {
-                    ++Ptr;
-                }
-                while (Ptr < End && FChar::IsDigit(*Ptr)) { ++Ptr; }
-            }
-            if (!AnyDigit)
-            {
-                return nullptr;
-            }
-            const FString NumStr(FStringView(Start, static_cast<int32>(Ptr - Start)));
-            return FGtcJsonValue::MakeNumber(FCString::Atod(*NumStr));
-        }
-
-        FGtcJsonValuePtr ParseArray()
-        {
-            ++Ptr; // '['
-            TArray<FGtcJsonValuePtr> Items;
-            SkipWhitespace();
-            if (Peek() == TEXT(']'))
-            {
-                ++Ptr;
-                return FGtcJsonValue::MakeArray(Items);
-            }
-            while (true)
-            {
-                FGtcJsonValuePtr Item = ParseValue();
-                if (!Item.IsValid())
-                {
-                    return nullptr;
-                }
-                Items.Add(Item);
-                SkipWhitespace();
-                const TCHAR C = Peek();
-                if (C == TEXT(','))
-                {
-                    ++Ptr;
-                    continue;
-                }
-                if (C == TEXT(']'))
-                {
-                    ++Ptr;
-                    return FGtcJsonValue::MakeArray(Items);
-                }
-                return nullptr;
-            }
-        }
-
-        FGtcJsonValuePtr ParseObject()
-        {
-            ++Ptr; // '{'
-            TSharedRef<FGtcJsonObject> Obj = MakeShared<FGtcJsonObject>();
-            SkipWhitespace();
-            if (Peek() == TEXT('}'))
-            {
-                ++Ptr;
                 return FGtcJsonValue::MakeObject(Obj);
             }
-            while (true)
+            // Every field token carries its key as the identifier.
+            const FString Key = Reader->GetIdentifier();
+            const FGtcJsonValuePtr Val = ReadValue(Reader, Notation, bOk);
+            if (!bOk)
             {
-                SkipWhitespace();
-                FString Key;
-                if (!ParseString(Key))
-                {
-                    return nullptr;
-                }
-                SkipWhitespace();
-                if (Peek() != TEXT(':'))
-                {
-                    return nullptr;
-                }
-                ++Ptr;
-                FGtcJsonValuePtr Val = ParseValue();
-                if (!Val.IsValid())
-                {
-                    return nullptr;
-                }
-                Obj->Set(Key, Val);
-                SkipWhitespace();
-                const TCHAR C = Peek();
-                if (C == TEXT(','))
-                {
-                    ++Ptr;
-                    continue;
-                }
-                if (C == TEXT('}'))
-                {
-                    ++Ptr;
-                    return FGtcJsonValue::MakeObject(Obj);
-                }
                 return nullptr;
             }
+            Obj->Set(Key, Val);
         }
-    };
+        bOk = false; // ran out of tokens before ObjectEnd
+        return nullptr;
+    }
+
+    FGtcJsonValuePtr ReadArray(const TSharedRef<FGtcJsonReader>& Reader, bool& bOk)
+    {
+        TArray<FGtcJsonValuePtr> Items;
+        EJsonNotation Notation;
+        while (Reader->ReadNext(Notation))
+        {
+            if (Notation == EJsonNotation::ArrayEnd)
+            {
+                return FGtcJsonValue::MakeArray(Items);
+            }
+            const FGtcJsonValuePtr Item = ReadValue(Reader, Notation, bOk);
+            if (!bOk)
+            {
+                return nullptr;
+            }
+            Items.Add(Item);
+        }
+        bOk = false; // ran out of tokens before ArrayEnd
+        return nullptr;
+    }
+
+    FGtcJsonValuePtr ReadValue(const TSharedRef<FGtcJsonReader>& Reader, EJsonNotation Notation, bool& bOk)
+    {
+        switch (Notation)
+        {
+        case EJsonNotation::ObjectStart: return ReadObject(Reader, bOk);
+        case EJsonNotation::ArrayStart:  return ReadArray(Reader, bOk);
+        case EJsonNotation::Boolean:     return FGtcJsonValue::MakeBool(Reader->GetValueAsBoolean());
+        case EJsonNotation::Number:      return FGtcJsonValue::MakeNumber(Reader->GetValueAsNumber());
+        case EJsonNotation::String:      return FGtcJsonValue::MakeString(Reader->GetValueAsString());
+        case EJsonNotation::Null:        return FGtcJsonValue::MakeNull();
+        default:
+            bOk = false; // EJsonNotation::Error or an End where a value was expected
+            return nullptr;
+        }
+    }
 }
 
 namespace GtcJson
 {
     FGtcJsonValuePtr Parse(const FString& Text)
     {
-        const FString Trimmed = Text;
-        FJsonParser Parser(Trimmed);
-        Parser.SkipWhitespace();
-        if (Parser.AtEnd())
+        const TSharedRef<FGtcJsonReader> Reader = TJsonReaderFactory<TCHAR>::Create(Text);
+
+        EJsonNotation Notation;
+        if (!Reader->ReadNext(Notation))
+        {
+            return nullptr; // empty / immediate error
+        }
+
+        bool bOk = true;
+        FGtcJsonValuePtr Value = ReadValue(Reader, Notation, bOk);
+        if (!bOk || !Value.IsValid())
         {
             return nullptr;
         }
-        FGtcJsonValuePtr Value = Parser.ParseValue();
-        if (!Value.IsValid())
-        {
-            return nullptr;
-        }
-        // Trailing non-whitespace makes the whole parse invalid (Godot rejects it).
-        Parser.SkipWhitespace();
-        if (!Parser.AtEnd())
+
+        // Reject trailing non-whitespace (Godot rejects it). After a complete top-level value
+        // the next ReadNext must report end-of-stream (ReadNext returns false), not another
+        // token. A trailing-content error also returns false, which is the same reject path.
+        if (Reader->ReadNext(Notation))
         {
             return nullptr;
         }

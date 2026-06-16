@@ -10,7 +10,10 @@ public class GTC_UE5 : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		// "Json": engine JSON model used only inside Systems/Save/SaveJson.cpp (FJsonObject /
+		// FJsonSerializer / TJsonReader / TJsonWriter). Private — no engine Json type crosses the
+		// Save headers' module boundary; the public Save API is the in-module ordered wrapper.
+		PrivateDependencyModuleNames.AddRange(new string[] { "Json" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
