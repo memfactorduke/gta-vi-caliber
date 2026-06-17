@@ -10,7 +10,7 @@ class AActor;
 
 /**
  * UGTCInteractionComponent — the player-side interaction adapter. The UE
- * replacement for the Godot player's interact handling: each tick it gathers the
+ * replacement for the the reference player's interact handling: each tick it gathers the
  * nearby IGTCInteractable actors in front of the owner (forward sphere/overlap +
  * trace), scores them with the merged FInteraction selection model
  * (World/Interaction/Interaction.h — the W1-tested "nearest in reach" pick), and

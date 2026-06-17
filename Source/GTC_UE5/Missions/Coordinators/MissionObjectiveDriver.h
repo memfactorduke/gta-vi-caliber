@@ -10,7 +10,7 @@
  * trigger geometry, so every campaign mission can have its own locations and
  * objective kinds without per-mission scene edits.
  *
- * Godot parity: game/scripts/missions/mission_objective_driver.gd (class
+ * the reference parity: game/scripts/missions/mission_objective_driver.gd (class
  * MissionObjectiveDriver, Node). The DECISION step (Evaluate) is pure, static and
  * 1:1 unit-tested against game/tests/unit/test_mission_objective_driver.gd (8
  * funcs); the node body is just the per-tick pump.
@@ -38,8 +38,8 @@ class GTC_UE5_API FMissionObjectiveDriver
 public:
     /**
      * One objective definition: how this objective id completes.
-     * Mirrors Godot's per-id Dictionary {kind, radius, duration}; defaults match
-     * the Godot get() fallbacks (kind "reach", radius 6.0, duration 3.0).
+     * Mirrors the reference per-id Dictionary {kind, radius, duration}; defaults match
+     * the the reference get() fallbacks (kind "reach", radius 6.0, duration 3.0).
      */
     struct FObjectiveDef
     {
@@ -59,7 +59,7 @@ public:
 
     /**
      * Result of one decision step: whether the objective is satisfied this frame,
-     * and the new hold clock to carry forward. Mirrors Godot's
+     * and the new hold clock to carry forward. Mirrors the reference
      * {"satisfied": bool, "held": float}; the compound return is split into named
      * fields (bSatisfied / Held).
      */
@@ -75,7 +75,7 @@ public:
      * {bSatisfied, Held} — the new hold clock to carry forward. Unknown kinds behave
      * as "reach" so a typo'd def degrades gracefully.
      *
-     * Godot parity: MissionObjectiveDriver.evaluate (static).
+     * the reference parity: MissionObjectiveDriver.evaluate (static).
      */
     static FVerdict Evaluate(
         const FObjectiveDef& Def,
@@ -84,15 +84,15 @@ public:
         double Held,
         double Delta);
 
-    // --- Owned pump coordination state (Godot Node body, sans SceneTree) --------
+    // --- Owned pump coordination state (the reference Node body, sans SceneTree) --------
 
-    /** Active objective id -> its def. Mirrors the Godot `defs` Dictionary. */
+    /** Active objective id -> its def. Mirrors the the reference `defs` Dictionary. */
     TMap<FString, FObjectiveDef> Defs;
 
     /**
      * Re-arm the driver for a fresh mission: clears the running hold clock and the
      * armed objective so a leftover hold can't leak into the next mission. Mirrors
-     * Godot bind(controller) (sans storing the controller Node — Wave 3 wiring).
+     * the reference bind(controller) (sans storing the controller Node — Wave 3 wiring).
      */
     void Bind();
 
@@ -100,7 +100,7 @@ public:
      * Headless equivalent of one _physics_process frame for a single active
      * objective: looks up `ObjectiveId` in Defs, re-arms the hold clock when the
      * active objective changes, evaluates, stores the carried hold, and returns
-     * true on the frame the objective is satisfied (the Godot complete() call site).
+     * true on the frame the objective is satisfied (the the reference complete() call site).
      * A Wave 3 scene adapter feeds PlayerPos/Target from the resolved player Node3D
      * and the live controller waypoint. An id absent from Defs returns false (the
      * Godot "no declared kind" early-out — scene triggers handle those).
@@ -111,10 +111,10 @@ public:
         const FVector& Target,
         double Delta);
 
-    /** Current running hold clock (owned pump state, Godot `_held`). */
+    /** Current running hold clock (owned pump state, the reference `_held`). */
     double GetHeld() const { return Held; }
 
-    /** Currently armed objective id (owned pump state, Godot `_armed_id`). */
+    /** Currently armed objective id (owned pump state, the reference `_armed_id`). */
     const FString& GetArmedId() const { return ArmedId; }
 
 private:

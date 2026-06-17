@@ -4,7 +4,7 @@
 
 namespace
 {
-	// LINES dictionary, keyed by situation, preserving Godot author order.
+	// LINES dictionary, keyed by situation, preserving the reference author order.
 	const TMap<EBarkSituation, TArray<FString>>& BarkPoolLines()
 	{
 		static const TMap<EBarkSituation, TArray<FString>> L = {
@@ -41,7 +41,7 @@ FString FBarkPool::Line(EBarkSituation Situation, int32 Index)
 	{
 		return FString();
 	}
-	// Godot posmod(index, pool.size()): always non-negative in [0, size).
+	// the reference posmod(index, pool.size()): always non-negative in [0, size).
 	const int32 N = Pool->Num();
 	const int32 WrappedIndex = ((Index % N) + N) % N;
 	return (*Pool)[WrappedIndex];

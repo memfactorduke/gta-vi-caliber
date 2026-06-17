@@ -13,7 +13,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FNpcMind, mapped 1:1 from the Godot oracle
+ * Parity tests for FNpcMind, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_npc_mind.gd. The behaviours: a content NPC follows its
  * routine; a desperate drive hijacks it; discipline raises the override bar.
  * String/enum equality asserts exactly; urgency uses the oracle's < 0.001.

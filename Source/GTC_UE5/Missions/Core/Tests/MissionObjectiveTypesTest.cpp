@@ -7,7 +7,7 @@
 #include "../MissionObjectiveTypes.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_mission_objective_types.gd.
 
 using GtcTest::Eps;

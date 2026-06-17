@@ -9,11 +9,11 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_casino_games.gd. Spins use a seeded FRandomStream (seed-
 // reproducible WITHIN UE5, not byte-identical to Godot); the oracle only pins
 // determinism and range, which FRandomStream satisfies. Blackjack cards are passed as
-// FString tokens ("10","A","K") since Godot cards are int-or-string.
+// FString tokens ("10","A","K") since the reference cards are int-or-string.
 
 // --- Roulette ---
 

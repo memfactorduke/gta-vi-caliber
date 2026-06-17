@@ -10,16 +10,16 @@
  * flow along sidewalks, ease to a stop at destinations, and don't telescope into
  * each other. Boids-lite: seek, arrive, separation, path following.
  *
- * Direct port of the Godot `NpcSteering` (RefCounted) at
+ * Direct port of the the reference `NpcSteering` (RefCounted) at
  * `game/scripts/npc/npc_steering.gd`. All static, FVector-in / FVector-out, no
- * UObject — unit-tested headless via the parity oracle
+ * UObject — unit-tested headless via the reference behavior
  * (Tests/NpcSteeringTest.cpp, prefix GTC.NPC.Steering.NpcSteering).
  *
- * Double precision throughout, to match the GDScript float math. Work happens in
- * the XZ plane (Godot Y-up); `Ground(V)` flattens to `FVector(V.X, 0, V.Z)`.
+ * Double precision throughout, to match the the reference implementation float math. Work happens in
+ * the XZ plane (the reference Y-up); `Ground(V)` flattens to `FVector(V.X, 0, V.Z)`.
  *
  * NOTE: no Godot->UE Z-up axis remap is baked in here — the model stays in the
- * Godot XZ frame so the ported unit tests match the oracle bit-for-bit. Porting
+ * the reference XZ frame so the ported unit tests match the oracle bit-for-bit. Porting
  * the axis convention to UE's Z-up space is a DEFERRED Wave-3 concern.
  *
  * PURE-CORE boundary: this is ONLY the per-agent steering math, computed from

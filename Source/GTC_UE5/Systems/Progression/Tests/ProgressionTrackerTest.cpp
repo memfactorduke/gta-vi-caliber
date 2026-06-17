@@ -11,10 +11,10 @@
 using GtcTest::Eps;
 
 // Subsystem BEHAVIOR / lifecycle tests for UProgressionTracker. The Godot
-// progression_tracker.gd has NO parity oracle (test_progression_tracker.gd has 0
+// progression_tracker.gd has NO reference behavior (test_progression_tracker.gd has 0
 // funcs), so these are fresh tests of the Wave 2 ownership model: the subsystem owns a
 // single FPlayerProgression and drives it via the objective/mission award methods that
-// replace the Godot MissionController signal wiring (Wave 3).
+// replace the the reference MissionController signal wiring (Wave 3).
 //
 // UGameInstanceSubsystem has ClassWithin = UGameInstance, so it must be created with a
 // GameInstance outer (a transient one suffices for headless ownership/driving tests).

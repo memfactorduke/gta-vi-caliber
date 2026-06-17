@@ -6,7 +6,7 @@
 
 /**
  * Pure hitscan math shared by every weapon — the low-level twin of
- * FWeaponBallistics. Direct port of the Godot `Ballistics` (RefCounted) at
+ * FWeaponBallistics. Direct port of the the reference `Ballistics` (RefCounted) at
  * `game/scripts/weapons/ballistics.gd`.
  *
  * Static functions only — no scene access, no RNG. The caller passes a random
@@ -14,11 +14,11 @@
  * FVector-out, scalar-in / scalar-out. Unit-tested headless via the parity
  * oracle (Tests/BallisticsTest.cpp, prefix GTC.Weapons.Ballistics).
  *
- * Double precision throughout, to match the GDScript float math. Tolerance
+ * Double precision throughout, to match the the reference implementation float math. Tolerance
  * mirrors the oracle's is_equal_approx (Eps = 1e-4).
  *
  * NOTE: no Godot->UE Z-up axis remap is baked in here — the model stays in the
- * Godot frame (forward = -Z, up = +Y) so the ported unit tests match the oracle.
+ * the reference frame (forward = -Z, up = +Y) so the ported unit tests match the oracle.
  * The axis convention port to UE's Z-up space is a DEFERRED Wave-3 concern.
  *
  * PURE-CORE boundary: this is ONLY the spread/falloff/sampling math. The actual
@@ -28,7 +28,7 @@
  */
 struct GTC_UE5_API FBallistics
 {
-    /** Planar tolerance mirroring the Godot is_zero_approx / is_equal_approx. */
+    /** Planar tolerance mirroring the the reference is_zero_approx / is_equal_approx. */
     static constexpr double Eps = 1e-4;
 
     /**

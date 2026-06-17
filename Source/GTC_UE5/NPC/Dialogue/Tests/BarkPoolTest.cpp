@@ -7,7 +7,7 @@
 #include "../BarkPool.h"
 
 /**
- * Parity tests for FBarkPool, mapped 1:1 from the Godot oracle
+ * Parity tests for FBarkPool, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_bark_pool.gd (7 funcs). Each TestTrue corresponds to one
  * oracle assertion with the oracle's own literals/indices. Compound `a and b`
  * returns are split into independent TestTrue calls.

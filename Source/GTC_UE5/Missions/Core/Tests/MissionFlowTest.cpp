@@ -6,7 +6,7 @@
 
 #include "../MissionFlow.h"
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_mission_flow.gd.
 
 namespace MissionFlowTestNS

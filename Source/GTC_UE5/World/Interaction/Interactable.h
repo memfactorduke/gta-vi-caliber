@@ -9,7 +9,7 @@
 /**
  * IGTCInteractable — the contract every context-sensitive interact target
  * implements (shops, hubs, mission actors, pickups). The UE replacement for the
- * Godot "interactables" group: in Godot the player gathered group members and,
+ * Godot "interactables" group: in the reference the player gathered group members and,
  * on the interact key, called interact()/interact_prompt() on the winner. Here
  * any AActor (C++ or Blueprint) that implements this interface is a candidate
  * UGTCInteractionComponent can gather, score (via the merged FInteraction

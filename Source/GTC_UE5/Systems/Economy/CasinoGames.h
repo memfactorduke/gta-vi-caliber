@@ -9,13 +9,13 @@
  * Pure casino gambling model — blackjack, slots, and roulette payout/odds math plus
  * a small stateful chip bankroll for a session. The static helpers are pure odds/
  * payout functions; every spin/deal takes a caller-supplied FRandomStream so outcomes
- * are reproducible in tests. Headless-testable (parity oracle test_casino_games.gd).
+ * are reproducible in tests. Headless-testable (reference behavior test_casino_games.gd).
  *
  * Payout helpers return the TOTAL chips returned to the player (stake included), or 0
  * on a loss.
  *
  * RNG parity note: spins use FRandomStream — deterministic and seed-reproducible
- * WITHIN UE5, NOT a Godot PCG reimplementation, so draws are NOT byte-identical to
+ * WITHIN UE5, NOT a the reference PCG reimplementation, so draws are NOT byte-identical to
  * Godot. The oracle only pins determinism (same seed -> same result) and range, never
  * an exact seed->value sequence, so FRandomStream satisfies every assertion. Mapping:
  * randi_range(lo, hi) -> RandRange(lo, hi) (inclusive both ends).

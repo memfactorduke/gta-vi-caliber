@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_heist_crew.gd. Rolls use a seeded FRandomStream (seed-
 // reproducible WITHIN UE5, not byte-identical to Godot); the oracle only pins
 // determinism and certain/hopeless boundaries, which FRandomStream satisfies.

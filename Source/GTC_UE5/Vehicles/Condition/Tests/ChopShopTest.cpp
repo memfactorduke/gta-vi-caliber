@@ -8,7 +8,7 @@
 #include "../VehicleHealth.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_chop_shop.gd (15 tests). One test composes FVehicleHealth (a damaged car
 // fences for less), mirroring the cross-ref oracle.
 
@@ -194,7 +194,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FChopShopRotateRequestsDeterministicTest::RunTest(const FString& Parameters)
 {
-    // RNG parity: FRandomStream is deterministic per seed (NOT byte-identical to Godot's
+    // RNG parity: FRandomStream is deterministic per seed (NOT byte-identical to the reference
     // RandomNumberGenerator); the oracle only pins determinism + count, which holds.
     FChopShop A;
     FChopShop B;

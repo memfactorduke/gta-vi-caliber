@@ -7,13 +7,13 @@
 /**
  * Pure swim math for the player when in water.
  *
- * Direct port of the Godot `SwimMotion` (RefCounted) static helpers at
+ * Direct port of the the reference `SwimMotion` (RefCounted) static helpers at
  * `game/scripts/player/swim_motion.gd`. Static methods only, no scene access —
  * the same testable-core pattern as FPlayerMotion. This owns submersion, the
  * enter/leave hysteresis, stroke input and passive buoyancy.
  *
- * Double precision throughout, to match the GDScript float math. Work stays in
- * the Godot Y-up frame (vertical is +Y); `Direction` is the planar unit vector
+ * Double precision throughout, to match the the reference implementation float math. Work stays in
+ * the the reference Y-up frame (vertical is +Y); `Direction` is the planar unit vector
  * from FPlayerMotion. NO Godot->UE Z-up axis remap is baked in here — wiring
  * these outputs onto a UE CharacterMovement rig is a DEFERRED Wave-3 adapter and
  * is NOT parity-covered.

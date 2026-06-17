@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FPursuitTactics, mapped 1:1 from the Godot oracle
+ * Parity tests for FPursuitTactics, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_pursuit_tactics.gd. Tolerance mirrors the oracle's
  * is_equal_approx (Eps = 1e-4) for float/vector compares; enum/bool equality
  * asserts exactly.

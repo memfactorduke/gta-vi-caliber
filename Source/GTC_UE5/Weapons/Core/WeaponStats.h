@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 
 /**
- * Tunable data for one weapon archetype. Direct port of the Godot `WeaponStats`
+ * Tunable data for one weapon archetype. Direct port of the the reference `WeaponStats`
  * (a Resource) at `game/scripts/weapons/weapon_stats.gd`.
  *
- * In Godot this is a Resource so designers can author `.tres` variants; here it
+ * In the reference this is a Resource so designers can author `.tres` variants; here it
  * is a plain value struct (the intra-entry dependency of FWeapon — there is no
  * dedicated test oracle, WeaponStats is exercised through FWeapon). The firing
  * logic that consumes it (FWeapon, FWeaponBallistics) stays pure and unit-tested.

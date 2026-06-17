@@ -7,7 +7,7 @@
 #include "../NpcConversation.h"
 
 /**
- * Parity tests for FNpcConversation, mapped 1:1 from the Godot oracle
+ * Parity tests for FNpcConversation, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_npc_conversation.gd (6 funcs). Each TestTrue corresponds
  * to one oracle assertion with the oracle's own literals/seeds. Compound returns
  * are split into independent TestTrue calls.

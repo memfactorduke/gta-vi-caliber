@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 
 /**
- * FDisguise — pure appearance / disguise model (UE 5.7 port of Godot `disguise.gd`,
+ * FDisguise — pure appearance / disguise model (UE 5.7 port of the reference `disguise.gd`,
  * class Disguise, RefCounted). Parity oracle game/tests/unit/test_disguise.gd (11 funcs).
  *
  * The genre's "change your look to lose the heat" mechanic. The player has an appearance
@@ -15,7 +15,7 @@
  * faster. The slot weights sum to 1.0 so recognition lands in [0, 1]. double precision for
  * float parity with the oracle.
  *
- * Ordered backing store: Godot's WEIGHTS is a Dictionary whose key order (outfit, mask,
+ * Ordered backing store: the reference WEIGHTS is a Dictionary whose key order (outfit, mask,
  * vehicle, hair) is observable through slots(); we preserve that order with a parallel
  * ordered list of slot names rather than relying on TMap iteration order.
  *
@@ -24,11 +24,11 @@
  *   cold" countdown faster) is a DEFERRED-OWNERSHIP decision. This model OWNS its own
  *   disguise state and exposes effectiveness only via EvasionSpeedup(); a caller multiplies
  *   the WantedEvasion search delta by it. FDisguise does NOT reach into any live
- *   WantedSubsystem and does not import it for production use. The parity oracle's
+ *   WantedSubsystem and does not import it for production use. The reference behavior's
  *   cross-system test (`test_disguised_evades_faster_than_recognized`) drives a standalone
  *   FWantedEvasion (reused from main, NOT re-ported) purely to assert the speedup math; the
  *   runtime read-back / wiring into the live wanted system is a Wave-3 adapter and DEFERRED.
- *   The Godot disguise_tracker.gd (Node) and the runtime wanted read-back are likewise
+ *   The the reference disguise_tracker.gd (Node) and the runtime wanted read-back are likewise
  *   DEFERRED to Wave 3 and intentionally not ported here.
  */
 class GTC_UE5_API FDisguise
@@ -38,7 +38,7 @@ public:
      *  versus a fully-recognized one (recognition 1 -> 1.0x). */
     static constexpr double MaxEvasionSpeedup = 3.0;
 
-    /** Value every slot starts at (and resets to). Godot DEFAULT_LOOK. */
+    /** Value every slot starts at (and resets to). the reference DEFAULT_LOOK. */
     static const FString DefaultLook;
 
     /** Construct with every appearance slot set to DefaultLook (Godot _init). */
@@ -84,7 +84,7 @@ private:
     /** Weight of one slot in recognition. Returns 0 for unknown slots. */
     static double WeightOf(const FString& Slot);
 
-    /** Slot names in Godot WEIGHTS declaration order. */
+    /** Slot names in the reference WEIGHTS declaration order. */
     static const TArray<FString>& OrderedSlots();
 
     /** slot -> current value the player is wearing/driving. */
@@ -93,6 +93,6 @@ private:
     /** slot -> value police last logged. Empty until the first LogSighting(). */
     TMap<FString, FString> _WantedLook;
 
-    /** Whether a description has been logged (mirrors Godot's empty-dict check). */
+    /** Whether a description has been logged (mirrors the reference empty-dict check). */
     bool _HasWantedLook = false;
 };

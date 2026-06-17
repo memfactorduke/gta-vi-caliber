@@ -4,8 +4,8 @@
 
 namespace
 {
-	// Godot posmod(a, n): result is always non-negative in [0, n). Uses 64-bit
-	// intermediates to mirror GDScript int (64-bit) for the `seed*7+1` / `seed*13+2`
+	// the reference posmod(a, n): result is always non-negative in [0, n). Uses 64-bit
+	// intermediates to mirror the reference implementation int (64-bit) for the `seed*7+1` / `seed*13+2`
 	// index arithmetic that would otherwise overflow int32 at large seeds.
 	int32 DialoguePosmod(int64 A, int32 N)
 	{
@@ -13,7 +13,7 @@ namespace
 		return static_cast<int32>(((A % N64) + N64) % N64);
 	}
 
-	// voice -> context -> lines (BANKS). Built once; preserves Godot author order.
+	// voice -> context -> lines (BANKS). Built once; preserves the reference author order.
 	const TMap<FString, TMap<FString, TArray<FString>>>& DialogueBanks()
 	{
 		static const TMap<FString, TMap<FString, TArray<FString>>> B = []

@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FNpcBrain, mapped 1:1 from the Godot oracle
+ * Parity tests for FNpcBrain, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_npc_brain.gd. Tolerance mirrors the oracle's
  * is_equal_approx (Eps = 1e-4); vector and state equality assert exactly.
  *

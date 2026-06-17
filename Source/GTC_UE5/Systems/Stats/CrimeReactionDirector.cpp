@@ -23,7 +23,7 @@ void UCrimeReactionDirector::EnsureModels() const
     }
     if (!_Districts.IsValid())
     {
-        // Default roster (Godot DistrictEconomy.new() with no args).
+        // Default roster (the reference DistrictEconomy.new() with no args).
         _Districts = MakeUnique<DistrictEconomy>();
     }
 }

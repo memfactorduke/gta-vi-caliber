@@ -11,7 +11,7 @@
 
 using GtcTest::Eps;
 
-// BEHAVIOR tests (Wave 2 rule) — UMissionCampaign has NO Godot parity oracle; these
+// BEHAVIOR tests (Wave 2 rule) — UMissionCampaign has NO the reference reference behavior; these
 // assert ownership / lifecycle: it sequences one controller through the merged,
 // parity-tested MissionChain, loads each mission's defs into the controller + the
 // owned sibling FMissionObjectiveDriver, advances on pass, and replays on fail

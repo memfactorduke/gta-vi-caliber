@@ -7,7 +7,7 @@
 #include "../SideJob.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test below maps 1:1 to a test_* assertion in the Godot parity oracle
+// Each test below maps 1:1 to a test_* assertion in the the reference reference behavior
 // game/tests/unit/test_side_job.gd.
 
 using GtcTest::Eps;

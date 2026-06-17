@@ -29,7 +29,7 @@ void UMissionController::Build()
 
 void UMissionController::Begin()
 {
-    // Godot begin(): build if needed, then _mission.start().
+    // the reference begin(): build if needed, then _mission.start().
     if (!bBuilt)
     {
         Build();
@@ -39,7 +39,7 @@ void UMissionController::Begin()
 
 void UMissionController::Complete(const FString& Id)
 {
-    // Godot complete(id): no-op unless active; otherwise delegate to the owned
+    // the reference complete(id): no-op unless active; otherwise delegate to the owned
     // model, which marks the objective and auto-completes the mission internally.
     if (!Mission.IsActive())
     {
@@ -57,7 +57,7 @@ void UMissionController::Complete(const FString& Id)
 
 void UMissionController::Fail()
 {
-    // Godot fail(): if active, _mission.fail() then _finish(false).
+    // the reference fail(): if active, _mission.fail() then _finish(false).
     if (Mission.IsActive())
     {
         Mission.Fail();
@@ -91,7 +91,7 @@ FVector UMissionController::CurrentWaypoint(const FVector& Fallback) const
     {
         return Fallback;
     }
-    // Godot converts authored coords through _local_waypoints() (FloatingOrigin
+    // the reference converts authored coords through _local_waypoints() (FloatingOrigin
     // offset). That origin-shift is Wave 3 wiring; here waypoints are authored.
     return MissionFlow::CurrentWaypoint(Mission.Objectives, Waypoints, Fallback);
 }

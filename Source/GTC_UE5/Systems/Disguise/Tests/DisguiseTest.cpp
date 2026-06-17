@@ -10,7 +10,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to a test_* func in the Godot parity oracle
+// Each test below maps 1:1 to a test_* func in the the reference reference behavior
 // game/tests/unit/test_disguise.gd (11 funcs). Recognition sums float slot weights, so
 // those use Eps; exact-equality oracle checks (== 0.0, counts, bools) stay exact. Compound
 // `a and b` oracle returns are split into separate Test* calls. FWantedEvasion is REUSED

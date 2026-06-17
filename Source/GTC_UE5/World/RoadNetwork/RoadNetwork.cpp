@@ -7,7 +7,7 @@
 
 #include <limits>
 
-// Godot Vector3.FORWARD is (0, 0, -1); used as the heading fallback for a
+// the reference Vector3.FORWARD is (0, 0, -1); used as the heading fallback for a
 // zero-length segment in point_on_segment / _project_to_segment.
 namespace
 {
@@ -16,7 +16,7 @@ namespace
 
 int32 FRoadNetwork::RoundHalfAway(double V)
 {
-    // Godot roundi rounds half away from zero; FMath::RoundToInt is banker's on
+    // the reference roundi rounds half away from zero; FMath::RoundToInt is banker's on
     // some platforms, so do it explicitly for grid-key parity.
     return static_cast<int32>(V >= 0.0 ? FMath::FloorToDouble(V + 0.5) : FMath::CeilToDouble(V - 0.5));
 }
@@ -91,7 +91,7 @@ FRoadNetwork::FNearestPoint FRoadNetwork::NearestPoint(const FVector& Pos)
     FNearestPoint Best;
     if (SegA.Num() == 0)
     {
-        return Best; // bValid == false -> Godot empty {}
+        return Best; // bValid == false -> the reference empty {}
     }
     if (!bSegIndexBuilt)
     {

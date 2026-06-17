@@ -4,7 +4,7 @@
 
 const TArray<FStuntScore::FTrickPoints>& FStuntScore::TrickPoints()
 {
-    // Insertion-ordered mirror of the Godot TRICK_POINTS Dictionary.
+    // Insertion-ordered mirror of the the reference TRICK_POINTS Dictionary.
     static const TArray<FTrickPoints> Table = {
         { TEXT("jump"), 50.0 },
         { TEXT("flip"), 250.0 },

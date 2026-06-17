@@ -4,7 +4,7 @@
 
 const TArray<FStatTracker::FAchievement>& FStatTracker::Achievements()
 {
-    // Mirrors the Godot ACHIEVEMENTS Dictionary in declaration order.
+    // Mirrors the the reference ACHIEVEMENTS Dictionary in declaration order.
     static const TArray<FAchievement> Rules = {
         {TEXT("centurion"), TEXT("kills"), 100.0},
         {TEXT("sharpshooter"), TEXT("headshots"), 50.0},
@@ -34,7 +34,7 @@ void FStatTracker::Store(const FString& StatId, double Value)
 
 void FStatTracker::Add(const FString& StatId, double Amount)
 {
-    // Godot add(): negative amounts are ignored so a total never drifts backwards.
+    // the reference add(): negative amounts are ignored so a total never drifts backwards.
     if (Amount < 0.0)
     {
         return;

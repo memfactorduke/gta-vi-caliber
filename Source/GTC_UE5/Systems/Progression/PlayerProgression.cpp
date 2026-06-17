@@ -4,7 +4,7 @@
 
 const TArray<FPlayerProgression::FUnlockGate>& FPlayerProgression::UnlockTable()
 {
-    // Insertion-ordered mirror of the Godot UNLOCK_TABLE Dictionary.
+    // Insertion-ordered mirror of the the reference UNLOCK_TABLE Dictionary.
     static const TArray<FUnlockGate> Table = {
         { 2,  { TEXT("pistol_slot") } },
         { 5,  { TEXT("sports_car"), TEXT("ammo_discount") } },

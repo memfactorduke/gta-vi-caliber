@@ -106,7 +106,7 @@ FShopPurchase ShopModel::Fail(int32 Balance, const FString& Reason)
 
 void ShopModel::Register(const FShopCatalogueItem& Entry)
 {
-    // Drop malformed rows: empty id or negative price. (Godot also drops non-int
+    // Drop malformed rows: empty id or negative price. (the reference also drops non-int
     // price strings / non-dict rows; those are unrepresentable with a typed FShopCatalogueItem.)
     if (Entry.Id.IsEmpty() || Entry.Price < 0)
     {
@@ -121,7 +121,7 @@ void ShopModel::Register(const FShopCatalogueItem& Entry)
     {
         Stored.Category = TEXT("misc");
     }
-    // Godot's _items[id] = {...} overwrites on a duplicate id (last-wins), keeping the
+    // the reference _items[id] = {...} overwrites on a duplicate id (last-wins), keeping the
     // key's original insertion position. Mirror that: update in place if present.
     if (const int32* FoundIndex = Index.Find(Stored.Id))
     {

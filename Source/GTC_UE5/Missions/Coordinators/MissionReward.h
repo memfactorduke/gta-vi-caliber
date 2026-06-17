@@ -12,14 +12,14 @@
  * actually moves. Each completed objective credits a small reward and finishing a
  * mission pays a bonus.
  *
- * Godot parity: game/scripts/missions/mission_reward.gd (class MissionReward,
+ * the reference parity: game/scripts/missions/mission_reward.gd (class MissionReward,
  * Node; self-wires via group "mission" + group "player_stats"). This is the Wave 2
  * UE 5.7 port: a UGameInstanceSubsystem (rewards are player-global). NO Godot
- * parity oracle — its tests are BEHAVIOR (ownership / lifecycle / wiring to a
+ * reference behavior — its tests are BEHAVIOR (ownership / lifecycle / wiring to a
  * controller's signals), NOT parity.
  *
  * DEFERRED-OWNERSHIP (option-1 own-state, lead-signed):
- *   Godot's _pay() reaches the live PlayerStats Node (group "player_stats") and
+ *   the reference _pay() reaches the live PlayerStats Node (group "player_stats") and
  *   calls add_money(). Here the reward does NOT write through to any PlayerStats
  *   type — none is included or depended on. Instead this subsystem OWNS its payout
  *   state: it accumulates the reward into an owned wallet snapshot (SetWallet /

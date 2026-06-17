@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FGpsNavigation, mapped 1:1 from the Godot oracle
+ * Parity tests for FGpsNavigation, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_gps_navigation.gd. Tolerance mirrors the oracle's
  * is_equal_approx (Eps = 1e-4) for float/vector compares; enum/bool/int equality
  * and the ETA infinity guard (!FMath::IsFinite) assert exactly.

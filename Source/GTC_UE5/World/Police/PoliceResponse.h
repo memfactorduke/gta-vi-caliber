@@ -8,7 +8,7 @@
  * The whole police response profile bundled together: how many units pursue, how
  * aggressive they are, how far out they spawn, and whether a helicopter joins.
  *
- * Ported from the Godot `PoliceResponse.profile()` dictionary
+ * Ported from the the reference `PoliceResponse.profile()` dictionary
  * (game/scripts/world/police_response.gd).
  */
 struct FPoliceProfile
@@ -26,12 +26,12 @@ struct FPoliceProfile
  * (World/Police/Tests/PoliceResponseTest.cpp); a spawner/AI layer consumes the
  * profile.
  *
- * Ported 1:1 from the Godot RefCounted `PoliceResponse`
+ * Ported 1:1 from the the reference RefCounted `PoliceResponse`
  * (game/scripts/world/police_response.gd). All-static plain functions, no
  * UObject.
  *
  * Double precision throughout (LWC): aggression and spawn radius are doubles to
- * match the Godot oracle's float arithmetic bit-for-bit.
+ * match the the reference oracle's float arithmetic bit-for-bit.
  */
 class GTC_UE5_API FPoliceResponse
 {

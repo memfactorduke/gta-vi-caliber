@@ -9,7 +9,7 @@
 using GtcTest::Eps;
 
 // Parity oracle: game/tests/unit/test_combat_cover.gd. Each It(...) maps 1:1 to
-// one Godot test_* function, asserting the SAME conditions. The Godot _cover(pos,
+// one the reference test_* function, asserting the SAME conditions. The Godot _cover(pos,
 // normal) Dictionary helper becomes the FCombatCover::FCoverPoint value type.
 BEGIN_DEFINE_SPEC(FCombatCoverSpec, "GTC.AI.Combat.CombatCover",
     EAutomationTestFlags::ProductFilter | EAutomationTestFlags_ApplicationContextMask)

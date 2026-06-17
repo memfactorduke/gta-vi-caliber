@@ -11,18 +11,18 @@
  * destination), it answers progress / distance / ETA / next-turn questions for
  * a player somewhere along it.
  *
- * Direct port of the Godot `GpsNavigation` (RefCounted) at
+ * Direct port of the the reference `GpsNavigation` (RefCounted) at
  * `game/scripts/ai/gps_navigation.gd`. All static, FVector-in, scalar/struct-out,
- * no UObject — unit-tested headless via the parity oracle
+ * no UObject — unit-tested headless via the reference behavior
  * (Tests/GpsNavigationTest.cpp, prefix GTC.AI.Gps).
  *
- * Double precision throughout, to match the GDScript float math. Work happens in
- * the XZ plane (Godot Y-up); `Ground(V)` flattens to `FVector(V.X, 0, V.Z)`.
+ * Double precision throughout, to match the the reference implementation float math. Work happens in
+ * the XZ plane (the reference Y-up); `Ground(V)` flattens to `FVector(V.X, 0, V.Z)`.
  * Defensive throughout — empty or single-point routes and zero speed never
  * produce NaN/INF surprises (ETA is the one deliberate +infinity).
  *
  * NOTE: no Godot->UE Z-up axis remap is baked in here — the model stays in the
- * Godot XZ frame so the ported unit tests match the oracle bit-for-bit. Porting
+ * the reference XZ frame so the ported unit tests match the oracle bit-for-bit. Porting
  * the axis convention to UE's Z-up space is a DEFERRED Wave-3 concern.
  *
  * PURE-CORE boundary: this is NOT pathfinding. Recast/navmesh path GENERATION is
@@ -43,13 +43,13 @@ enum class ETurnDirection : uint8
 
 struct GTC_UE5_API FGpsNavigation
 {
-    /** Planar tolerance mirroring the Godot EPS (degenerate segment / zero speed). */
+    /** Planar tolerance mirroring the the reference EPS (degenerate segment / zero speed). */
     static constexpr double Eps = 1e-4;
 
     /**
      * The next waypoint where the route bends by more than the turn threshold.
-     * Mirrors the Godot `{position, distance, direction}` dictionary; an empty
-     * Godot `{}` (no upcoming turn) maps to bHasTurn == false.
+     * Mirrors the the reference `{position, distance, direction}` dictionary; an empty
+     * the reference `{}` (no upcoming turn) maps to bHasTurn == false.
      */
     struct FNextTurn
     {

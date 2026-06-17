@@ -22,7 +22,7 @@ namespace
     }
 }
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_player_progression.gd. Curve: leaving level L costs 100*L;
 // cumulative reach(L) is the triangular sum 100*(L-1)*L/2.
 // The two final tracker tests exercise the UProgressionTracker subsystem's owned
@@ -334,7 +334,7 @@ bool FProgTrackerRestoreGarbageTest::RunTest(const FString& Parameters)
 {
     UProgressionTracker* Tracker = MakeProgressionTrackerForParityTest();
     Tracker->Restore(990);
-    Tracker->RestoreGarbage();  // Godot restore({"total_xp": "junk"}) -> number_or 0.
+    Tracker->RestoreGarbage();  // the reference restore({"total_xp": "junk"}) -> number_or 0.
     TestEqual(TEXT("total_xp == 0"), Tracker->TotalXp(), 0);
     TestEqual(TEXT("level == 1"), Tracker->Level(), 1);
     return true;

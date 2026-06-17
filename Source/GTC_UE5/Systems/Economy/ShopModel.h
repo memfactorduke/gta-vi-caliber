@@ -8,14 +8,14 @@
  * Pure shop/store economy model — spends the money the player earns on weapons,
  * ammo, armor, and vehicles. Plain C++ value type (no UObject): a purchase resolves
  * against a wallet balance the caller passes in, returning the result so the caller
- * applies the spend. Headless-testable (parity oracle test_shop_model.gd).
+ * applies the spend. Headless-testable (reference behavior test_shop_model.gd).
  *
  * Each catalogue entry is {Id, Name, Price, Category}. Garbage entries (missing id,
  * negative price) are dropped at construction.
  *
- * Parity note: Godot's catalogue Dictionary is insertion-ordered. items_in_category
+ * Parity note: the reference catalogue Dictionary is insertion-ordered. items_in_category
  * iterates it; an explicit ordered backing store (TArray + index map) preserves that
- * observable order. Godot's typed-Variant garbage filtering (non-int price strings,
+ * observable order. the reference typed-Variant garbage filtering (non-int price strings,
  * non-dict rows) has no analogue under a typed FShopCatalogueItem — those rows can't be
  * constructed here, so the corresponding oracle rows are covered by the negative-price
  * / empty-id paths that ARE representable.
@@ -37,7 +37,7 @@ struct GTC_UE5_API FShopCatalogueItem
     }
 };
 
-/** Result of a purchase attempt — mirrors Godot's {success, cost, new_balance, reason}. */
+/** Result of a purchase attempt — mirrors the reference {success, cost, new_balance, reason}. */
 struct GTC_UE5_API FShopPurchase
 {
     bool bSuccess = false;

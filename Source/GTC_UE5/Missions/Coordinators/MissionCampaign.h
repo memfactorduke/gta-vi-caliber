@@ -17,10 +17,10 @@
  * a kind ("reach" or "hold") — so missions play at distinct locations with distinct
  * beats instead of re-theming fixed trigger zones.
  *
- * Godot parity: game/scripts/missions/mission_campaign.gd (class MissionCampaign,
+ * the reference parity: game/scripts/missions/mission_campaign.gd (class MissionCampaign,
  * Node; self-wires via group "campaign" + the group-"mission" controller). This is
  * the Wave 2 UE 5.7 port: a UGameInstanceSubsystem above one UMissionController. NO
- * Godot parity oracle — its tests are BEHAVIOR (ownership / lifecycle: sequencing a
+ * the reference reference behavior — its tests are BEHAVIOR (ownership / lifecycle: sequencing a
  * controller through pass/fail, loading per-mission defs into controller + driver),
  * NOT parity.
  *
@@ -70,7 +70,7 @@ public:
     virtual void Deinitialize() override;
 
     /**
-     * Start the campaign on a live controller (Godot's first-tick resolve + kick).
+     * Start the campaign on a live controller (the reference first-tick resolve + kick).
      * Builds the chain from the opening arc, subscribes to the controller's
      * pass/fail delegates, and loads the first mission. The controller is PASSED IN
      * (Wave 3 resolves it from group "mission").
@@ -82,17 +82,17 @@ public:
 
     /**
      * If a failed mission is pending retry and the player is back on their feet,
-     * reload the current mission (Godot's _process retry gate). bPlayerDead is
+     * reload the current mission (the reference _process retry gate). bPlayerDead is
      * PASSED IN. Returns true if a retry was applied this call.
      */
     bool AdvanceRetryIfPending(bool bPlayerDead);
 
     bool IsCampaignComplete() const { return Chain.IsCampaignComplete(); }
 
-    /** Missions passed so far (Godot missions_done()). */
+    /** Missions passed so far (the reference missions_done()). */
     int32 MissionsDone() const { return Chain.Completed(); }
 
-    /** Total campaign missions (Godot mission_total()). */
+    /** Total campaign missions (the reference mission_total()). */
     int32 MissionTotal() const { return Chain.Count(); }
 
     /** The owned objective driver the campaign loads per-mission defs into. */

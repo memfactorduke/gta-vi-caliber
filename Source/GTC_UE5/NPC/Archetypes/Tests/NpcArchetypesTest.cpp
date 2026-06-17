@@ -11,10 +11,10 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FNpcArchetypes, mapped 1:1 from the Godot oracle
+ * Parity tests for FNpcArchetypes, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_npc_archetypes.gd (7 funcs). Schedule coverage compares
  * the active block to FNpcSchedule::Idle() by full structural equality, matching
- * the Godot `block == NpcSchedule.IDLE` dict comparison (SLOW_LIFE reuses the
+ * the the reference `block == NpcSchedule.IDLE` dict comparison (SLOW_LIFE reuses the
  * "loiter"/"street" pair on a non-24h window, so activity-only would be wrong).
  */
 
@@ -44,7 +44,7 @@ bool FNpcArchetypesTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("catalog has >= 10 archetypes"), All.Num() >= 10);
 
     // test_every_archetype_is_well_formed
-    // The Godot dict "has(key)" checks are structurally guaranteed by FNpcArchetype's
+    // The the reference dict "has(key)" checks are structurally guaranteed by FNpcArchetype's
     // fields; the load-bearing runtime checks are: schedule is a non-empty array and
     // tint is a colour (FLinearColor, always true by type). Assert non-empty schedule.
     for (const FNpcArchetype& C : All)

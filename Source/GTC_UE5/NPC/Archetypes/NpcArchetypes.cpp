@@ -3,7 +3,7 @@
 #include "NpcArchetypes.h"
 
 // Shared daily-routine templates. Authored most-specific-first; midnight-wrapping
-// blocks allowed (see FNpcSchedule). These mirror the Godot const Arrays
+// blocks allowed (see FNpcSchedule). These mirror the the reference const Arrays
 // NINE_TO_FIVE / NIGHT_OWL / STREET_HUSTLE / SLOW_LIFE; block author order is
 // preserved by the ordered TArray (first covering block wins on scan).
 //
@@ -140,7 +140,7 @@ FNpcArchetype FNpcArchetypes::Pick(int32 SeedValue)
     {
         return FNpcArchetype();
     }
-    // Godot posmod(seed, n): always non-negative in [0, n).
+    // the reference posmod(seed, n): always non-negative in [0, n).
     const int32 Index = ((SeedValue % N) + N) % N;
     return Citizens[Index];
 }

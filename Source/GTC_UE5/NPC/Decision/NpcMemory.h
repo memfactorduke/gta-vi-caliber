@@ -10,14 +10,14 @@
  * it lingers and the culprit is in sight, the citizen recognises them and reacts
  * — the city remembers what you did, for a while.
  *
- * Direct port of the Godot `NpcMemory` (RefCounted) at
+ * Direct port of the the reference `NpcMemory` (RefCounted) at
  * `game/scripts/npc/npc_memory.gd`. Pure and deterministic (intensity + time ->
  * state), unit-tested headless (Tests/NpcMemoryTest.cpp, prefix
  * GTC.NPC.Decision.NpcMemory).
  *
  * PURE-CORE boundary: the Citizen owning the mutable intensity and the
  * witness-bark humour (NpcDialogue) are the DEFERRED Wave-3 adapter and are NOT
- * covered by the parity tests. Computed precision is `double` to match GDScript.
+ * covered by the parity tests. Computed precision is `double` to match the reference implementation.
  */
 struct GTC_UE5_API FNpcMemory
 {

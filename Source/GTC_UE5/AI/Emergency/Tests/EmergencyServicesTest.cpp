@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FEmergencyServices, mapped 1:1 from the Godot oracle
+ * Parity tests for FEmergencyServices, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_emergency_services.gd. Tolerance mirrors the oracle's
  * is_equal_approx (Eps = 1e-4); enum equality, infinity, and empty/index cases
  * assert exactly.

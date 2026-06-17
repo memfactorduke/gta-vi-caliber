@@ -100,7 +100,7 @@ void FChopShop::RotateRequests(FRandomStream& Rng, int32 Count)
 
 void FChopShop::RotateRequestsNoRng()
 {
-    // Mirrors Godot's `if rng == null: return` — no rotation without an rng.
+    // Mirrors the reference `if rng == null: return` — no rotation without an rng.
 }
 
 FChopShop::FDeliverResult FChopShop::Deliver(const FString& Id, double Condition, bool bHot)

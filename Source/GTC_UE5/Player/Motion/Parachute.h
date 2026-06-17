@@ -8,25 +8,25 @@
  * Pure parachute / skydive model — the freefall -> canopy -> landing arc a
  * player rides after leaping from a helicopter or rooftop.
  *
- * Direct port of the Godot `Parachute` (RefCounted) stateful instance at
+ * Direct port of the the reference `Parachute` (RefCounted) stateful instance at
  * `game/scripts/player/parachute.gd`. No nodes: it owns the jump's State and the
  * descent physics. The arc has three beats — FREEFALL plummets toward
  * TerminalVelocity with barely any steering; Deploy() pops the canopy (once, only
  * from freefall) to bleed speed toward CanopyDescentRate and steer-glide across
  * XZ; Land() ends the jump.
  *
- * Double precision throughout, to match the GDScript float math. Work happens in
- * the Godot Y-up frame: fall speed is a positive downward magnitude, horizontal
+ * Double precision throughout, to match the the reference implementation float math. Work happens in
+ * the the reference Y-up frame: fall speed is a positive downward magnitude, horizontal
  * drift is on the XZ plane. NO Godot->UE Z-up axis remap is baked in — wiring
  * this onto a UE CharacterMovement rig (gravity/collision stay the engine's job)
  * is a DEFERRED Wave-3 adapter and is NOT parity-covered.
  *
  * NOTE: this system is marked UNUSED in the migration inventory, but it has a
- * live Godot test oracle (game/tests/unit/test_parachute.gd), so it is ported
+ * live the reference test oracle (game/tests/unit/test_parachute.gd), so it is ported
  * with full parity coverage per the Wave-1 "port any that have an oracle" rule.
  *
  * `TimeToGround` returns true +infinity (std::numeric_limits<double>::infinity)
- * for a hovering descent rate, matching the Godot INF.
+ * for a hovering descent rate, matching the the reference INF.
  *
  * Parity coverage: Tests/ParachuteTest.cpp, prefix GTC.Player.Motion.
  */

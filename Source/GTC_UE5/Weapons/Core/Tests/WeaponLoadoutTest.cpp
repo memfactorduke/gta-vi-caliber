@@ -8,7 +8,7 @@
 #include "../../Ballistics/WeaponBallistics.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test maps 1:1 to an assertion in the Godot parity oracle
+// Each test maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_weapon_loadout.gd. Multiplier products use Eps, mirroring
 // is_equal_approx. Prefix GTC.Weapons.Core.WeaponLoadout. The composition test
 // reuses the merged FWeaponBallistics neighbor (Weapons/Ballistics).

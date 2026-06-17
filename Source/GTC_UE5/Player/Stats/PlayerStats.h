@@ -7,7 +7,7 @@
 #include "PlayerStats.generated.h"
 
 /**
- * Player stats / vitals store — ported from Godot `PlayerStats` (a Node in the
+ * Player stats / vitals store — ported from the reference implementation `PlayerStats` (a Node in the
  * "player_stats" group): the reactive HUD store for the vitals no other system
  * owns yet — body armor, the wallet, and the active objective. Health lives in
  * PlayerHealth and heat in WantedTracker; this fills the remaining gaps.
@@ -16,16 +16,16 @@
  *
  *  - FPlayerStats  : the pure data/logic value type. Holds the stat state and
  *                    all clamp/absorb/derived maths, exactly 1:1 with the Godot
- *                    source and its parity oracle (test_player_stats.gd). No
+ *                    source and its reference behavior (test_player_stats.gd). No
  *                    UObject, headless-testable, no engine context required.
  *                    The static helpers `Absorb` / `Fraction` are the unit-tested
  *                    pure maths; the mutators (SoakDamage/AddArmor/AddMoney/
- *                    SpendMoney/SetObjective/...) carry the Godot Node mutator
+ *                    SpendMoney/SetObjective/...) carry the the reference Node mutator
  *                    semantics minus the signal emission.
  *
  *  - UPlayerStatsComponent : a plain replicated stats UActorComponent that OWNS
  *                    an FPlayerStats and exposes clamped accessors + change
- *                    delegates. This is the UE analogue of the Godot Node's
+ *                    delegates. This is the UE analogue of the the reference Node's
  *                    self-wiring + signals.
  *
  * APPROVED design (option 2): this is a *plain replicated stats component*, NOT
@@ -38,8 +38,8 @@
  * PreAttributeChange. Keep that shape if you extend this.
  *
  * Parity notes vs Godot:
- *  - `double` throughout for armor maths (Godot `float` == 64-bit). No Z-up remap.
- *  - The objective waypoint is an FVector (Godot Vector3) but is NEVER remapped —
+ *  - `double` throughout for armor maths (the reference `float` == 64-bit). No Z-up remap.
+ *  - The objective waypoint is an FVector (the reference Vector3) but is NEVER remapped —
  *    it is opaque store-and-return data, so axis order is irrelevant to parity.
  *  - serialize()/restore() round-trip preserved, including the "garbage keeps the
  *    current value" rule of SaveData.number_or (non-numeric Variant -> fallback).
@@ -52,7 +52,7 @@ struct GTC_UE5_API FPlayerStats
 
     // --- Tunables (Godot @export defaults) -------------------------------------
 
-    /** Armor ceiling. Godot `@export var max_armor := 100.0`. */
+    /** Armor ceiling. the reference `@export var max_armor := 100.0`. */
     double MaxArmor = 100.0;
 
     /** Starting wallet so the HUD reads as a live game from frame 1. Godot 1500. */
@@ -75,7 +75,7 @@ struct GTC_UE5_API FPlayerStats
     bool bHasWaypoint = false;
 
     /**
-     * Mirror of Godot `_ready()`: seed the wallet from StartingMoney and, if no
+     * Mirror of the reference `_ready()`: seed the wallet from StartingMoney and, if no
      * objective is set yet, seed the starting objective. Pure data step, no
      * group join / signal — the component drives delegates separately.
      */
@@ -142,10 +142,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGtcMoneyChanged, int32, Amount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGtcObjectiveChanged, const FString&, Title, bool, bHasWaypoint);
 
 /**
- * UPlayerStatsComponent — the UE analogue of the Godot `PlayerStats` Node.
+ * UPlayerStatsComponent — the UE analogue of the the reference `PlayerStats` Node.
  *
  * Owns an FPlayerStats and re-exposes its mutators as clamped accessors that
- * also broadcast change delegates (the UE replacement for Godot signals). The
+ * also broadcast change delegates (the UE replacement for the reference signals). The
  * heavy parity maths live in FPlayerStats; this layer is the thin owner +
  * lifecycle + broadcast shell, so the data can be parity-tested without a world.
  *
@@ -167,7 +167,7 @@ class GTC_UE5_API UPlayerStatsComponent : public UActorComponent
 public:
     UPlayerStatsComponent();
 
-    // --- Change delegates (Godot signals) --------------------------------------
+    // --- Change delegates (the reference signals) --------------------------------------
 
     UPROPERTY(BlueprintAssignable, Category = "GTC|Player|Stats")
     FGtcArmorChanged OnArmorChanged;

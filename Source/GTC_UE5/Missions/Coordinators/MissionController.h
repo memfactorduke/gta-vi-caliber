@@ -13,10 +13,10 @@
  * retry path — the scene glue the M5 missions need beyond the kill-counter
  * MissionDirector.
  *
- * Godot parity: game/scripts/missions/mission_controller.gd (class
+ * the reference parity: game/scripts/missions/mission_controller.gd (class
  * MissionController, Node; self-wires via group "mission"). This is the Wave 2
  * UE 5.7 port: a UGameInstanceSubsystem (the active mission is player-global, like
- * the Godot group "mission"). It has NO Godot parity oracle of its own EXCEPT the
+ * the the reference group "mission"). It has NO the reference reference behavior of its own EXCEPT the
  * accessors test_mission_objective_driver.gd::test_controller_reports_active_objective_id
  * pins (Begin / CurrentObjectiveId / Complete / IsComplete) — those four are oracle-
  * backed; the rest are BEHAVIOR (ownership / lifecycle) tests.
@@ -49,11 +49,11 @@ public:
     DECLARE_MULTICAST_DELEGATE(FOnMissionCompleted);
     DECLARE_MULTICAST_DELEGATE(FOnMissionFailed);
 
-    /** Per-objective completion (Godot signal objective_completed(id)). */
+    /** Per-objective completion (the reference signal objective_completed(id)). */
     FOnObjectiveCompleted OnObjectiveCompleted;
-    /** Whole mission passed (Godot signal mission_completed). */
+    /** Whole mission passed (the reference signal mission_completed). */
     FOnMissionCompleted OnMissionCompleted;
-    /** Whole mission failed — timeout or death (Godot signal mission_failed). */
+    /** Whole mission failed — timeout or death (the reference signal mission_failed). */
     FOnMissionFailed OnMissionFailed;
 
     /** HUD title (Godot @export title). */
@@ -77,31 +77,31 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-    /** Build + activate the objective set (Godot begin()). Idempotent on an already-active set. */
+    /** Build + activate the objective set (the reference begin()). Idempotent on an already-active set. */
     void Begin();
 
     /**
      * Mark an objective done; emits OnObjectiveCompleted and completes the mission
-     * when the last objective closes (Godot complete(id)). No-op when not active.
+     * when the last objective closes (the reference complete(id)). No-op when not active.
      */
     void Complete(const FString& Id);
 
-    /** Fail the mission now (Godot fail()) — emits OnMissionFailed. No-op when not active. */
+    /** Fail the mission now (the reference fail()) — emits OnMissionFailed. No-op when not active. */
     void Fail();
 
-    /** Rebuild and restart from scratch — the retry button (Godot reset()). */
+    /** Rebuild and restart from scratch — the retry button (the reference reset()). */
     void Reset();
 
     bool IsActive() const { return Mission.IsActive(); }
     bool IsComplete() const { return Mission.IsComplete(); }
 
-    /** HUD line for the current objective and progress (Godot hud_text()). */
+    /** HUD line for the current objective and progress (the reference hud_text()). */
     FString HudText() const;
 
-    /** Id of the active (first not-done) objective, or "" when none remains (Godot current_objective_id()). */
+    /** Id of the active (first not-done) objective, or "" when none remains (the reference current_objective_id()). */
     FString CurrentObjectiveId() const;
 
-    /** World marker for the active objective, or Fallback (Godot current_waypoint()). */
+    /** World marker for the active objective, or Fallback (the reference current_waypoint()). */
     FVector CurrentWaypoint(const FVector& Fallback = FVector::ZeroVector) const;
 
     /**

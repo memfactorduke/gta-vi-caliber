@@ -20,14 +20,14 @@
  *
  * Parity notes:
  * - int32 payouts; int(round(...)) maps to FMath::RoundToInt with the float promotion preserved
- *   (the product is computed in double, matching Godot's float round()).
- * - Godot's Dictionary is insertion-ordered; Ids()/Requested() rely on it, so an ordered backing
+ *   (the product is computed in double, matching the reference float round()).
+ * - an insertion-ordered map is insertion-ordered; Ids()/Requested() rely on it, so an ordered backing
  *   store (TArray + TMap index) mirrors that. Requests likewise keep insertion order.
- * - RNG: Godot's rotate_requests/_shuffle take a RandomNumberGenerator seeded by the caller and run
+ * - RNG: the reference rotate_requests/_shuffle take a RandomNumberGenerator seeded by the caller and run
  *   a Fisher-Yates with rng.randi() % (i+1). UE uses FRandomStream. The oracle pins only
  *   determinism (same seed -> same requested set) and count/range, NOT a Godot-byte-identical
  *   sequence, so the shuffle is deterministic-per-seed but NOT byte-identical to Godot. A
- *   RotateRequestsNoRng() no-op mirrors Godot's rng == null early return.
+ *   RotateRequestsNoRng() no-op mirrors the reference rng == null early return.
  *
  * Deferred Wave-3 adapters (NOT implemented/tested here): the chop-shop trigger volume, the wallet
  * actor that banks the payout, and the most-wanted UI board.
@@ -49,7 +49,7 @@ public:
         int32 Base = 0;
     };
 
-    /** Outcome of a Deliver() call (mirrors the Godot result Dictionary). */
+    /** Outcome of a Deliver() call (mirrors the the reference result Dictionary). */
     struct FDeliverResult
     {
         bool bAccepted = false;
@@ -89,7 +89,7 @@ public:
     /** Roll a fresh set of Count distinct most-wanted classes using Rng. Deterministic per seed. */
     void RotateRequests(FRandomStream& Rng, int32 Count);
 
-    /** Null-rng path: no-op, mirroring Godot's rng == null early return. */
+    /** Null-rng path: no-op, mirroring the reference rng == null early return. */
     void RotateRequestsNoRng();
 
     /** Fence a delivered vehicle. Pays Value() (heat-discounted if bHot), banks it, fulfils the order. */

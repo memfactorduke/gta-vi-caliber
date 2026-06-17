@@ -44,7 +44,7 @@ FWardrobe::FWardrobe(const TArray<FInputItem>& Items)
     {
         Register(Entry);
     }
-    // Wear the first owned starter in each slot (Godot iterates _owned in insertion order).
+    // Wear the first owned starter in each slot (the reference iterates _owned in insertion order).
     for (const FString& Id : _OwnedOrder)
     {
         const FString& Slot = _Catalogue[Id].Slot;
@@ -59,7 +59,7 @@ FWardrobe::FWardrobe(const TArray<FInputItem>& Items)
 void FWardrobe::Register(const FInputItem& Entry)
 {
     // Godot: drop non-dict / missing id handled by caller; here every FInputItem has an Id field,
-    // but an absent id in Godot maps to an empty Id here (rejected below).
+    // but an absent id in the reference maps to an empty Id here (rejected below).
     const FString& Id = Entry.Id;
     const FString& Slot = Entry.Slot;
     const int32 Price = Entry.Price;

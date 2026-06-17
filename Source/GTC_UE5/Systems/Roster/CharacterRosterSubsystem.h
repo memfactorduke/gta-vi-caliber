@@ -8,12 +8,12 @@
 #include "CharacterRosterSubsystem.generated.h"
 
 /**
- * UCharacterRosterSubsystem — UE 5.7 port of Godot's self-wiring `character_switcher.gd`
+ * UCharacterRosterSubsystem — UE 5.7 port of the reference self-wiring `character_switcher.gd`
  * (class CharacterSwitcher, a Node). Owns one FCharacterRoster and coordinates
  * dual-protagonist switching: park the outgoing lead, flip the active character, resume
  * the incoming lead.
  *
- * Why a GameInstanceSubsystem: the Godot CharacterSwitcher is a persistent self-wiring
+ * Why a GameInstanceSubsystem: the the reference CharacterSwitcher is a persistent self-wiring
  * Node that holds the roster for the whole session and survives streamed sublevels; the
  * dual-protagonist roster is a player-global, save-persisted thing with that lifetime. A
  * GameInstanceSubsystem matches. (If a future design needs per-world reset semantics this
@@ -28,10 +28,10 @@
  * DEFERRED-OWNERSHIP (Wave-3 adapter — documented, NOT implemented or depended on here;
  * flag for lead sign-off):
  *
- * The Godot CharacterSwitcher.request_switch wires the live PlayerStats wallet through each
+ * The the reference CharacterSwitcher.request_switch wires the live PlayerStats wallet through each
  * switch (write the active lead's money back from PlayerStats, flip, load the incoming
  * lead's money into PlayerStats — group "player_stats"). Position/wanted sync follow the
- * same shape and were left to the scene controller in Godot.
+ * same shape and were left to the scene controller in the reference.
  *
  * Here that runtime PlayerStats/Wanted wiring is DEFERRED to Wave 3. At W3 the switch will
  * SNAPSHOT/RESTORE the canonical runtime state against:
@@ -53,7 +53,7 @@ class GTC_UE5_API UCharacterRosterSubsystem : public UGameInstanceSubsystem
     GENERATED_BODY()
 
 public:
-    /** Fires when the active lead changes (Godot character_switched). */
+    /** Fires when the active lead changes (the reference character_switched). */
     UPROPERTY(BlueprintAssignable, Category = "Roster")
     FOnCharacterSwitched OnCharacterSwitched;
 
@@ -76,7 +76,7 @@ public:
     /**
      * Switch the active lead. Returns false if the owned roster refuses (unknown id,
      * already active, on cooldown). Broadcasts OnCharacterSwitched on success. Mirrors
-     * Godot request_switch MINUS the live PlayerStats wallet sync, which is the Wave-3
+     * the reference request_switch MINUS the live PlayerStats wallet sync, which is the Wave-3
      * adapter (see header). `Now` defaults to far-future so an untimed caller can switch.
      */
     bool RequestSwitch(const FString& Id, double Now = TNumericLimits<double>::Max());

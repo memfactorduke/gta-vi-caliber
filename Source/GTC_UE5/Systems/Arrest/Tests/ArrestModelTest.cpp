@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_arrest_model.gd (15 test_* funcs). Literals/tolerances are
 // identical to the oracle; the two compound oracle funcs (busted_at_grapple_time,
 // bust_fee_complements_kept_cash) are split into their constituent assertions.

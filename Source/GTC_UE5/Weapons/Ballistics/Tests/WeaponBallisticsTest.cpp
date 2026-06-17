@@ -8,9 +8,9 @@
 #include "../../../Tests/GtcTestTolerances.h"
 #include "Math/UnrealMathUtility.h"
 
-// Each test maps 1:1 to an assertion in the Godot parity oracle
+// Each test maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_weapon_ballistics.gd. Float/vector compares use Eps,
-// mirroring is_equal_approx. The model stays in the Godot frame.
+// mirroring is_equal_approx. The model stays in the the reference frame.
 //
 // RNG note: SpreadDirection uses FRandomStream (seed-reproducible WITHIN UE5,
 // not byte-identical to Godot). The oracle never pins a seed to an exact spread

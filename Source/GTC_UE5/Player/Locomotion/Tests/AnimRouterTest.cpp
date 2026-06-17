@@ -12,7 +12,7 @@
 #include <limits>
 
 /**
- * Parity tests for FAnimRouter, mapped 1:1 from the Godot oracles
+ * Parity tests for FAnimRouter, mapped 1:1 from the the reference oracles
  * game/tests/unit/test_anim_router.gd (TravelTarget / MoveBlendValue /
  * DominantBlendPoint) and game/tests/unit/test_anim_router_facing.gd
  * (RotateTowardAngle / FacingTarget). FName comparisons assert exactly;
@@ -139,7 +139,7 @@ bool FAnimRouterDominantBlendPointTest::RunTest(const FString& Parameters)
 
 // --- rotate_toward_angle / facing_target ----------------------------------
 // Mapped 1:1 from game/tests/unit/test_anim_router_facing.gd. All inputs stay
-// in the Godot XZ frame (Y up) — NO axis remap — so the oracle holds bit-for-bit.
+// in the the reference XZ frame (Y up) — NO axis remap — so the oracle holds bit-for-bit.
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FAnimRouterFacingTest,
@@ -167,9 +167,9 @@ bool FAnimRouterFacingTest::RunTest(const FString& Parameters)
         FAnimRouter::FacingTarget(FVector(5.0, 0.0, 0.0), std::numeric_limits<double>::quiet_NaN()),
         FMath::Atan2(5.0, 0.0), Eps);
 
-    // test_facing_points_local_positive_z_along_velocity: the yaw rotates Godot's
+    // test_facing_points_local_positive_z_along_velocity: the yaw rotates the reference
     // local +Z (Vector3.BACK) about +Y (Vector3.UP) to point along the velocity.
-    // Basis(UP, yaw) * BACK == (sin(yaw), 0, cos(yaw)) in the Godot XZ frame.
+    // Basis(UP, yaw) * BACK == (sin(yaw), 0, cos(yaw)) in the the reference XZ frame.
     {
         const FVector Velocity = FVector(2.0, 0.0, -3.0).GetSafeNormal();
         const double Yaw = FAnimRouter::FacingTarget(Velocity, std::numeric_limits<double>::quiet_NaN());

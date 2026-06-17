@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FPedestrianTraffic, mapped 1:1 from the Godot oracle
+ * Parity tests for FPedestrianTraffic, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_pedestrian_traffic.gd. Tolerance mirrors the oracle's
  * is_equal_approx (Eps = 1e-4) for scalar/vector compares; the oracle's explicit
  * `< 0.001` / `> x` comparisons assert with TrafficEps / TestTrue as written.

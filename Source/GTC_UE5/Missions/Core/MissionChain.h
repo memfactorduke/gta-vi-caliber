@@ -9,15 +9,15 @@
  * at a time, the layer above a single MissionController. Tracks which mission is
  * active and advances to the next when one completes.
  *
- * Godot parity: game/scripts/missions/mission_chain.gd (RefCounted). Pure and
+ * the reference parity: game/scripts/missions/mission_chain.gd (RefCounted). Pure and
  * node-free (unit-tested headless). A coordinator node feeds Current() into a
  * MissionController on start, calls CompleteCurrent() when that controller emits
  * mission_completed, then re-arms with the next Current(); when
  * IsCampaignComplete() it stops re-arming.
  *
- * Typed-port gap: Godot stores each mission as an untyped Dictionary
+ * Typed-port gap: the reference stores each mission as an untyped Dictionary
  * ({id, title, objective_defs, waypoints}). Here that is modelled as FMissionDef,
- * a value struct with a bValid presence flag standing in for Godot's empty-{}
+ * a value struct with a bValid presence flag standing in for the reference empty-{}
  * "no current mission" sentinel. objective_defs/waypoints are carried verbatim as
  * opaque per-mission data; their interpretation (objectives -> StateTree wiring)
  * is deferred to W2/W3 and not part of this parity port.
@@ -46,11 +46,11 @@ public:
         {
         }
 
-        /** Matches Godot's mission.is_empty() on the returned Dictionary. */
+        /** Matches the reference mission.is_empty() on the returned Dictionary. */
         bool IsEmpty() const { return !bValid; }
     };
 
-    /** Copies the input array (Godot duplicate()), so later edits don't alias. */
+    /** Copies the input array (the reference duplicate()), so later edits don't alias. */
     explicit MissionChain(const TArray<FMissionDef>& Missions = TArray<FMissionDef>());
 
     /** How many missions the campaign holds. */

@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_contraband_market.gd. District multipliers come from a stable
 // hash we don't hardcode; price assertions are derived from the model's own
 // MultiplierFor()/BasePrice (engine-correct, RNG/hash-agnostic).

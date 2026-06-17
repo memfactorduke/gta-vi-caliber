@@ -8,14 +8,14 @@
 
 #include <limits>
 
-// Each test below maps 1:1 to a test_* function in the Godot parity oracle
-// the upstream Godot test test_ambient_events.gd (12 functions). Godot's compound boolean
+// Each test below maps 1:1 to a test_* function in the the reference reference behavior
+// the reference test test_ambient_events.gd (12 functions). the reference compound boolean
 // returns are split into independent TestTrue/TestFalse/TestEqual assertions with the oracle's exact
 // constants. All helper names are system-prefixed (MakeAmbient*) to stay ODR-unique under unity.
 
 namespace
 {
-	// Godot const CALM := {"stars": 0, "district": "downtown"}.
+	// the reference const CALM := {"stars": 0, "district": "downtown"}.
 	FAmbientEvents::FAmbientContext MakeAmbientCalm()
 	{
 		FAmbientEvents::FAmbientContext Ctx;
@@ -36,7 +36,7 @@ namespace
 	// compare: FMath::Abs(-INF - (-INF)) is NaN and NaN < Eps is false, so TestEqual(..., -INF) (which
 	// is tolerance-based) reports a false failure even when both values are -inf. This mirrors the
 	// established INF-sentinel pattern (VehicleHealth TimeToExplosion +inf, WorldSaveGame) and the
-	// Godot oracle's exact `last_fired_of(...) == -INF` (test_ambient_events.gd::test_reset_clears_cooldowns).
+	// the reference oracle's exact `last_fired_of(...) == -INF` (test_ambient_events.gd::test_reset_clears_cooldowns).
 	bool IsAmbientNegInf(double Value)
 	{
 		return Value == -std::numeric_limits<double>::infinity();
@@ -64,7 +64,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FAmbientEventsMalformedDroppedTest::RunTest(const FString& Parameters)
 {
-	// Godot roster: {"id":"ok","weight":1}, {"id":"","weight":1}, {"weight":1} (no id),
+	// the reference roster: {"id":"ok","weight":1}, {"id":"","weight":1}, {"weight":1} (no id),
 	// {"id":"zero","weight":0} (non-positive weight), {"id":"ok","weight":2} (duplicate id).
 	// The "no id" Dictionary maps to a def with an empty Id, dropped by Register exactly as the
 	// explicit empty-id case is.
@@ -184,7 +184,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAmbientEventsNullRngTest::RunTest(const FString& Parameters)
 {
 	FAmbientEvents A;
-	// Godot passes rng == null; UE expresses the null-guard as the TriggerNextNoRng() overload.
+	// the reference passes rng == null; UE expresses the null-guard as the TriggerNextNoRng() overload.
 	TestEqual(TEXT("null rng == \"\""), A.TriggerNextNoRng(), FString());
 	return true;
 }

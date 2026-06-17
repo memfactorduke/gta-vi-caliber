@@ -10,16 +10,16 @@
  * can-I-see-it FOV check: this is the TIME-BASED meter built on top, so a target
  * glimpsed for a single frame doesn't flip straight to ALERTED.
  *
- * Direct port of the Godot `StealthDetection` (RefCounted) at
+ * Direct port of the the reference `StealthDetection` (RefCounted) at
  * `game/scripts/npc/stealth_detection.gd`. A stateful instance, one per watcher.
  * Awareness is 0..1 and walks UNAWARE -> SUSPICIOUS -> ALERTED as the watcher
  * keeps eyes on the player, and decays back down when sight is lost. ALERTED is
  * sticky once reached: a full meter means "spotted", and a momentary flicker of
  * sight doesn't un-spot the player — only Reset() clears it.
  *
- * Double precision throughout, to match the GDScript float math. Defensive:
+ * Double precision throughout, to match the the reference implementation float math. Defensive:
  * negative delta and out-of-range inputs are clamped, not trusted. Unit-tested
- * headless via the parity oracle (Tests/StealthDetectionTest.cpp, prefix
+ * headless via the reference behavior (Tests/StealthDetectionTest.cpp, prefix
  * GTC.NPC.Stealth).
  *
  * PURE-CORE boundary: this is the pure awareness/detection-meter MATH only —
@@ -33,7 +33,7 @@
  * feed those from the perception system and route the resulting State into AI.
  */
 
-/** Discrete watcher awareness state. Godot ordinal order preserved. */
+/** Discrete watcher awareness state. the reference ordinal order preserved. */
 enum class EStealthState : uint8
 {
     Unaware,

@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_stock_market.gd. Prices use a neutral multiplier (1.0) or
 // relative-direction compares so they stay deterministic and engine-correct.
 
@@ -80,7 +80,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FStockMalformedDroppedTest::RunTest(const FString& Parameters)
 {
-    // Typed-port note: Godot's "no base_price" row is unrepresentable with a typed
+    // Typed-port note: the reference "no base_price" row is unrepresentable with a typed
     // FCompanyDef; the negative-price and duplicate-id rows that ARE representable
     // cover the drop path 1:1.
     StockMarket M({

@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_business_venture.gd. coke_lab tuning: 10 product/day, 2.0
 // supply per product, 200 max product, $2000 sale, 6 staff, 3 tiers. Float compares
 // use Eps.

@@ -31,7 +31,7 @@ double FSoundPropagation::BaseLoudness(ESoundKind Kind)
 
 double FSoundPropagation::BaseLoudnessForInt(int32 KindRaw)
 {
-    // Mirror Godot's match-on-int: only the defined ordinals map; all else -> 0.0.
+    // Mirror the reference match-on-int: only the defined ordinals map; all else -> 0.0.
     if (KindRaw < static_cast<int32>(ESoundKind::Gunshot)
         || KindRaw > static_cast<int32>(ESoundKind::GlassBreak))
     {

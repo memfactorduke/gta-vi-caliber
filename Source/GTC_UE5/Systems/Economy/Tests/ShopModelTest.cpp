@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_shop_model.gd. Deterministic, concrete numbers.
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -264,7 +264,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FShopGarbageDroppedTest::RunTest(const FString& Parameters)
 {
-    // Typed-port note: Godot's non-int-price ("free") and non-dict ("not_a_dict")
+    // Typed-port note: the reference non-int-price ("free") and non-dict ("not_a_dict")
     // rows are unrepresentable with a typed FShopCatalogueItem; the empty-id and negative-price
     // rows that ARE representable cover the garbage-drop path 1:1.
     ShopModel Shop({

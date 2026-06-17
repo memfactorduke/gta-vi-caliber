@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 
 /**
- * Pure lifetime-stats and 100%-completion model — the UE 5.7 port of Godot's
+ * Pure lifetime-stats and 100%-completion model — the UE 5.7 port of the reference
  * StatTracker (RefCounted). The keyed counters open-world games track (kills, headshots, missions
  * passed, distance driven, ...) plus a few simple achievement thresholds derived from
  * them. Plain C++ value type (no UObject); a subsystem (StatsCoordinator) owns one,
  * pushes gameplay events into it via Add() and reads the totals / ratios / completion.
- * Headless-testable (parity oracle game/tests/unit/test_stat_tracker.gd).
+ * Headless-testable (reference behavior game/tests/unit/test_stat_tracker.gd).
  *
  * DEFERRED-OWNERSHIP (option-1 own-state): FStatTracker takes increments as INPUT — the
  * caller pushes kill/mission/distance/wanted events in via Add(). It never reaches into
@@ -36,7 +36,7 @@ public:
         double Threshold;
     };
 
-    /** Achievement rules in table order (mirrors the Godot ACHIEVEMENTS Dictionary). */
+    /** Achievement rules in table order (mirrors the the reference ACHIEVEMENTS Dictionary). */
     static const TArray<FAchievement>& Achievements();
 
     FStatTracker();
@@ -45,7 +45,7 @@ public:
 
     /**
      * Increment a named stat by Amount (defaults to 1). Negative amounts are ignored,
-     * so a miscounted event can never drive a total backwards. Mirrors Godot add().
+     * so a miscounted event can never drive a total backwards. Mirrors the reference add().
      */
     void Add(const FString& StatId, double Amount = 1.0);
 
@@ -68,7 +68,7 @@ public:
 
     /**
      * Fraction of kills that were headshots, 0..1. 0 when there are no kills, so there
-     * is never a divide-by-zero. Mirrors Godot headshot_ratio().
+     * is never a divide-by-zero. Mirrors the reference headshot_ratio().
      */
     double HeadshotRatio() const;
 
@@ -90,13 +90,13 @@ public:
 
     /**
      * Snapshot the stat store as {id: value} in first-seen order. Derived stats and
-     * achievements are recomputed on restore. Mirrors Godot serialize()["stats"].
+     * achievements are recomputed on restore. Mirrors the reference serialize()["stats"].
      */
     TArray<TPair<FString, double>> Serialize() const;
 
     /**
      * Rebuild from a Serialize() snapshot. Resets first, so missing data yields a clean
-     * slate. Mirrors Godot restore() (a non-dictionary "stats" resets and returns).
+     * slate. Mirrors the reference restore() (a non-dictionary "stats" resets and returns).
      */
     void Restore(const TArray<TPair<FString, double>>& Stats);
 

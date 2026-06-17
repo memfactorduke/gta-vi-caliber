@@ -10,20 +10,20 @@
  * well under a metre across a city-scale district (a few km), which is far below
  * what a player can perceive, and it is cheap and exactly invertible.
  *
- * Ported 1:1 from the Godot RefCounted `GeoProjection`
+ * Ported 1:1 from the the reference RefCounted `GeoProjection`
  * (game/scripts/world/geo_projection.gd). Plain value type, no UObject — unit
- * tested headless via the parity oracle (World/Tests/GeoProjectionTest.cpp).
+ * tested headless via the reference behavior (World/Tests/GeoProjectionTest.cpp).
  *
  * Double precision throughout (LWC): the inverse round-trip is parity-tested to
  * 1e-6 degrees, which is only achievable with doubles.
  *
  * Axis convention (Godot, Y-up): +X = east, -Z = north, ground on the XZ plane.
  * The convention-free core `ProjectEastNorth` returns pure (East, North) scalars;
- * the `ToLocal*`/`ToGeo` accessors reproduce the Godot axis layout exactly.
+ * the `ToLocal*`/`ToGeo` accessors reproduce the the reference axis layout exactly.
  *
  * NOTE: no UE Z-up remap is baked in here — porting the axis convention to UE's
  * Z-up space is a deferred Wave 3 concern. These accessors are parity-literal
- * with the Godot source so the ported unit tests match the oracle bit-for-bit.
+ * with the the reference source so the ported unit tests match the oracle bit-for-bit.
  */
 class GTC_UE5_API FGeoProjection
 {
@@ -57,7 +57,7 @@ public:
         return FVector(EN.X, 0.0, -EN.Y);
     }
 
-    /** Projection collapsed to the XZ plane (Godot Vector2: x=East, y=-North). */
+    /** Projection collapsed to the XZ plane (the reference Vector2: x=East, y=-North). */
     FVector2D ToLocal2D(double Lat, double Lon) const
     {
         const FVector2D EN = ProjectEastNorth(Lat, Lon);

@@ -14,7 +14,7 @@ FString DefaultPath()
 
 FString Serialize(const TSharedRef<FGtcJsonObject>& State)
 {
-    // {"version": VERSION, "state": state} — same envelope shape as Godot SaveGame.serialize.
+    // {"version": VERSION, "state": state} — same envelope shape as the reference SaveGame.serialize.
     const TSharedRef<FGtcJsonObject> Wrapper = MakeShared<FGtcJsonObject>();
     Wrapper->SetNumber(TEXT("version"), Version);
     Wrapper->SetObject(TEXT("state"), State);

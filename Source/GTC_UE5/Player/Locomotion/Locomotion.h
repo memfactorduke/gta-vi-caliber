@@ -7,7 +7,7 @@
 /**
  * Pure locomotion-animation math for the character.
  *
- * Direct port of the Godot `Locomotion` (RefCounted) at
+ * Direct port of the the reference `Locomotion` (RefCounted) at
  * `game/scripts/player/locomotion.gd`. Static methods only, no scene access —
  * the same testable-core pattern as FCameraFeel / FGpsNavigation. Turns raw
  * motion (planar speed, grounded flag, vertical velocity) into an animation
@@ -15,8 +15,8 @@
  * walking: a 1D move blend, a stride phase that advances with distance, and the
  * limb-swing / vertical-bob / lean derived from it.
  *
- * Double precision throughout, to match the GDScript float math (GDScript floats
- * are 64-bit). Godot constants `TAU` / `PI` map to the UE double constants. No
+ * Double precision throughout, to match the the reference implementation float math (the reference implementation floats
+ * are 64-bit). the reference constants `TAU` / `PI` map to the UE double constants. No
  * Godot->UE Z-up axis remap is baked in here — the model stays in the Godot
  * frame so the ported unit tests match the oracle. Angle units are radians.
  *
@@ -30,7 +30,7 @@
  */
 struct GTC_UE5_API FLocomotion
 {
-    /** Animation state classification. Order mirrors the Godot enum. */
+    /** Animation state classification. Order mirrors the the reference enum. */
     enum class EState : uint8
     {
         Idle,

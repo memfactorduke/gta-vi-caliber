@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FNpcSteering, mapped 1:1 from the Godot oracle
+ * Parity tests for FNpcSteering, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_npc_steering.gd. Tolerance mirrors the oracle's
  * is_equal_approx / explicit 0.001 length compares (Eps = 1e-4 for vector
  * equality; SpeedEps = 1e-3 for the speed-magnitude asserts the oracle writes as

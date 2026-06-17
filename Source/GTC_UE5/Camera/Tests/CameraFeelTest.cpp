@@ -12,7 +12,7 @@ using GtcTest::Eps;
 using GtcTest::ConvergeEps;
 
 /**
- * Parity tests for FCameraFeel, mapped 1:1 from the Godot oracle
+ * Parity tests for FCameraFeel, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_camera_feel.gd. Tolerances mirror the oracle's
  * is_equal_approx epsilons: 1e-4 for most approx checks, 1e-2 for the
  * convergence loop; exact-equality (is_equal) cases assert exactly.

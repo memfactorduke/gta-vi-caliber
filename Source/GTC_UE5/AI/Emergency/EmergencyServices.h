@@ -8,7 +8,7 @@
  * Pure civilian-emergency dispatch model — ambulances, fire trucks, and
  * paramedics responding to incidents (a wreck, a fire, a downed pedestrian).
  *
- * Direct port of the Godot `EmergencyServices` (RefCounted) at
+ * Direct port of the the reference `EmergencyServices` (RefCounted) at
  * `game/scripts/ai/emergency_services.gd`. Distinct from the police pursuit
  * layers: this routes the *help* services toward an incident and runs the
  * paramedic-on-scene timer. The one police-shaped role is PoliceBackup for a
@@ -17,19 +17,19 @@
  * Static dispatch helpers (no scene/RNG/node state, deterministic, unit-tested
  * in Tests/EmergencyServicesTest.cpp, prefix GTC.AI.Emergency) plus one small
  * stateful response timer (the same Begin/Tick/HasArrived/Progress/Treating/
- * Cancel/Reset surface as the Godot original). Spatial math is on the XZ plane
- * (Y ignored), matching the Godot source.
+ * Cancel/Reset surface as the the reference original). Spatial math is on the XZ plane
+ * (Y ignored), matching the the reference source.
  *
  * PURE-CORE boundary: the helpers take positions/speed/responders as plain
  * inputs. Actual responder spawning, world positioning, navmesh/physics
  * distance, and per-frame tick wiring are the DEFERRED Wave-3 adapter — NOT
  * implemented here and NOT covered by the parity tests. These helpers stay pure
- * scalar/vector math, computed precision being `double` to match GDScript.
+ * scalar/vector math, computed precision being `double` to match the reference implementation.
  */
 
 /**
  * Which service rolls out — an ambulance for the hurt, a fire truck for fire,
- * police backup to secure a violent scene. Godot ordinal order preserved.
+ * police backup to secure a violent scene. the reference ordinal order preserved.
  */
 enum class EEmergencyService : uint8
 {
@@ -41,7 +41,7 @@ enum class EEmergencyService : uint8
 /**
  * What happened. Wreck = a vehicle collision, Fire = a structure/vehicle
  * ablaze, Injury = a downed/hurt pedestrian, Shooting = a violent crime scene.
- * Godot ordinal order preserved.
+ * the reference ordinal order preserved.
  */
 enum class EEmergencyIncident : uint8
 {
@@ -53,7 +53,7 @@ enum class EEmergencyIncident : uint8
 
 /**
  * Response-timer phases: Idle before Begin(), EnRoute driving to the scene,
- * then Treating once on-scene and working the victim. Godot ordinal order.
+ * then Treating once on-scene and working the victim. the reference ordinal order.
  */
 enum class EEmergencyPhase : uint8
 {
@@ -82,7 +82,7 @@ struct GTC_UE5_API FEmergencyServices
      * The primary service for a raw incident ordinal. Fire -> FireTruck,
      * Injury/Wreck -> Ambulance, Shooting -> PoliceBackup. An unknown/out-of-range
      * incident defaults to an Ambulance (help-first: someone is probably hurt).
-     * Mirrors the Godot `service_for(int)` so `ServiceForInt(999)` -> Ambulance
+     * Mirrors the the reference `service_for(int)` so `ServiceForInt(999)` -> Ambulance
      * is expressible.
      */
     static EEmergencyService ServiceForInt(int32 IncidentRaw);

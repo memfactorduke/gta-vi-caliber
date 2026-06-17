@@ -7,7 +7,7 @@
 /**
  * Utility-AI need model for a single NPC — the "why" behind everything it does.
  *
- * Direct port of the Godot `NpcNeeds` (RefCounted) at
+ * Direct port of the the reference `NpcNeeds` (RefCounted) at
  * `game/scripts/npc/npc_needs.gd`. Five drives, each a satisfaction level in
  * [0, 1] (1 = fully sated, 0 = desperate). They decay over time at per-NPC
  * rates; activities top them back up. NpcMind reads these to decide when a
@@ -17,14 +17,14 @@
  *
  * The canonical drive order (Needs()) is stable so seeds/tests stay
  * deterministic, and every scan iterates it in that order — insertion-order
- * parity with the Godot `values` Dictionary. Computed precision is `double` to
- * match GDScript.
+ * parity with the the reference `values` Dictionary. Computed precision is `double` to
+ * match the reference implementation.
  */
 struct GTC_UE5_API FNpcNeeds
 {
     /**
      * Canonical drive order. Index 0..N is stable so seeds/tests stay
-     * deterministic. Mirrors the Godot `NEEDS` PackedStringArray.
+     * deterministic. Mirrors the the reference `NEEDS` PackedStringArray.
      */
     static const TArray<FString>& Needs();
 

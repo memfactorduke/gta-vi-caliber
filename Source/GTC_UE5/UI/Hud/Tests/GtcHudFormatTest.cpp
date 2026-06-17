@@ -10,7 +10,7 @@
 using GtcTest::Eps;
 
 // ============================================================================
-// GTC.UI.HudFormat — pure HUD formatting/clamp helpers. No Godot oracle (this is
+// GTC.UI.HudFormat — pure HUD formatting/clamp helpers. No the reference oracle (this is
 // new UE-side display logic); assertions use independent, hand-checked constants.
 // ============================================================================
 

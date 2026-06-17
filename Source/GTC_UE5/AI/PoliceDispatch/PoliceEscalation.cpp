@@ -3,7 +3,7 @@
 #include "PoliceEscalation.h"
 
 // Out-of-line storage for the response-composition table, ported VERBATIM from the
-// Godot RESPONSE_BY_STAR constant (game/scripts/ai/police_escalation.gd). Index =
+// the reference RESPONSE_BY_STAR constant (game/scripts/ai/police_escalation.gd). Index =
 // clamped stars (0..MaxStars). Element counts set only the *mix*; absolute head-
 // count lives in FPoliceResponse, not here. Ordered (order is observable: tests
 // index units[0] and the returned array is a copy a caller may mutate).

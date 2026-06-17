@@ -9,7 +9,7 @@
 using GtcTest::Eps;
 
 // Parity oracle: game/tests/unit/test_road_network.gd. Each It(...) maps 1:1 to
-// one Godot test function. Vector "is_equal_approx" checks use the shared
+// one the reference test function. Vector "is_equal_approx" checks use the shared
 // GtcTest::Eps; the oracle's explicit `< 0.001` magnitude checks are reproduced
 // as-is.
 // _line(a, b) helper from the oracle. Uniquely prefixed for DEFAULT-unity hygiene.

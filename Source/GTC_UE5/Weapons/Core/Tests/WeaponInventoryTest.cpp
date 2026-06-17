@@ -7,7 +7,7 @@
 #include "../WeaponInventory.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test maps 1:1 to an assertion in the Godot parity oracle
+// Each test maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_weapon_inventory.gd. Prefix GTC.Weapons.Core.WeaponInventory.
 // Integer state throughout — no float tolerance needed; Eps is included only for
 // the shared-tolerance convention.

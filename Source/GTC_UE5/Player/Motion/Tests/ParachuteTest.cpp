@@ -9,9 +9,9 @@
 #include "Math/UnrealMathUtility.h"
 
 /**
- * Parity tests for FParachute, mapped 1:1 from the Godot oracle
+ * Parity tests for FParachute, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_parachute.gd. is_equal_approx -> Eps=1e-4; exact state /
- * bool checks assert exactly. time_to_ground's Godot INF is asserted as true
+ * bool checks assert exactly. time_to_ground's the reference INF is asserted as true
  * +infinity (!FMath::IsFinite and > 0), matching the FGpsNavigation ETA pattern.
  */
 

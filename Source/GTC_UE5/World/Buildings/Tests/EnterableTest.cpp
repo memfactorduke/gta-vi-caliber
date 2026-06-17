@@ -6,7 +6,7 @@
 #include "../Enterable.h"
 
 // Parity oracle: game/tests/unit/test_enterable.gd. Each It(...) maps 1:1 to one
-// Godot test function, asserting the SAME conditions as the oracle, including its
+// the reference test function, asserting the SAME conditions as the oracle, including its
 // 0.001 door-midpoint tolerance.
 BEGIN_DEFINE_SPEC(FEnterableSpec, "GTC.World.Buildings.Enterable",
     EAutomationTestFlags::ProductFilter | EAutomationTestFlags_ApplicationContextMask)
