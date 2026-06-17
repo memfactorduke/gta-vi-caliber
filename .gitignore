@@ -75,3 +75,15 @@ Plugins/**/Intermediate/*
 DerivedDataCache/*
 .DS_Store
 **/.DS_Store
+
+# ── GT-Caliber-Asset submodule (defense-in-depth) ───────────────────────────
+# The Fab/Epic/Cesium assets live ONLY in the private submodule mounted at
+# Content/GTCaliberAssets/ (a tracked mode-160000 gitlink). They must NEVER be
+# committed into this (eventually public) GT-caliber tree. This rule blocks any
+# stray LOOSE copies under that path from being staged into the parent repo —
+# e.g. if the submodule is deinitialized and someone drops files in, or copies
+# an asset out of the submodule into the parent. It matches CONTENTS under the
+# path only, so the submodule gitlink itself stays tracked (gitignore never
+# untracks an already-staged entry, and this pattern does not match the bare
+# path "Content/GTCaliberAssets"). See docs/ASSET_HANDLING.md.
+/Content/GTCaliberAssets/**
