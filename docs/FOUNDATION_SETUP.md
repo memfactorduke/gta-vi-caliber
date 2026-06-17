@@ -1,6 +1,6 @@
 # GTC UE5 — Foundation setup record
 
-What was set up from the FOUNDATION section of `../../the migration plan` (12 CARRIES OVER +
+What was set up from the migration's FOUNDATION work (12 CARRIES OVER +
 16 NATIVE + the "execute first" scaffold). The `.uproject` C++ baseline already existed; this layer adds
 the carried knowledge/tooling and the engine-feature configuration.
 
@@ -13,7 +13,7 @@ the carried knowledge/tooling and the engine-feature configuration.
   `reference/README.md`, `AGENTS.md`, `.editorconfig`, `.github/ISSUE_TEMPLATE/`,
   `.github/PULL_REQUEST_TEMPLATE.md`, `.codacy/`, `LICENSE`, `LICENSE-ASSETS`.
 - **Portable tooling** → `tools/osm/` (OSM pipeline), `tools/three_mara_modeler/` (GLB exporters).
-- **Still need UE5 updates (per the foundation plan):** the install/quickstart + code-style sections of README/
+- **Still need UE5 updates:** the install/quickstart + code-style sections of README/
   CONTRIBUTING are Godot/GDScript-specific; `.editorconfig` language sections, the `.github` template
   checklist lines (`.uid`/GDScript), and the Codacy runtime list should be retargeted to UE5 C++. The
   Godot CI workflows were **not** copied (they are DROP/REBUILD, not CARRIES OVER).

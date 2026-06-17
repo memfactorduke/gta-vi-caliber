@@ -1,6 +1,6 @@
 # Asset handling — standing rules
 
-How third-party art assets enter and are used in `GT-caliber`. **Config/docs policy — read before
+How third-party art assets enter and are used in this repo. **Config/docs policy — read before
 referencing, importing, or onboarding to any asset set.** These rules are binding on every contributor
 and on any AI agent operating in this repo.
 
@@ -15,7 +15,7 @@ All third-party art assets live **only** in the private submodule:
 | **UE reference path** | `/Game/GTCaliberAssets/Content/...` (the asset repo carries its own `Content/`, hence the double-`Content` nesting — intentional, lowest-friction; see the migration notes) |
 | **Transport** | Git LFS (`*.uasset`, `*.umap`); ~15 GB on disk when smudged |
 
-The raw asset files are **never committed to the `GT-caliber` repo.** The parent repo tracks only the
+The raw asset files are **never committed to the project repo.** The parent repo tracks only the
 gitlink pointer. This is enforced by two layers:
 
 1. **Submodule boundary** — while the submodule is initialized, git refuses parent-repo operations
@@ -97,7 +97,7 @@ Each developer needs:
 1. **Read access** to the private `duolahypercho/GT-Caliber-Asset` repo (without it, the submodule fetch
    403s).
 2. **git-lfs installed** (`git lfs install`, once per machine).
-3. **Clone with submodules:** `git clone --recurse-submodules <GT-caliber-url>` — or after a plain clone,
+3. **Clone with submodules:** `git clone --recurse-submodules <repo-url>` — or after a plain clone,
    `git submodule update --init --recursive`.
 4. **Pull LFS objects:** `cd Content/GTCaliberAssets && git lfs pull` if any pointer stubs remain.
 
@@ -105,7 +105,7 @@ Each developer needs:
 
 ## Public-repo note (for the README / open-source prep)
 
-Once `GT-caliber` is published, external cloners receive the **gitlink** but **cannot fetch the assets**
+Once this repo is published, external cloners receive the **gitlink** but **cannot fetch the assets**
 without access to the private `GT-Caliber-Asset` repo — submodule init will fail for them. This is the
 **intended protection** (paid/licensed assets never become public). Consequence: the public repo is
 **not runnable as-is** without asset-repo access. State this plainly in the README so external users

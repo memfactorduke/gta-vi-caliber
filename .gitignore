@@ -79,7 +79,7 @@ DerivedDataCache/*
 # ── GT-Caliber-Asset submodule (defense-in-depth) ───────────────────────────
 # The Fab/Epic/Cesium assets live ONLY in the private submodule mounted at
 # Content/GTCaliberAssets/ (a tracked mode-160000 gitlink). They must NEVER be
-# committed into this (eventually public) GT-caliber tree. This rule blocks any
+# committed into this (eventually public) project tree. This rule blocks any
 # stray LOOSE copies under that path from being staged into the parent repo —
 # e.g. if the submodule is deinitialized and someone drops files in, or copies
 # an asset out of the submodule into the parent. It matches CONTENTS under the

@@ -84,9 +84,8 @@ You provide the engine; the repository provides the game.
 ## Pointers
 - `docs/ASSET_HANDLING.md` - asset submodule, CoreRedirects, the no-AI rule.
 - `UE5_NOTES.md` - hard-won UE5 / editor / MCP gotchas; append new fixes.
-- `ROADMAP.md` and `PROJECT_CHECKLIST.md` - what is built, what is left, by phase.
-- `the migration plan` and `docs/SYSTEMS.md` - the ported gameplay logic
-  behind each feature.
+- `ROADMAP.md` - what is built, what is left, by phase.
+- `docs/SYSTEMS.md` - the ported gameplay logic behind each feature.
 
 By contributing **code** you agree to license it under MIT; by contributing
 **assets** you agree to the asset terms recorded in `docs/ASSETS.md` and attest

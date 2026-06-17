@@ -1,4 +1,4 @@
-"""GTC foundation scaffold — create the editor-only assets the the foundation plan flags "execute first".
+"""GTC foundation scaffold — create the editor-only assets flagged as execute-first.
 
 Run this INSIDE the UE5 editor (Output Log > Python, or `UnrealEditor-Cmd ... -run=pythonscript
 -script=".../setup_foundation.py"`). It is NOT runnable headlessly from the migration sandbox, which is

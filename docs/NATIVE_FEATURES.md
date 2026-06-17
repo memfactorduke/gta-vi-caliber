@@ -1,6 +1,6 @@
 # NATIVE features — what UE5 provides in place of the old Godot modules
 
-Per the FOUNDATION section of `../../the migration plan`, these 16 capabilities were custom
+Per the migration's FOUNDATION work, these 16 capabilities were custom
 code in the Godot project and are **provided natively by Unreal Engine 5** — so the old C++/GDScript is
 **not ported**; we configure the engine feature instead. Each note records the replacement and where it
 is set up in this repo. (Asset-backed items — the MPC, Input assets, Landscape, materials — are content
