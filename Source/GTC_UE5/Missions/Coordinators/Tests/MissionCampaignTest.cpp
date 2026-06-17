@@ -47,7 +47,7 @@ bool FMissionCampaignOpeningArcShapeTest::RunTest(const FString& Parameters)
     const TArray<UMissionCampaign::FCampaignMission> Arc = UMissionCampaign::OpeningArc();
     TestEqual(TEXT("five missions"), Arc.Num(), 5);
     TestEqual(TEXT("m1 id"), Arc[0].Id, FString(TEXT("intro")));
-    TestEqual(TEXT("m1 title"), Arc[0].Title, FString(TEXT("WELCOME TO Miami")));
+    TestEqual(TEXT("m1 title"), Arc[0].Title, FString(TEXT("WELCOME TO THE COAST")));
     TestEqual(TEXT("m1 untimed"), Arc[0].TimeLimit, 0.0, Eps);
     TestEqual(TEXT("m1 drive_strip radius == 7"), Arc[0].Objectives[1].Radius, 7.0, Eps);
 
@@ -77,7 +77,7 @@ bool FMissionCampaignLoadsFirstMissionTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("none done yet"), Rig.Campaign->MissionsDone(), 0);
 
     // Controller got the first mission's title + objectives, and auto-began (Reset).
-    TestEqual(TEXT("controller title"), Rig.Controller->Title, FString(TEXT("WELCOME TO Miami")));
+    TestEqual(TEXT("controller title"), Rig.Controller->Title, FString(TEXT("WELCOME TO THE COAST")));
     TestTrue(TEXT("controller active"), Rig.Controller->IsActive());
     TestEqual(TEXT("controller first objective"), Rig.Controller->CurrentObjectiveId(), FString(TEXT("reach_car")));
 
@@ -160,7 +160,7 @@ bool FMissionCampaignRetriesOnFailWhenAliveTest::RunTest(const FString& Paramete
     // Once the player is back up, the retry reloads the SAME mission from the top.
     TestTrue(TEXT("retry applies when alive"), Rig.Campaign->AdvanceRetryIfPending(/*bPlayerDead*/ false));
     TestFalse(TEXT("retry consumed"), Rig.Campaign->IsRetryPending());
-    TestEqual(TEXT("same mission reloaded"), Rig.Controller->Title, FString(TEXT("WELCOME TO Miami")));
+    TestEqual(TEXT("same mission reloaded"), Rig.Controller->Title, FString(TEXT("WELCOME TO THE COAST")));
     TestEqual(TEXT("back to first objective"), Rig.Controller->CurrentObjectiveId(), FString(TEXT("reach_car")));
     TestEqual(TEXT("still mission 1 (none completed)"), Rig.Campaign->MissionsDone(), 0);
     return true;

@@ -9,7 +9,7 @@
  *
  * Godot parity: game/scripts/missions/mission_flow.gd (RefCounted, all-static).
  * MissionObjectives owns the objective set and done-flags; this decides which
- * objective is CURRENT (open-world shows one at a time with a waypoint), formats the HUD
+ * objective is CURRENT (open-world games show one at a time with a waypoint), formats the HUD
  * line, and answers whether a fail condition (timer, player death) has tripped.
  * Static, scene-free, RNG-free — unit-tested headless.
  *

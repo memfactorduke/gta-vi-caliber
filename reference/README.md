@@ -17,8 +17,6 @@ plenty) for frame-by-frame study:
 
 | Reference | Official link | Study for |
 | --- | --- | --- |
-| AAA open-world reference — Trailer 1 | <https://www.youtube.com/watch?v=QdBZY2fkU-0> | Golden-hour lighting, beach/street crowd density, color grade |
-| AAA open-world reference — Trailer 2 | <https://www.youtube.com/watch?v=VQRLujxTm3c> | Neon-wet nights, interiors, character close-ups, motion feel |
 
 To download a local copy for study (stays on your machine — gitignored):
 

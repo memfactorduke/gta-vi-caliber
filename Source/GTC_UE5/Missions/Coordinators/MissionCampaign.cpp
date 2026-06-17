@@ -49,7 +49,7 @@ TArray<UMissionCampaign::FCampaignMission> UMissionCampaign::OpeningArc()
     {
         FCampaignMission M;
         M.Id = TEXT("intro");
-        M.Title = TEXT("WELCOME TO Miami");
+        M.Title = TEXT("WELCOME TO THE COAST");
         M.Objectives = {
             MakeReach(TEXT("reach_car"), TEXT("Get in your car"), FVector(7, 1, 5)),
             MakeReach(TEXT("drive_strip"), TEXT("Drive down to the strip"), FVector(72, 1, -48), 7.0),
@@ -209,7 +209,7 @@ void UMissionCampaign::HandleMissionPassed()
 
 void UMissionCampaign::HandleMissionFailed()
 {
-    // Failure (timeout / death) replays the same mission — open-world's retry, gated on
+    // Failure (timeout / death) replays the same mission (a checkpoint retry), gated on
     // the player being back on their feet (AdvanceRetryIfPending).
     bRetryPending = true;
 }

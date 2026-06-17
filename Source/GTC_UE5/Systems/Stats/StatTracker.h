@@ -6,7 +6,7 @@
 
 /**
  * Pure lifetime-stats and 100%-completion model — the UE 5.7 port of Godot's
- * StatTracker (RefCounted). The keyed counters open-world tracks (kills, headshots, missions
+ * StatTracker (RefCounted). The keyed counters open-world games track (kills, headshots, missions
  * passed, distance driven, ...) plus a few simple achievement thresholds derived from
  * them. Plain C++ value type (no UObject); a subsystem (StatsCoordinator) owns one,
  * pushes gameplay events into it via Add() and reads the totals / ratios / completion.

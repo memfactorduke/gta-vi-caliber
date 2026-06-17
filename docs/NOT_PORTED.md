@@ -1,7 +1,7 @@
 # NOT PORTED (DROP) — Godot code/infra not carried to UE5
 
 From the DROP section of `../../the migration plan`. Each is provided natively by UE5 or no
-longer needed; recorded here with a one-line reason (paths are the old `GT-caliber` Godot repo).
+longer needed; recorded here with a one-line reason (paths are the old Godot repo).
 
 > **Count note:** the brief said "25"; the live plan lists **26** — the INVESTIGATE #4 decision
 > (deprecate the upstream-to-Godot policy) added entry 26 after that framing. All 26 are listed.

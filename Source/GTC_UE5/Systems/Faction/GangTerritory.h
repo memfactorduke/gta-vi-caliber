@@ -45,7 +45,7 @@ public:
     /** Construct from a list of {Id, Owner}; an empty list uses DefaultDistricts(). */
     explicit GangTerritory(const TArray<FDistrictDef>& Districts = TArray<FDistrictDef>());
 
-    /** The built-in turf map: Miami districts each held by a rival gang, influence 0. */
+    /** The built-in turf map: the city's districts each held by a rival gang, influence 0. */
     static TArray<FDistrictDef> DefaultDistricts();
 
     int32 DistrictCount() const;

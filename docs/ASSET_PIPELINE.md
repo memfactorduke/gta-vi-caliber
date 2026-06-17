@@ -180,7 +180,7 @@ the proof-of-concept phase.
 sources above we lean on (photoreal scans + Sketchfab realistic cars vs
 stylized kits), so it has to land before bulk generation starts.
 
-The project's stated bar is the a AAA open-world reference trailer (`docs/QUALITY.md` grades
+The project's stated bar is a AAA open-world reference (`docs/QUALITY.md` grades
 every playtest against the VISION.md "trailer-fidelity" bar) — i.e.
 photorealism.
 

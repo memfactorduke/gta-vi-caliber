@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 
 /**
- * Pure PAY-N-SPRAY / hideout instant wanted-loss model — the iconic open-world respray.
+ * Pure PAY-N-SPRAY / hideout instant wanted-loss model — the iconic respray.
  *
  * Duck into a spray shop or safehouse and, IF no cop saw you enter, the wanted
  * level clears the moment the door shuts. This is the INSTANT-CLEAR path and is

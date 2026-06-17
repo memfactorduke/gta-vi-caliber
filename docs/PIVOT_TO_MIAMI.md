@@ -1,8 +1,8 @@
-# ⚠️ PROJECT PIVOT: Los Angeles → Miami / Florida (Miami)
+# ⚠️ PROJECT PIVOT: Los Angeles to Miami / Florida
 
 **Date:** 2026-06-11. **Decision by:** project owner.
 
-The game is set in **Miami, Florida (Miami)** — a AAA open-world reference's real setting — **not
+The game is set in **Miami, Florida**, **not
 Los Angeles.** LA was the wrong target. This pivot is landed in the world data and
 the game map; remaining LA content must be retired.
 
