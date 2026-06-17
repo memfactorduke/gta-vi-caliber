@@ -181,9 +181,8 @@ the proof-of-concept phase.
 sources above we lean on (photoreal scans + Sketchfab realistic cars vs
 stylized kits), so it has to land before bulk generation starts.
 
-The project's stated bar is a AAA open-world reference (`docs/QUALITY.md` grades
-every playtest against the VISION.md "trailer-fidelity" bar) — i.e.
-photorealism.
+The project's stated bar is a AAA open-world reference (graded against the
+VISION.md "trailer-fidelity" bar), i.e. photorealism.
 
 **Our recommendation: aim realistic, not stylized.** Photoreal scanned
 surfaces (ambientCG / Poly Haven), real OSM layouts, PBR lighting — while

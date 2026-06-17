@@ -5,15 +5,14 @@ What was set up from the FOUNDATION section of `../../the migration plan` (12 CA
 the carried knowledge/tooling and the engine-feature configuration.
 
 ## CARRIES OVER (copied in, not re-authored)
-- **Design & systems reference, asset policy, quality ledger** → `docs/` (ARCHITECTURE, SYSTEMS, VISION,
-  ROADMAP, BUILD_ORDER, PIVOT_TO_MIAMI, ASSETS, ASSET_PIPELINE, QUALITY),
+- **Design & systems reference, asset policy** → `docs/` (ARCHITECTURE, SYSTEMS, VISION,
+  ROADMAP, BUILD_ORDER, PIVOT_TO_MIAMI, ASSETS, ASSET_PIPELINE),
   `CREDITS.md` at root. The provenance ledger in `docs/ASSETS.md` + `CREDITS.md` is load-bearing for
   legal compliance — kept verbatim.
 - **Front-door / governance** → `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`,
-  `reference/README.md`, `AGENTS.md`, `LOOP_AGENT.md`, `.editorconfig`, `.github/ISSUE_TEMPLATE/`,
+  `reference/README.md`, `AGENTS.md`, `.editorconfig`, `.github/ISSUE_TEMPLATE/`,
   `.github/PULL_REQUEST_TEMPLATE.md`, `.codacy/`, `LICENSE`, `LICENSE-ASSETS`.
-- **Portable tooling** → `tools/osm/` (OSM pipeline), `tools/three_mara_modeler/` (GLB exporters),
-  `tools/worktrees/`.
+- **Portable tooling** → `tools/osm/` (OSM pipeline), `tools/three_mara_modeler/` (GLB exporters).
 - **Still need UE5 updates (per the foundation plan):** the install/quickstart + code-style sections of README/
   CONTRIBUTING are Godot/GDScript-specific; `.editorconfig` language sections, the `.github` template
   checklist lines (`.uid`/GDScript), and the Codacy runtime list should be retargeted to UE5 C++. The
