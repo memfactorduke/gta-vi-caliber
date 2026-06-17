@@ -7,7 +7,6 @@ an honest, dependency-ordered position on top of them.
 
 | Canonical doc | What it owns |
 | --- | --- |
-| [`../plan.md`](../plan.md) | Strategy: the experiment, Phases A to H, the cut line, the honest scope. |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | How to build: the two-layer model, the native-code golden rule, conventions, the frame budget. |
 | [`SYSTEMS.md`](SYSTEMS.md) | The parts bin: every gameplay system, its API, how to wire it, and which are already wired. **Source of truth for wired vs shelf.** |
 | [`ROADMAP.md`](ROADMAP.md) | The forward task board (M0 to M6). Its checkboxes lag the code; trust this file for current state. |
@@ -84,7 +83,7 @@ cinematic capture tooling that lives in the atmosphere/polish layers.
 ### 1. Close the foundation (L0 / Phase A)
 Everything rests on it, so finish it before widening. Finish the remaining pivot
 cleanup, and gate the cinematic lighting in for the dense district with a
-measured budget. See `plan.md` Phase A for the exact list.
+measured budget.
 
 ### 2. Wire the parts bin (L2 / Phase C): needs no streaming, so do it now
 Ordered by dependency, each wired with the `SYSTEMS.md` self-wiring-coordinator
@@ -123,7 +122,7 @@ missing was a single honest front door and a dependency order, so contributors
 and agents defaulted to merging whatever, wherever. This doc is that front door.
 
 A document cannot enforce coordination, though. The merge soup is also a process
-issue, and the fix for that already lives in `plan.md` §4: lane discipline, one
+issue, and the fix for that is lane discipline, one
 concern per PR, and routing shared-file changes (`project.godot`, `player.gd`,
 shared scenes) through an integrator. This file only makes the target legible.
 

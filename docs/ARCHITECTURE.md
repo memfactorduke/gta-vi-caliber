@@ -26,7 +26,7 @@ optional accelerators that the game detects and uses when present.
 A system earns a C++ module in `engine/` only when **all three** hold:
 
 1. A working GDScript implementation exists (or is provably impossible).
-2. A captured profile (checked into `docs/profiles/`) shows it blowing the
+2. A captured profile shows it blowing the
    frame budget — not a hunch, a flame graph.
 3. The module boundary is a narrow, stable API (Godot classes in, signals and
    typed data out) so the game layer never needs to know C++ exists.

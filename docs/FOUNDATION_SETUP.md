@@ -6,7 +6,7 @@ the carried knowledge/tooling and the engine-feature configuration.
 
 ## CARRIES OVER (copied in, not re-authored)
 - **Design & systems reference, asset policy, quality ledger** → `docs/` (ARCHITECTURE, SYSTEMS, VISION,
-  ROADMAP, BUILD_ORDER, PIVOT_TO_MIAMI, ASSETS, ASSET_PIPELINE, QUALITY + `docs/profiles/`), `plan.md`,
+  ROADMAP, BUILD_ORDER, PIVOT_TO_MIAMI, ASSETS, ASSET_PIPELINE, QUALITY),
   `CREDITS.md` at root. The provenance ledger in `docs/ASSETS.md` + `CREDITS.md` is load-bearing for
   legal compliance — kept verbatim.
 - **Front-door / governance** → `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`,
@@ -41,5 +41,5 @@ sandbox, so these `.uasset`s are not committed):
 - **`/Game/Input/IMC_Default`** — optional starter Enhanced Input mapping context.
 
 Run it, then commit the generated assets. Verify unreal API names via the VibeUE skills/discovery first
-(`UE5_NOTES.md` §0). The `.uproject`/Project Settings/`MPC` together are the bootstrap the plan flags as
-the prerequisite for Wave 1 C++ and all Wave 3 shader/material work.
+(`UE5_NOTES.md` §0). The `.uproject`/Project Settings/`MPC` together are the bootstrap
+prerequisite for Wave 1 C++ and all Wave 3 shader/material work.

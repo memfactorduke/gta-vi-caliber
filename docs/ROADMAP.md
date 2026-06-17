@@ -6,10 +6,6 @@
 > which gameplay systems are wired versus still on the shelf,
 > [`SYSTEMS.md`](SYSTEMS.md) is the source of truth.
 
-> See [`../plan.md`](../plan.md) for the end-to-end strategy (Phases A–H, scope,
-> and the cut line). This file is the live task board (M0–M6); `plan.md` sits
-> above it. When the two disagree, fix one of them in the same PR.
-
 The path from empty repo to trailer-grade open world, as shippable milestones.
 **Every unchecked box is an invitation** — comment on or open an issue before
 starting so work isn't duplicated. Boxes only get checked when the feature is
@@ -68,7 +64,7 @@ Goal: walk or drive 4 km in any direction with no loading screen.
 - [ ] **`engine/`: runtime impostor baker** for distant buildings
 - [x] Floating-origin shift to dodge float precision at distance
 - [x] Streaming debug HUD (tiles resident, VRAM, frame budget)
-- [x] Benchmark scene + captured profile checked into `docs/profiles/`
+- [x] Benchmark scene + captured profile
 
 ## M4 — A living district
 
