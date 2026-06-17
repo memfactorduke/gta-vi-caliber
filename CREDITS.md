@@ -1,55 +1,28 @@
 # Credits
 
-Attribution for everything in this repo that isn't original project work.
-This file is the source for the in-game credits screen. It mirrors the
-provenance ledger in `docs/ASSETS.md` — every CC-BY asset and every
-attribution-bearing dataset gets a line here in the same change that adds
-it. CC0 work needs no attribution; we list it anyway as a courtesy.
+Attribution for content used in this project that is not original project work.
+Source for the in-game credits screen; mirrors docs/ASSETS.md (the project's own
+assets) and docs/ASSET_HANDLING.md (the third-party asset submodule).
 
-## Required attribution (CC-BY 4.0)
+## Project assets
 
-Format: `Asset — Author — Source URL — CC BY 4.0`
+The assets this repository authors and tracks directly (the Material Parameter
+Collection, the GameMode and HUD Blueprints, the Enhanced Input assets) are
+original project work, licensed CC BY 4.0 and credited collectively to the GTC
+contributors. No third-party attribution applies to them.
 
-*(none from third parties yet; project-original CC-BY work is credited
-collectively to the project contributors)*
+## Third-party asset packs (private submodule)
 
-## Courtesy credits (CC0)
+Licensed content in the private Content/GTCaliberAssets submodule, used under its
+own terms (see docs/ASSET_HANDLING.md). None of these require attribution for use
+in a shipped game; the courtesy credit below is provided anyway.
 
-Format: `Asset — Author — Source URL — CC0 1.0`
+- CityBeachStrip environment pack, PropHaus, via Fab (Fab Standard License). The
+  Fab Standard License is royalty-free and does not require attribution for use in
+  a game; credited here as a courtesy.
+- Mannequin and template content, Epic Games (Unreal Engine EULA). No attribution
+  required.
 
-- PBR material scans (asphalt, concrete, pavers, facades; per-asset URLs
-  in the `docs/ASSETS.md` ledger) — ambientCG / Lennart Demes —
-  https://ambientcg.com — CC0 1.0
-- Universal Base Characters (player + NPC base meshes) — Quaternius —
-  https://quaternius.com/packs/universalbasecharacters.html — CC0 1.0
-- Universal Animation Library (45 humanoid clips) — Quaternius —
-  https://quaternius.com/packs/universalanimationlibrary.html — CC0 1.0
-
-## Required attribution (CC-BY 4.0) — character library
-
-- NPC + main-character-candidate wardrobe skins (`game/assets/characters/
-  npc_variants/`) — recolored by project contributors from Tripo Studio
-  base character textures (CC BY 4.0) and Quaternius UBC textures (CC0) —
-  CC BY 4.0. Note: the base Tripo coastal-resident characters they derive
-  from (`coastal_residents/`, added in PR #34) are themselves CC BY 4.0
-  but are not yet listed here — a pre-existing CREDITS gap to close.
-
-## Data
-
-- Map data © OpenStreetMap contributors —
-  https://www.openstreetmap.org/copyright — ODbL 1.0 (district footprints
-  and road centerlines in `game/assets/world/`)
-- Florida state boundary geometry — U.S. Census Bureau —
-  https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_state_500k.zip —
-  U.S. public domain
-
-## Tools and libraries
-
-Engine and vendored addon licenses live with their sources (`LICENSE`,
-`game/addons/*/LICENSE*`); they are not duplicated here.
-
-Content-generation tools used in the asset pipeline (not redistributed in
-this repo):
-
-- Blosm (blender-osm) — prochitecture — https://prochitecture.gumroad.com
-- Buildify — Pavel Oliva — https://paveloliva.gumroad.com/l/buildify
+Cesium for Unreal config is present in the pack but the plugin is not installed
+and no Cesium ion data is used, so no Cesium attribution applies. Add a credit
+here if Cesium ion tilesets are ever streamed.
