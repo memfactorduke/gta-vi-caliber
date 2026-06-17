@@ -1,140 +1,121 @@
 # GTC
 
-**A community-driven, fully open-source open-world game.** Our quality bar is the
-fidelity shown in modern AAA open-world trailers: a dense, living coastal city
-with seamless streaming, vehicles, crowds, water, and weather. Built on
-[Godot 4](https://godotengine.org) with custom C++ engine modules where the
-engine needs to be pushed further.
+**An original, community-driven open-world game project, built on Unreal Engine 5.**
+The quality bar is the fidelity of modern AAA open-world games: a dense, living
+coastal city with seamless streaming, vehicles, crowds, water, and weather.
 
-> ⚠️ This is an original, unaffiliated community project. It is **not**
-> associated with Rockstar Games or Take-Two Interactive, and contains no
-> assets, code, or content from any Grand Theft Auto product. "GTC"
-> describes our *quality benchmark*, nothing more.
+> ⚠️ This is an **original, unaffiliated** project. It is **not** associated
+> with, endorsed by, or connected to Rockstar Games or Take-Two Interactive,
+> and it contains **no** assets, code, trademarks, or content from any
+> commercial game. Any "AAA open-world" comparison describes a *quality
+> benchmark*, nothing more.
 
-## Play in one command (no GitHub or Godot needed)
+## Licensing (read this first)
 
-Never used GitHub? Don't want to install anything? Paste one line into a
-terminal. It fetches the Godot engine and the game (assets included) into a
-local folder and launches straight into play. Re-run it any time to update and
-play again.
+- **Game code** (everything in `Source/`, build scripts, and configuration) is
+  licensed under the **[MIT License](LICENSE)**.
+- **Game assets we author** (our own files under `Content/`, excluding the
+  `Content/GTCaliberAssets/` submodule) are licensed under
+  **[CC BY 4.0](LICENSE-ASSETS)**, with provenance tracked in
+  [docs/ASSETS.md](docs/ASSETS.md). The third-party assets in the
+  `Content/GTCaliberAssets/` submodule are **separately licensed and NOT
+  CC BY 4.0** (see [docs/ASSET_HANDLING.md](docs/ASSET_HANDLING.md) and the
+  "Assets" section below).
 
-**macOS / Linux:**
+**This is not "fully open-source software," and cannot be.** The project runs on
+**Unreal Engine 5**, which is **proprietary**: Unreal is provided by Epic Games
+under the **[Unreal Engine EULA](https://www.unrealengine.com/eula)** (source-available,
+royalty-bearing, **not** an OSI/FSF open-source license). You must **obtain the
+engine yourself** from Epic; it is **not redistributed** here, and the engine
+cannot be relicensed under MIT. What is open here is our **own game code (MIT)**
+and **our own art (CC BY 4.0)**, sitting on top of a proprietary engine. Any
+Epic sample content, Fab marketplace assets, or engine plugins added later
+remain under their own Epic/third-party terms and are likewise not open source.
+
+In short: **MIT-licensed game code and CC-BY assets, on a proprietary engine.**
+
+## Status
+
+🛠️ **In active development; not yet a playable build.** The project is a
+ground-up Unreal Engine 5.7 (C++) port of a prior prototype. The work is staged:
+
+- **Wave 1, tested logic core (complete):** pure gameplay/AI/economy models
+  (scoring, ballistics, NPC decision cores, faction/territory, economy, missions,
+  weapons, vehicle logic, and more) ported to C++ with **automation-test parity**.
+- **Wave 2, subsystems (complete):** self-wiring managers landed as UE
+  GameInstance/World Subsystems across four batches (progression, player stats,
+  save/persistence, wanted/arrest, NPC dialogue, disguise, roster, mission
+  coordinators, and more).
+- **Wave 3, engine/feel (in progress):** the C++ framework is merged (player
+  pawn, context interaction, HUD base, Enhanced Input, armor reconciliation as
+  tested logic); rendering, World Partition streaming, Chaos vehicles, Mass AI
+  crowds/traffic, animation, audio, and UMG follow.
+
+The logic core currently passes a full headless automation suite of **1246 tests**.
+
+## Build (contributors)
+
+UE **5.7**, macOS (Apple Silicon verified) / Windows. You provide the engine; the
+repo provides the game.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/duolahypercho/GT-caliber/main/install.sh | bash
+# 1. Install Unreal Engine 5.7 from the Epic Games Launcher (accept the UE EULA).
+# 2. Install Git LFS once per machine:
+git lfs install
+# 3. Clone WITH submodules (the game art lives in a submodule; see "Assets" below):
+git clone --recurse-submodules <repo-url>
+#    (already cloned without it? run: git submodule update --init --recursive)
+# 4. Pull the Git LFS asset objects for the submodule:
+cd Content/GTCaliberAssets && git lfs pull && cd -
+# 5. Generate project files and build the editor target
+#    (right-click the .uproject, "Generate project files", or use the engine's
+#     Build.sh / UnrealBuildTool for GTC_UE5Editor).
 ```
 
-**Windows (PowerShell):**
+Headless tests run via the engine's Automation system against the `GTC.*` test
+prefixes. See `Source/` for the module layout and the in-module tests under each
+system's `Tests/` folder.
 
-```powershell
-iwr https://raw.githubusercontent.com/duolahypercho/GT-caliber/main/install.ps1 | iex
-```
+## Assets
 
-Everything lands in `~/GT-caliber` (engine cached separately). The only
-prerequisite the installer can't fetch for you is `git` itself — preinstalled
-on nearly every Mac, and a one-line install on Linux/Windows if missing.
+Most game art is **not** in this repository. It lives in a **private** Git LFS
+submodule mounted at `Content/GTCaliberAssets/` (about 15 GB), sourced from:
 
-## Quickstart (60 seconds, for contributors)
+- **Fab / PropHaus** (Standard License) for the city/environment set,
+- **Epic Games** (Unreal Engine EULA) for the Mannequin and template content,
+- **Cesium for Unreal** for geospatial config.
 
-```bash
-# 1. Install Godot 4.6+ and git-lfs
-brew install --cask godot && brew install git-lfs && git lfs install
-#    (Linux/Windows: download Godot 4.6 from https://godotengine.org/download)
+These are **separately licensed and are NOT CC BY 4.0**; their handling rules and
+per-set provenance live in [docs/ASSET_HANDLING.md](docs/ASSET_HANDLING.md). This
+repository tracks only a submodule pointer, never the asset files.
 
-# 2. Clone
-git clone https://github.com/duolahypercho/GT-caliber.git
-cd GT-caliber
-
-# 3. Play — boots straight into the one map, no editor needed:
-godot --path game
-#    — or open it in the Godot editor and press F5:
-godot --path game --editor
-```
-
-There is **one map** and it boots straight into play — no menus, no scene
-picker. The command above (or pressing F5 in the editor) drops you into the
-streaming Miami world, ready to walk, drive, and trigger the wanted system.
-
-### Controls
-
-| Input | Action |
-| --- | --- |
-| `WASD` | Move |
-| `Shift` | Sprint |
-| `Space` | Jump / brake |
-| `Ctrl` | Dive |
-| `E` | Enter / exit nearest car |
-| `C` | Look behind |
-| Mouse | Look around |
-| `LMB` / `RMB` | Fire / aim |
-| `R` | Reload |
-| `Q` / `V` | Next weapon / weapon wheel |
-| `X` | Holster |
-| `F` | Melee (unarmed) |
-| `Tab` or `P` | Phone |
-| `F5` / `F9` | Quick-save / quick-load |
-| `Esc` | Pause menu |
-
-The mouse cursor is handled automatically: captured while you play and
-freed while the pause menu is open, rather than toggled by hand.
-
-A gamepad works too: left stick moves, right trigger fires, left trigger
-aims, `A` jumps, `B` dives, `X` interacts, `Y` reloads, shoulders holster
-(`LB`) and melee (`RB`), stick clicks sprint (`L3`) and look behind (`R3`).
-
-More detail in [docs/BUILDING.md](docs/BUILDING.md).
-
-## Project status
-
-🟢 **Playable.** Launching the game drops you straight into a single streaming
-Miami map: a third-person character, drivable vehicles, traffic and crowds,
-and the core open-world loop wired end to end (commit crimes → wanted stars → police
-dispatch → evade or get busted), plus missions and a property/economy layer.
-See [docs/ROADMAP.md](docs/ROADMAP.md) for what's next.
-
-## Support the project
-
-GTC is free, open source, and built by the community. If you'd like
-to help fund development, you can support the project on Solana. Contract
-address (CA):
-
-```text
-DY2ZAaZrt27b3PpXjxH8qqDBZwrEoFoSqb83t7VNpump
-```
-
-[Donate / view on Phantom »](https://phantom.com/tokens/solana/DY2ZAaZrt27b3PpXjxH8qqDBZwrEoFoSqb83t7VNpump)
-
-Every bit goes back into the game — tooling, assets, and contributor time.
-
-> Always verify the full address character-for-character before sending
-> anything. Support is voluntary and non-refundable; this is community-run, not
-> a promise of returns, and nothing here is financial advice.
-
-## Contributing
-
-**Everyone is welcome — programmers, 3D artists, sound designers, writers,
-playtesters.** Start here:
-
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md) (5 minutes).
-2. Pick a [good first issue](../../issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-   or any unchecked task in [docs/ROADMAP.md](docs/ROADMAP.md).
-3. Open a PR. CI validates everything headlessly — if `tools/check.sh` passes
-   locally, you're good.
-
-AI agents are welcome contributors too: the repo contract for agents lives in
-[AGENTS.md](AGENTS.md).
+**Access is gated.** Fetching the assets requires read access to the private
+asset repository. Without it you can clone and build the **code**, but you will
+not get the art, and the project is **not runnable as-is**. This is intentional:
+licensed and paid assets are never redistributed here. Contributors who need the
+art should request access; the code stays open regardless.
 
 ## Repository layout
 
 | Path | What it is |
 | --- | --- |
-| `game/` | The Godot 4.6 project — scenes, scripts, assets, tests |
-| `engine/` | Custom C++ engine modules (GDExtension) for performance-critical systems |
-| `docs/` | Roadmap, architecture, asset policy + pipeline, vision, build guide |
-| `tools/` | `check.sh` (the local CI gate) and helper scripts |
-| `reference/` | Local-only art-direction study footage — never committed |
+| `Source/` | The UE5 C++ game module (`GTC_UE5`): systems + in-module automation tests |
+| `Content/` | Unreal content: project assets (CC BY 4.0) plus the private `GTCaliberAssets` asset submodule (separately licensed) |
+| `Config/` | Project / engine / input configuration |
+| `Data/` | Data tables and world data |
+| `docs/` | Asset policy + provenance, notes, and design docs |
+| `tools/` | Build / test gate and helper scripts |
 
-## License
+## Contributing
 
-- **Code:** [MIT](LICENSE)
-- **Assets:** [CC BY 4.0](LICENSE-ASSETS)
+Contributions are welcome: programmers, 3D artists, audio, writers, playtesters.
+
+1. Read [CONTRIBUTING.md](CONTRIBUTING.md).
+2. Pick an open task.
+3. Open a PR. CI validates headlessly; the build + automation tests must pass.
+
+By contributing **code** you agree to license it under MIT; by contributing
+**assets** you agree to CC BY 4.0 and attest you hold the rights (see
+[docs/ASSETS.md](docs/ASSETS.md)). AI-generated assets are accepted only when the
+generator's terms permit CC BY 4.0 redistribution and that is recorded in the
+provenance ledger.

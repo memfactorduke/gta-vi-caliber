@@ -1,31 +1,73 @@
 Asset License
 =============
 
-Unless a per-file or per-folder LICENSE states otherwise, all game assets in
-this repository (everything under `game/assets/`, including models, textures,
-audio, music, and materials) are licensed under:
+Unless a per-file or per-folder LICENSE states otherwise, the game *assets that
+this project authors* (our own files under `Content/`, such as the Material
+Parameter Collection, the GameMode and HUD Blueprints, and the Enhanced Input
+assets) are licensed under:
 
   Creative Commons Attribution 4.0 International (CC BY 4.0)
   https://creativecommons.org/licenses/by/4.0/legalcode
 
+This does NOT cover the third-party assets in the `Content/GTCaliberAssets/`
+submodule. Those (Fab/PropHaus, Epic/UE-EULA, and Cesium content) are separately
+licensed under their own terms, are NOT relicensed to CC BY 4.0 by inclusion
+here, and are governed by docs/ASSET_HANDLING.md. The submodule holds the asset
+files; this repository tracks only a pointer to it.
+
 You are free to:
 
-  Share — copy and redistribute the material in any medium or format
-  Adapt — remix, transform, and build upon the material for any purpose,
+  Share: copy and redistribute the material in any medium or format.
+  Adapt: remix, transform, and build upon the material for any purpose,
   even commercially.
 
 Under the following terms:
 
-  Attribution — You must give appropriate credit to "GTC
-  contributors" (see the credits section in docs/ASSETS.md), provide a link
-  to the license, and indicate if changes were made.
+  Attribution: You must give appropriate credit to the "GTC contributors"
+  (see the provenance ledger in docs/ASSETS.md), provide a link to the
+  license, and indicate if changes were made.
 
-Code (everything that is not a game asset, including all GDScript, C++,
-scenes, and build scripts) is separately licensed under the MIT License —
-see the LICENSE file.
+Scope note (current state)
+--------------------------
+This repository is the Unreal Engine 5 code/logic project. The art it tracks
+directly is limited to the project's own framework assets, all original and
+CC BY 4.0: the Material Parameter Collection
+(`Content/Materials/MPC_GTCGlobals.uasset`), the GameMode and HUD Blueprints
+(`Content/Core/BP_GTCGameMode.uasset`, `Content/UI/WBP_GTCHud.uasset`), and the
+Enhanced Input assets (`Content/Input/`). The bulk of the game art is NOT tracked
+here: it lives in the private `Content/GTCaliberAssets/` Git LFS submodule under
+its own third-party licenses (see docs/ASSET_HANDLING.md). Any new
+project-authored art added under `Content/` is governed by this file (CC BY 4.0)
+unless its own per-folder LICENSE says otherwise, and must carry a provenance row
+in docs/ASSETS.md.
 
-Contributors: by submitting assets to this repository you agree to license
-them under CC BY 4.0 and you attest that you hold the rights to do so.
-Only original work or work derived from CC0 / CC-BY sources (with attribution
-recorded in docs/ASSETS.md) is accepted. See docs/ASSETS.md for the full
-asset contribution policy.
+Vehicle meshes: the previously-referenced AI-generated (Tripo Studio) vehicle
+meshes were removed before public release pending verification of
+AI-generation redistribution rights. Licensed vehicle meshes (Fab / CC0 /
+original) will be added later. The vehicle *logic* (ownership, condition,
+health, chop-shop) is C++ and mesh-agnostic, and is unaffected.
+
+Engine and third-party content
+------------------------------
+This is an Unreal Engine 5 project. Unreal Engine itself is NOT covered by this
+license or by the MIT code license; it is provided by Epic Games under the
+Unreal Engine EULA and must be obtained separately. Any third-party content
+brought in later (e.g. Epic sample content, Fab marketplace assets, engine
+plugins) remains under its own license / EULA and is NOT relicensed under
+CC BY 4.0 by inclusion here.
+
+Code
+----
+Code, meaning everything that is not a game asset (all C++, build scripts, and
+configuration), is separately licensed under the MIT License; see the
+LICENSE file.
+
+Contributing assets
+-------------------
+By submitting assets to this repository you agree to license them under CC BY
+4.0 and you attest that you hold the rights to do so. Only original work, or
+work derived from CC0 / CC-BY sources (with attribution recorded in
+docs/ASSETS.md), is accepted. AI-generated assets are accepted only when the
+generator's terms permit redistribution under CC BY 4.0 and that is recorded
+in the provenance ledger. See docs/ASSETS.md for the full asset contribution
+policy.
