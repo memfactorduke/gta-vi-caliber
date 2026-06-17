@@ -8,8 +8,8 @@ can drive, walk, and cause trouble in — seamless streaming, convincing crowds,
 water you want to look at, weather that changes how the city feels.
 
 We will not get there by wishing. We get there by shipping a playable build
-every single week and never letting the repo regress below "clone it, press
-F5, it runs."
+every single week and never letting the repo regress below "clone it, open it,
+it runs."
 
 ## The quality bar, made concrete
 
@@ -25,30 +25,30 @@ roadmap into the build:
 | **Play** | Mission framework, wanted/heat system, radio, persistence |
 | **Polish** | A 90-second in-engine trailer captured from a release build is the final acceptance test |
 
-## Why Godot, and why we fork nothing
+## Why Unreal Engine 5, and why we fork nothing
 
-We build **on top of** Godot 4.x, upstream-first:
+We build **on top of** Unreal Engine 5.7:
 
-1. **Game layer (`game/`)** — typed GDScript, scenes, assets. Anyone can
-   contribute here with zero C++ knowledge.
-2. **Engine layer (`engine/`)** — GDExtension C++ modules for the systems
-   where stock Godot runs out of headroom: world streaming, crowd/traffic
-   simulation, impostor generation, GPU-driven foliage, ocean.
+1. **The game layer:** UE5 C++ in `Source/`, with levels, Blueprints, UMG,
+   and assets in `Content/`. Anyone can contribute here (C++ or Blueprint).
+2. **The engine-feel layer:** custom C++ modules plus built-in UE5 systems
+   (World Partition streaming, Mass crowd/traffic, Nanite/HLOD, ocean) for the
+   places where stock features need extension.
 
-GDExtension means we extend the engine **without forking it**. Engine updates
-stay one `brew upgrade` away, contributors don't need a custom editor build,
-and anything generically useful gets offered upstream to Godot itself. If we
-ever hit a wall that genuinely requires patching the engine core, the patch
-lives in `engine/patches/` with an upstream PR opened the same week — a
-permanent private fork is a failure state, not a goal.
+We extend UE5 with C++ modules and engine features **without forking the engine
+source**. Engine upgrades stay clean, contributors use the stock Unreal editor,
+and reusable pieces stay as documented modules. Engine-source patches are a last
+resort kept isolated and minimal: a permanent private fork is a failure state,
+not a goal.
 
 ## How we work
 
 - **Playable trunk.** `main` always runs. CI enforces it headlessly.
 - **Vertical slices over horizontal layers.** One drivable block of city with
   working streetlights beats ten systems at 40%.
-- **GDScript first, C++ when profiled.** Native code must justify itself with
-  a captured profile (see [ARCHITECTURE.md](ARCHITECTURE.md)).
+- **Built-in features first, custom C++ when profiled.** Custom native code
+  must justify itself with a captured profile (see
+  [ARCHITECTURE.md](ARCHITECTURE.md)).
 - **Original assets only.** Provenance for every file ([ASSETS.md](ASSETS.md)).
   We are studying the look of AAA trailers, not copying their content.
 - **Humans and AI agents contribute under the same contract**

@@ -9,10 +9,10 @@
 ## Checklist
 
 - [ ] `tools/check.sh` passes locally (or I explained below why I couldn't run it)
-- [ ] GDScript is fully typed; new logic has a unit test in `game/tests/unit/`
-- [ ] `godot --path game` still boots to a controllable character
+- [ ] Code builds via UnrealBuildTool; new logic has an in-module `Tests/` automation test (`GTC.*` prefix)
+- [ ] The project still boots to a controllable character in the Unreal editor (or a packaged build)
 - [ ] New binary assets (if any) have a provenance row in `docs/ASSETS.md` and are original/CC0/CC-BY
-- [ ] No edits to `game/addons/**`, `game/bin/**`, or generated `.uid`/`.import` files by hand
+- [ ] No hand-edits to `Plugins/**`, `Binaries/**`/`Intermediate/**`, or generated `.uasset`/`.umap` binaries
 - [ ] Roadmap checkbox ticked if this completes a roadmap item
 
 ## Screenshots / clips

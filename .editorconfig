@@ -6,17 +6,12 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-# Godot's editor uses tabs for GDScript
-[*.gd]
-indent_style = tab
-indent_size = 4
-
-[*.{tscn,tres,godot,gdextension,import,cfg}]
-indent_style = tab
-
 [*.{cpp,h,hpp,c}]
 indent_style = space
 indent_size = 4
+
+[*.{ini,cfg}]
+indent_style = tab
 
 [*.{yml,yaml,json}]
 indent_style = space

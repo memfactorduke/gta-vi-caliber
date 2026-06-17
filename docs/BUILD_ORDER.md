@@ -43,14 +43,14 @@ them, not around the fast layers.
 Between **L1 and L2**. A vertical slice exists; the breadth above it does not.
 
 **Solid:**
-- `miami.tscn` is the one canonical playable loop, each step guarded by a runtime
+- `Miami.umap` is the one canonical playable loop, each step guarded by a runtime
   probe in `tools/check.sh`: player health/stats, crime to wanted to police
   dispatch, a 5-mission campaign, pay-n-spray, the busted/arrest fail loop,
   crowd/traffic/police directors, NPC barks.
 - The front door is routed and legacy-unit guarded:
-  `intro_video.tscn` -> `main_menu.tscn` -> `miami.tscn`.
-- Unit coverage is broad across legacy suites and gdUnit4; the gate is green on
-  a clean clone.
+  `IntroVideo.umap` -> `MainMenu.umap` -> `Miami.umap`.
+- Unit coverage is broad across the in-module `Tests/` UE5 automation suites;
+  the gate is green on a clean clone.
 - Interaction layer landed (context-sensitive interact key, generic
   `interactables` contract) and building entry on top of it (street doors, fade
   transition into a footprint-built interior).
@@ -59,11 +59,11 @@ Between **L1 and L2**. A vertical slice exists; the breadth above it does not.
 fully (retire legacy `los_angeles_*`/demo scenes), and route the premium
 cinematic lighting in behind a quality setting.
 
-**L1 World substrate, partial and the real bottleneck:** a GDScript tile
-streamer and floating origin exist, but city-scale streaming is **not proven**,
-and the native `worldcore` accelerators (async streamer, impostor baker) are
-written but unwired (they ship as `worldcore.gdextension.example`). Until this
-layer holds, L3 content volume cannot start.
+**L1 World substrate, partial and the real bottleneck:** a C++ tile streamer
+and floating-origin/Large World Coordinates exist, but city-scale streaming is
+**not proven**, and the native `worldcore` accelerators (async streamer,
+impostor baker) are written but unwired (they ship as a disabled/example
+module). Until this layer holds, L3 content volume cannot start.
 
 **L2 Systems wired, about a quarter done:** roughly 10 of ~40 systems in
 `SYSTEMS.md` are wired (the wanted/police/mission/pay-spray/arrest loop and its
@@ -105,9 +105,9 @@ pattern and a runtime probe (repo rule: no probe, it does not count):
    minimap feed and `RadioNewsDirector` HUD readout with mission/nav content.
 
 ### 3. Prove streaming at city scale (L1 / Phase B / M3): in parallel, the bottleneck
-This is what gates content volume. Build it GDScript-first; the native
-`worldcore` modules earn their place only with a captured profile, per the
-`ARCHITECTURE.md` golden rule. Do not start L3 content volume until a 4 km
+This is what gates content volume. Build it with built-in features first (World
+Partition); the native `worldcore` modules earn their place only with a captured
+profile, per the `ARCHITECTURE.md` golden rule. Do not start L3 content volume until a 4 km
 drive/walk streams with no hitch.
 
 ### 4. Continuous, never blocking
@@ -123,8 +123,8 @@ and agents defaulted to merging whatever, wherever. This doc is that front door.
 
 A document cannot enforce coordination, though. The merge soup is also a process
 issue, and the fix for that is lane discipline, one
-concern per PR, and routing shared-file changes (`project.godot`, `player.gd`,
-shared scenes) through an integrator. This file only makes the target legible.
+concern per PR, and routing shared-file changes (`.uproject`/`Config/DefaultEngine.ini`,
+the player pawn/character C++, shared levels) through an integrator. This file only makes the target legible.
 
 **Maintenance rule:** when a PR changes the state described here, it updates this
 file in the same PR. A front door that drifts is worse than none.

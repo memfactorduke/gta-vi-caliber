@@ -13,7 +13,7 @@ ambientCG / Poly Haven (materials) → Blender-OSM layout + Buildify
 (building mass) → Sketchfab CC hunting (hero buildings, props, base cars)
 → MB-Lab / MakeHuman bodies + Quaternius UAL animations (NPCs) → AI image
 gen for decals/signage/liveries ONLY → Blender driven via MCP for
-cleanup/variation/export → Godot 4, judged by in-game screenshot.
+cleanup/variation/export → Unreal Engine 5, judged by in-game screenshot.
 
 ## 2. Priorities (foundation first)
 
@@ -38,7 +38,7 @@ PR #31) is our animation library.
   custom-only work (signage, graffiti, liveries, decals).
 - **Buildings:** procedural, not downloaded. Blosm (blender-osm) free tier
   (real street layouts + building footprints; the data is ODbL like our
-  existing `game/assets/world/*.json` extracts — same attribution rules
+  existing `Content/World/*.json` extracts — same attribution rules
   apply) + Buildify (free geometry-nodes building generator) dressed with
   ambientCG facade materials. Sketchfab CC0/CC-BY for distinctive hero
   buildings — fictional designs only, per the policy below. The Base Mesh
@@ -101,12 +101,12 @@ Everything in `docs/ASSETS.md` applies. On top of that:
 ## 5. Materials tooling: `tools/pull-material.sh`
 
 Pulls a PBR set from ambientCG by asset ID and unpacks it into the repo's
-`PbrMaterial.from_set` layout (`docs/ASSETS.md`):
+material-set layout (`docs/ASSETS.md`):
 
 ```
 tools/pull-material.sh <AmbientCG-ID> <target-name> [resolution]
 # e.g. tools/pull-material.sh Asphalt025C asphalt_worn_01 2K
-# →  game/assets/materials/asphalt_worn_01/{albedo,normal,roughness,ao}.png
+# →  Content/Materials/asphalt_worn_01/{albedo,normal,roughness,ao}.png
 ```
 
 It uses the public API (`https://ambientcg.com/api/v2/full_json`) to
@@ -129,14 +129,14 @@ i.e. rubber. Two tiers:
 
 **Reflections need an environment to reflect — and the answer here is NOT
 an HDRI sky.** This repo has a live day-night physical sky (PR #33,
-`sky.gdshader` + SkyController); a static HDRI would regress it and is
+the sky material + SkyController); a static HDRI would regress it and is
 off the table. Instead:
 
-- Place **ReflectionProbe** nodes at vehicle-dense spots (streets,
+- Place **reflection capture** actors at vehicle-dense spots (streets,
   parking, showcase scenes). Set them to update on demand (re-capture on
   time-of-day changes, not per-frame) so day reflections aren't pasted
   onto night paint.
-- Consider **SDFGI** for large-scale ambient bounce; it tracks the dynamic
+- Consider **Lumen** for large-scale ambient bounce; it tracks the dynamic
   sky on its own. Budget it: measure on the night-street scene before
   adopting (the repo has prior art on night-perf cliffs, see PR #33 notes).
 - Screen-space reflections can supplement on wet-look streets but never
@@ -150,29 +150,30 @@ license), never meshes. Repo policy in `docs/ASSETS.md` already governs
 this: generator terms must permit CC-BY-4.0 redistribution, prompts must
 not target a specific artist/game/franchise, ledger row marked
 `AI (<tool>)`. Texture prompts must be orthographic with flat lighting (no
-baked shadows) or they won't tile or relight; verify 2×2 tiling in Godot
+baked shadows) or they won't tile or relight; verify 2×2 tiling in Unreal
 before accepting. Provider/API wiring is a later step — no gen tooling in
 the proof-of-concept phase.
 
-## 8. Godot 4 import cheatsheet
+## 8. Unreal Engine 5 import cheatsheet
 
 - **GLB is the exchange format.**
-- Suffix auto-import works: `name_albedo/_normal/_roughness/_ao/
-  _metallic/_height.png` — but in-repo materials prefer the
-  `PbrMaterial.from_set` folder layout (`docs/ASSETS.md`).
-- **Repeat = Enabled** for tileables (Godot defaults to Disabled).
-- Normal maps flagged as normal-map type; albedo sRGB, data maps linear.
-- Flip the normal-map green channel if bumps invert (Godot expects
-  OpenGL-style +Y).
-- **Headless imports skip `detect_3d`** — textures imported headless keep
-  2D defaults (no mipmaps, no VRAM compression). We hit this on the road
-  PBR work. Set import flags explicitly (commit the `.import` files with
-  mipmaps + VRAM compression for 3D textures) and eyeball one in-game
-  screenshot per new texture set.
+- Textures import into the Content Browser and drive Material Instances;
+  in-repo materials follow the repo's material-set convention
+  (`docs/ASSETS.md`).
+- Set tiling/wrap on for tileables in the texture asset settings.
+- Normal maps flagged as normal-map type; albedo sRGB, data maps linear
+  (UE5: Normalmap compression for normals, sRGB for base color,
+  linear/masks for data).
+- Flip the normal-map green channel as needed (UE5 expects DirectX-style
+  -Y; OpenGL-authored normals need a Y-flip).
+- **Don't rely on headless import defaults.** Import via the Interchange
+  glTF pipeline and set the texture compression/mip settings explicitly on
+  the imported asset, then eyeball one in-game screenshot per new texture
+  set. We hit this on the road PBR work.
 - Pack AO+Roughness+Metallic into one ORM texture for perf where the
   material count justifies it.
 - 2K standard, 4K hero-closeup only. Triplanar for terrain/roads to dodge
-  UV seams (supported by `PbrMaterial.from_set`).
+  UV seams (world-aligned/triplanar material nodes in UE5).
 
 ## 9. OPEN QUESTION for Ziwen + team: art direction target
 
@@ -264,11 +265,11 @@ driven entirely over the bridge — zero Blender clicks:
 - **Textures stay OUT of building GLBs.** Embedding 2K facade maps per
   building blew a single GLB to 51 MB. Instead export geometry-only with
   NAMED slot materials (WALL/TRIM/GLASS/ROOF/DETAIL/ACC*) and apply the
-  shared ambientCG sets in Godot via `scripts/props/building_facade.gd`
-  (per-building wall set + tint + glass colour). GLBs drop to 0.5-9 MB
-  and the textures live once in `game/assets/materials/`.
-  - `building_facade` matches slots tolerantly: it strips Godot's `.NNN`
-    duplicate suffixes AND maps Buildify's raw `proxy_mat_*` names to
+  shared ambientCG sets in UE5 via `Source/GTC/Props/BuildingFacade` (or
+  its material) (per-building wall set + tint + glass colour). GLBs drop to
+  0.5-9 MB and the textures live once in `Content/Materials/`.
+  - `BuildingFacade` matches slots tolerantly: it strips the engine's
+    `.NNN` duplicate suffixes AND maps Buildify's raw `proxy_mat_*` names to
     slots, so it works even when the generator's rename didn't take (a
     real bug — repeated Buildify re-appends duplicate the proxy
     materials, silently defeating an exact-name remap). It uses
@@ -307,8 +308,8 @@ gauntlet-time:
 ## 11. What the pipeline delivers: an asset library
 
 **The pipeline's deliverable is shelf stock, not world changes.** Output =
-gauntlet-passed assets landing in the `game/assets/` and
-`game/scenes/props/` folders, ledgered, unplaced, and unused by the live
+gauntlet-passed assets landing in the `Content/Assets/` and
+`Content/Props/` folders, ledgered, unplaced, and unused by the live
 game until someone deliberately uses them in their own later PR. Placement
 and world integration are explicitly out of scope per asset — every asset
 PR ships library stock only, and booting the game after merging one
@@ -344,16 +345,17 @@ grazing golden-hour sun, the night grade, distance bloom, free-look
 motion. (The road-PBR rounds proved each of those failure modes the hard
 way.)
 
-The stage is `game/tests/asset_gauntlet.tscn` — a self-contained scene
-that replicates the live miami.tscn rendering stack verbatim (PR #33
-physical sky + SkyController, the real Environment grade, the WorldQuality
-tier script, a ReflectionProbe). It never references miami.tscn. Run:
+The stage is the `AssetGauntlet` level under the project's `Tests/`
+content, a self-contained level that replicates the live `Miami.umap`
+rendering stack verbatim (the physical sky + sky controller, the real
+Post-Process Volume grade, the WorldQuality tier setup, a reflection
+capture). It never references `Miami.umap`. Run:
 
 ```
-ASSET=res://assets/<path-to>.glb \
+ASSET=/Game/Assets/<path-to> \
 SHOT_DIR=session_captures/gauntlet/<asset_name> \
-godot --path game --script res://tests/asset_gauntlet_capture.gd
-echo $?   # check it directly — never through a pipe
+UnrealEditor-Cmd GTC_UE5.uproject -run=AssetGauntletCapture
+echo $?   # check it directly, never through a pipe
 ```
 
 The battery, all automated:
@@ -369,10 +371,10 @@ The battery, all automated:
   shimmer) is an automatic FAIL.
 - **Glass sweep** — when reflective/transparent materials are detected
   (or `GLASS=1` forces it): incidence angles 5° → 85° across the facade,
-  with the stage's ReflectionProbe providing something to reflect.
+  with the stage's reflection capture providing something to reflect.
 - **Pixel sanity on every shot** — blank and single-tone (uniform)
-  detection via `GauntletChecks` (pure logic, unit-tested in
-  `tests/unit/test_gauntlet_checks.gd`).
+  detection via `GauntletChecks` (pure logic, unit-tested by the `GTC.*`
+  GauntletChecks automation test).
 - **Close-up lens pass criteria (by eye):** texture detail resolves, no
   aliasing/shimmer, and **no watermarks, logos, or placeholder imagery
   visible** — the backstop for the §10 export gate. The first gauntlet

@@ -21,11 +21,11 @@ humans steer the machines. Keep tasks small, concrete, and verifiable.
 Goal: every clone runs instantly; contribution pipeline works end to end.
 
 - [x] Repo structure, licenses, contribution docs, agent contract
-- [x] Godot 4.6 project with playable sandbox (ground, sky, sun)
+- [x] UE5 project with playable sandbox (ground, sky, sun)
 - [x] Third-person character: walk, sprint, jump, mouse-look camera
-- [x] `tools/check.sh` local gate = CI (format, lint, import, smoke, unit tests)
+- [x] `tools/check.sh` local gate = CI (format, lint, UnrealBuildTool build, boot/automation tests)
 - [x] GitHub Actions CI, issue templates, PR template
-- [x] Vendor [gdUnit4](https://github.com/MikeSchulze/gdUnit4) into `game/addons/` and port the unit-test runner to it
+- [x] Stand up the in-module `Tests/` UE5 Automation test harness (`GTC.*` prefixes) and the test runner
 - [x] First exported build artifacts (Linux/Windows/macOS) uploaded by CI on tag
 - [x] Stable menu-to-world startup with bounded district and crowd loading
 
@@ -46,7 +46,7 @@ Goal: moving around is *fun* before there is anything to do.
 
 Goal: get in a car, drive it, crash it, get out.
 
-- [x] `VehicleBody3D`-based car with tuned suspension (greybox body)
+- [x] Chaos Vehicles-based car with tuned suspension (greybox body)
 - [x] Seamless enter/exit interaction
 - [x] Chase camera with speed-based FOV and look-behind
 - [x] Engine/tire/impact audio loops
@@ -58,11 +58,11 @@ Goal: get in a car, drive it, crash it, get out.
 Goal: walk or drive 4 km in any direction with no loading screen.
 
 - [ ] World partitioned into tiles with seam-free LOD terrain
-- [x] GDScript district residency with threaded 128 m tile preparation, near-ring
+- [x] C++ district residency with threaded 128 m tile preparation, near-ring
   collision/navigation, HLOD/occluders, and one bounded main-thread step per frame
-- [ ] **`engine/`: async tile streamer GDExtension** (load/unload around camera, priority by velocity vector)
-- [ ] **`engine/`: runtime impostor baker** for distant buildings
-- [x] Floating-origin shift to dodge float precision at distance
+- [ ] **async tile streaming on World Partition / a C++ module** (load/unload around camera, priority by velocity vector)
+- [ ] **runtime impostor baker (Nanite/HLOD + Impostor Baker)** for distant buildings
+- [x] Large World Coordinates / floating-origin to dodge float precision at distance
 - [x] Streaming debug HUD (tiles resident, VRAM, frame budget)
 - [x] Benchmark scene + captured profile
 
@@ -70,22 +70,22 @@ Goal: walk or drive 4 km in any direction with no loading screen.
 
 Goal: one city district that feels inhabited.
 
-- [x] Blockout of a coastal district: streets, sidewalks, shore, 30+ building footprints (venice_beach.tscn: 1332 real footprints, sand shore + Ocean v1, golden-hour sky)
-- [ ] Road network graph + traffic system (**`engine/` candidate after profiling**)
-  - landed: `ai/nav_grid.gd` A* grid (tested) + `ai/traffic_*` streaming kinematic
+- [x] Blockout of a coastal district: streets, sidewalks, shore, 30+ building footprints (VeniceBeach.umap: 1332 real footprints, sand shore + Ocean v1, golden-hour sky)
+- [ ] Road network graph + traffic system (**native-module candidate after profiling**)
+  - landed: `Source/GTC/AI/NavGrid` A* grid (tested) + `Source/GTC/AI/Traffic*` streaming kinematic
     cars that route on a world-baked navmesh and car-follow (queue, don't overlap).
     Still TODO: a true OSM road-graph (cars currently route a baked walkability grid).
 - [ ] Pedestrian crowds: navmesh flows, reactions (flee/gawk), spawn/despawn invisible to player
-  - landed: `npc/crowd_director.gd` streams palette/stature/gait-varied premium
+  - landed: `Source/GTC/NPC/CrowdDirector` streams palette/stature/gait-varied premium
     humans using imported rigged man/woman visuals with shared runtime animation
     retargeting; spawn/despawn around the player, ground-snapped, kept out of
     buildings via the baked navmesh. Reactions (flee) in `Pedestrian`. TODO:
     route peds *through* `NavGrid.find_path` (now that buildings are solid)
     instead of straight wander; gawk reaction. Demo:
-    `scenes/world/living_city.tscn` (crowd + traffic).
+    the LivingCity level (`Content/.../LivingCity.umap`) (crowd + traffic).
 - [x] Time-of-day cycle driving sun, streetlights, building windows
 - [ ] Weather fronts: clear → overcast → rain, wet-surface materials
-- [x] Ocean v1: Gerstner/FFT water with shoreline blend (**`engine/` candidate**)
+- [x] Ocean v1: Gerstner/FFT water with shoreline blend (**native-module candidate**)
 
 ## M5 — Play
 
@@ -102,13 +102,13 @@ Goal: it is a *game* now.
 
 Goal: the acceptance test — a 90-second in-engine trailer from a release build.
 
-- [ ] Lighting pass: GI (SDFGI/HDDAGI tuning or `engine/` solution), volumetrics
+- [ ] Lighting pass: GI (Lumen tuning or a native solution), volumetrics
 - [ ] Ocean v2: foam, wakes, buoyancy
-- [ ] Crowd density pass (**`engine/`: GPU-driven crowd rendering**)
+- [ ] Crowd density pass (**GPU-driven crowd rendering (Mass + ISM/Nanite)**)
 - [x] Cinematic camera tooling for capture
 - [ ] Performance lockdown: 60 FPS @ 1080p mid-range GPU, captured profiles
   - [x] Phase 0 deterministic release harness, strict runtime gate, and working
-    visibility-range culling (upstream issue #53)
+    distance/visibility culling
   - [ ] Capture the Phase 0 baseline on RTX 3060-class target hardware
 - [ ] Cut, score, and publish the trailer
 
@@ -116,13 +116,13 @@ Goal: the acceptance test — a 90-second in-engine trailer from a release build
 
 ## Engine track (parallel, ongoing)
 
-Lives in `engine/`; rules in [ARCHITECTURE.md](ARCHITECTURE.md). Anything
-generically useful is offered upstream to Godot.
+Native C++ modules; rules in [ARCHITECTURE.md](ARCHITECTURE.md). Reusable pieces
+stay as documented modules.
 
-- [x] godot-cpp vendored as submodule + first compiled module on all 3 platforms
-- [x] CI job building `engine/` and running its C++ tests
+- [x] UnrealBuildTool module scaffolding + first compiled C++ module on all 3 platforms
+- [x] CI job building the native modules and running their C++ automation tests
 - [ ] Streaming module (M3)
 - [ ] Impostor baker (M3)
 - [ ] Crowd/traffic simulation core (M4+, only with profile evidence)
 - [ ] Ocean simulation (M4+)
-- [ ] Upstream PR log in `docs/UPSTREAM.md` (create with first PR)
+- [ ] Module change log in `docs/MODULES.md` (create with first module)

@@ -1,7 +1,7 @@
 # AGENTS.md — repo contract for AI agents
 
 You are contributing to an original open-source open-world game built on
-Godot 4.6 (GDScript) with optional C++ GDExtension modules. Humans and agents
+Unreal Engine 5.7 (C++) with the game logic in UE5 C++ modules. Humans and agents
 follow the same rules; this file is the machine-readable summary.
 
 ## Ground truth
@@ -17,36 +17,38 @@ follow the same rules; this file is the machine-readable summary.
 ## Definition of done (every change)
 
 ```bash
-tools/check.sh   # format + lint + headless import + smoke test + unit tests
+tools/check.sh   # format + lint + UnrealBuildTool build + automation tests
 ```
 
-Must exit 0. If you cannot run Godot headless in your environment, say so
-explicitly in the PR body — do not claim checks passed.
+Must exit 0. If you cannot run UnrealBuildTool or the Unreal automation tests in
+your environment, say so explicitly in the PR body: do not claim checks passed.
 
 ## Hard rules
 
-1. `main` stays playable: `godot --path game` must boot to a controllable
-   character after your change.
-2. Typed GDScript only; tabs; `snake_case` files; `PascalCase` class names.
-3. Extract testable logic into plain `RefCounted`/static-function classes
-   (pattern: `game/scripts/player/player_motion.gd`) and add a
-   `game/tests/unit/test_*.gd` for it.
-4. Do not edit `game/addons/**` (vendored), generated `.uid` / `.import`
-   files by hand, or `game/bin/**` (build artifacts).
-5. No new autoloads, no new third-party addons, no engine-core patches
-   without an issue approved by a maintainer first.
-6. C++ in `engine/` only with profile evidence per `docs/ARCHITECTURE.md`.
+1. `main` stays playable: launching the project in the Unreal editor (or a
+   packaged build) must boot to a controllable character after your change.
+2. UE5 C++ following the project's clang-format / `.editorconfig` conventions;
+   `PascalCase` types with the UE prefix convention (`U`/`A`/`F`).
+3. Extract testable logic into plain non-UObject classes / static functions
+   (pattern: `Source/GTC/Player/PlayerMotion.*`) and add an in-module
+   `Tests/` automation test (`GTC.*` prefix) for it.
+4. Do not hand-edit `Plugins/**` (vendored), generated `.uasset`/`.umap`
+   binaries, or `Binaries/**` / `Intermediate/**` (build artifacts).
+5. No new GameInstance/World Subsystems, no new third-party plugins, no
+   engine-source patches without an issue approved by a maintainer first.
+6. Engine-feel C++ (rendering, Chaos, Mass) lands per `docs/ARCHITECTURE.md`.
 7. One concern per PR. Reference the roadmap line or issue it closes.
-8. Scene files (`.tscn`) are hand-editable text — keep diffs minimal and
-   never reformat sections you didn't change.
+8. Config files (`.ini`) and `.uproject` are hand-editable text: keep diffs
+   minimal and never reformat sections you didn't change.
 
-## Scene/scripting conventions (quick reference)
+## Gameplay/wiring conventions (quick reference)
 
-- Signals up, calls down. World scenes are self-contained (streaming-ready):
-  no cross-scene node paths; use groups (`player`, `world`) and signals.
-- Player spawns are `Marker3D` nodes in the `spawn_points` group.
-- Input actions defined in `project.godot`: `move_left/right/forward/back`,
-  `jump`, `sprint` (+ built-in `ui_cancel` for mouse release).
+- Events up, calls down. World levels are self-contained (streaming-ready):
+  no cross-level hard references; use tags/subsystems and delegates.
+- Player spawns are `APlayerStart` (or tagged spawn) actors in the level.
+- Input actions are Enhanced Input assets (IMC/IA) referenced from
+  `Config/DefaultInput.ini`: move (2D axis), jump, sprint (+ a cancel action
+  for mouse release).
 
 ## Commit/PR format
 
