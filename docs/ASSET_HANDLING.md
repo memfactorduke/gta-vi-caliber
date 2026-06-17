@@ -27,6 +27,28 @@ gitlink pointer. This is enforced by two layers:
 
 The repo-isolation guard (run before every push) remains the final backstop.
 
+## Reference resolution: CoreRedirects (required for /Game-rooted packs)
+
+Marketplace packs reference their own assets by absolute `/Game/<Pack>/...` paths (the layout you get by
+dropping a pack into the project Content root). Because this project mounts the asset submodule one level
+deep at `/Game/GTCaliberAssets/Content/...`, those internal references do not resolve as-is. The fix is a
+package-path redirect per pack root, in `Config/DefaultEngine.ini`:
+
+```ini
+[CoreRedirects]
++PackageRedirects=(OldName="/Game/CityBeachStrip/",NewName="/Game/GTCaliberAssets/Content/CityBeachStrip/",MatchSubstring=true)
++PackageRedirects=(OldName="/Game/Characters/",NewName="/Game/GTCaliberAssets/Content/Characters/",MatchSubstring=true)
+```
+
+Verified 2026-06-17: with these two rules the CityBeachStrip map resolves all 1,109 dependencies (0
+missing, was 1,104 missing) and loads ~55k actors with geometry, lighting, and level-instances intact;
+the Mannequin resolves its materials and skeleton. CoreRedirects load at engine startup, so editing them
+requires an editor restart.
+
+**Recurring cost (accepted):** every future `/Game/`-rooted marketplace pack added to the submodule
+needs ONE more redirect line mapping `/Game/<PackRoot>/` to `/Game/GTCaliberAssets/Content/<PackRoot>/`.
+That is the trade for not relocating the submodule to the project Content root.
+
 ## Provenance — multi-source (log per asset set, auditable per actor entry)
 
 The asset repo is **not single-source.** Each set keeps its own source + license. Mirror the
