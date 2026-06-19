@@ -41,21 +41,21 @@ the editor-protect hook + one-editor rule forbid it; the user/CI runs that.
 - [x] **Buoyancy** — sample N hull points against the surface height → Archimedes
   buoyant force + restoring torque + linear/angular drag at the waterline.
   `GTC.World.Ocean.Buoyancy`.
-- [x] **Wake & foam** — from boat speed/heading + hull, Kelvin wake half-angle,
+- [ ] **Wake & foam** — from boat speed/heading + hull, Kelvin wake half-angle,
   wake strength, foam spawn rate; whitecap foam from wave steepness/Jacobian.
   `GTC.World.Ocean.Wake`.
-- [x] **Shoreline** — shore blend + wetness band from wave height vs terrain
+- [ ] **Shoreline** — shore blend + wetness band from wave height vs terrain
   depth: shallow-water whitening, run-up wet line that follows the swash.
   `GTC.World.Ocean.Shore`.
 
 ### Weather / lighting
-- [x] **WeatherFront** — spatial+temporal clear→overcast→rain front profile
+- [ ] **WeatherFront** — spatial+temporal clear→overcast→rain front profile
   (a moving front line over the map) and the **MPC_GTCGlobals** scalar values it
   drives (`world_wetness`, `world_night_amount`). `GTC.World.WeatherFront`.
-- [x] **SurfaceWetness** — rain → accumulation/drying curve so wetness *lags*
+- [ ] **SurfaceWetness** — rain → accumulation/drying curve so wetness *lags*
   rain (puddles build, streets dry slowly). Feeds MPC `world_wetness`.
   `GTC.World.Wetness`.
-- [x] **NightLights** — streetlight/lit-window activation vs time-of-day:
+- [ ] **NightLights** — streetlight/lit-window activation vs time-of-day:
   hysteretic dusk-on/dawn-off threshold + per-light jitter so the city doesn't
   pop on in unison. Drives `world_night_amount`. `GTC.World.NightLights`.
 
