@@ -27,8 +27,9 @@ So in this module the streaming core is greenfield. Build it fresh under
   `FTileStreamPriority`: anticipatory look-ahead distance so tiles *ahead* of the
   camera's motion load first; behind-and-far are least urgent.
   `World/Streaming/TileStreamPriority.{h,cpp}`, tests `GTC.World.Streaming.Priority.*`.
-- [ ] **Boundary hysteresis** — separate load vs. unload radii (+ optional dwell)
+- [x] **Boundary hysteresis** — separate load vs. unload radii (+ optional dwell)
   so tiles straddling a ring boundary don't thrash load/unload every frame.
+  `World/Streaming/TileHysteresis.{h,cpp}`, tests `GTC.World.Streaming.Hysteresis.*`.
 - [ ] **Per-tile LOD / impostor distance selection** — choose a tile's detail
   band (full / HLOD / impostor / unloaded) from camera distance with hysteresis.
 - [ ] **Frame-budget scheduler** — one bounded step per frame: admit at most N
