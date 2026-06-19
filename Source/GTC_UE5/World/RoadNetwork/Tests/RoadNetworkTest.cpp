@@ -188,6 +188,33 @@ void FRoadNetworkSpec::Define()
         const int32 B = GtcRoadNetworkNodeAt(Net, FVector(100, 0, 0));
         TestEqual(TEXT("disjoint components -> empty path"), Net.FindPath(A, B).Num(), 0);
     });
+
+    // GTC-original (no parity oracle): the segment-topology accessors a traffic
+    // agent uses to walk the graph segment->segment and turn at junctions.
+    It("exposes segment endpoints, length, and node positions", [this]()
+    {
+        FRoadNetwork Net(1.0);
+        Net.AddPolyline(GtcRoadNetworkLine(FVector(0, 0, 0), FVector(10, 0, 0)));
+        const int32 Start = GtcRoadNetworkNodeAt(Net, FVector(0, 0, 0));
+        const int32 Goal = GtcRoadNetworkNodeAt(Net, FVector(10, 0, 0));
+
+        // Find the directed segment Start->Goal and assert its topology round-trips.
+        const TArray<int32>& Out = Net.SegmentsFrom(Start);
+        TestEqual(TEXT("one outgoing segment from start"), Out.Num(), 1);
+        const int32 Seg = Out[0];
+        TestEqual(TEXT("segment start node"), Net.SegmentStartNode(Seg), Start);
+        TestEqual(TEXT("segment end node"), Net.SegmentEndNode(Seg), Goal);
+        TestTrue(TEXT("segment length ~= 10 m"), FMath::Abs(Net.SegmentLength(Seg) - 10.0) <= Eps);
+        TestTrue(TEXT("node position round-trips"),
+            Net.NodePosition(Goal).Equals(FVector(10, 0, 0), Eps));
+
+        // Out-of-range indices degrade gracefully instead of asserting.
+        TestEqual(TEXT("bad seg -> end node -1"), Net.SegmentEndNode(999), -1);
+        TestEqual(TEXT("bad seg -> start node -1"), Net.SegmentStartNode(-1), -1);
+        TestTrue(TEXT("bad seg -> length 0"), Net.SegmentLength(999) == 0.0);
+        TestTrue(TEXT("bad node -> ZeroVector"),
+            Net.NodePosition(999).Equals(FVector::ZeroVector, Eps));
+    });
 }
 
 #endif // WITH_AUTOMATION_TESTS
