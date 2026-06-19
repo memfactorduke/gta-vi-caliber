@@ -1,0 +1,95 @@
+# Payload TEMPLATE for ProgrammaticToolset.execute_tool_script (paste as the "script" arg).
+# Applies one PAGE of the Ocean Drive placement plan into the live editor.
+#
+# HOW IT IS DRIVEN (matches the gtc_interiors pattern):
+#   The driver (Claude, with Unreal MCP up) reads placement_plan.json on the host,
+#   chunks `actors` into pages of <=50, and for each page injects that page as the
+#   ACTORS literal below + sets PURGE=True only on the FIRST page. Data is injected
+#   inline (not read from disk) because execute_tool_script's sandbox only allows
+#   imports time/math/json/copy/re/datetime — no guaranteed file IO.
+#
+# IDEMPOTENT: page 0 first deletes every actor in our namespace (folder
+# GTC_CityGen/OceanDrive/* or label prefix GTC_CG_OceanDrive_), so re-applying never
+# duplicates and never touches the user's / C++ actors.
+#
+# PRECONDITION: caller must confirm EditorAppToolset.IsPIERunning == False first
+# (mutations silently no-op during PIE — see gtc_interiors/PROGRESS.md).
+import json
+
+# ---- injected by the driver, per page ----
+NAMESPACE = "GTC_CityGen/OceanDrive"
+PREFIX = "GTC_CG_OceanDrive_"
+PURGE = False                 # True only on the first page
+SLICE_BBOX = {"min": {"x": 249000, "y": -61000, "z": -1000},
+              "max": {"x": 321000, "y": 61000, "z": 30000}, "isValid": True}
+ACTORS = []                   # <-- driver injects this page's actor dicts here
+# ------------------------------------------
+
+def call(n, a):
+    return execute_tool(n, json.dumps(a))["returnValue"]
+
+def find(name, bbox):
+    return call("editor_toolset.toolsets.scene.SceneTools.find_actors",
+                {"name": name, "tag": "", "collision_channels": [], "bounds": bbox})
+
+def folder_of(ref):
+    try:
+        return call("editor_toolset.toolsets.actor.ActorTools.get_actor_folder", {"actor": {"refPath": ref}})
+    except Exception:
+        return ""
+
+def destroy(ref):
+    return call("editor_toolset.toolsets.actor.ActorTools.destroy_actor", {"actor": {"refPath": ref}})
+
+def spawn_asset(path, name, loc, rot, snap=False):
+    return call("editor_toolset.toolsets.scene.SceneTools.add_to_scene_from_asset",
+                {"asset_path": path, "name": name, "xform": {"location": loc, "rotation": rot}, "snap_to_ground": snap})
+
+def spawn_class(cls, name, loc, rot):
+    return call("editor_toolset.toolsets.scene.SceneTools.add_to_scene_from_class",
+                {"actor_type": {"refPath": cls}, "name": name, "xform": {"location": loc, "rotation": rot}, "snap_to_ground": False})
+
+def set_xform(a, loc, scale):
+    return call("editor_toolset.toolsets.actor.ActorTools.set_actor_transform",
+                {"actor": a, "xform": {"location": loc, "scale": scale}, "worldspace": True})
+
+def set_label(a, t):
+    call("editor_toolset.toolsets.actor.ActorTools.set_label", {"actor": a, "label": t})
+
+def set_folder(a, f):
+    call("editor_toolset.toolsets.scene.SceneTools.set_actor_folder", {"actor": a, "folder_path": f})
+
+def set_props(a, vals):
+    call("editor_toolset.toolsets.object.ObjectTools.set_properties", {"instance": a, "values": json.dumps(vals)})
+
+def purge():
+    n = 0
+    for d in find("", SLICE_BBOX):
+        ref = d["refPath"]
+        f = folder_of(ref)
+        lab = d["label"] if "label" in d else ""
+        if (isinstance(f, str) and f.startswith(NAMESPACE)) or (isinstance(lab, str) and lab.startswith(PREFIX)):
+            destroy(ref); n += 1
+    return n
+
+def run():
+    purged = purge() if PURGE else 0
+    spawned, errors = 0, []
+    for a in ACTORS:
+        loc = a["location"]; rot = a["rotation"]; name = a["label"]
+        try:
+            if a["spawn"] == "class":
+                act = spawn_class(a["ref"], name, loc, rot)
+            else:
+                # 'asset' and 'level_instance' both go through add_to_scene_from_asset;
+                # if LI_ .umap level instances need a dedicated API, the M4 pilot will catch it.
+                act = spawn_asset(a["ref"], name, loc, rot, snap=False)
+            set_xform(act, loc, a.get("scale", {"x": 1, "y": 1, "z": 1}))
+            set_label(act, name)
+            set_folder(act, a["folder"])
+            if a.get("props"):
+                set_props(act, a["props"])
+            spawned += 1
+        except Exception as e:
+            errors.append({"label": name, "ref": a["ref"], "err": str(e)})
+    return {"purged": purged, "spawned": spawned, "errors": errors[:20], "page_size": len(ACTORS)}

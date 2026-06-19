@@ -1,0 +1,71 @@
+{
+  "_doc": "Knobs for the Ocean Drive vertical slice. All distances in cm; everything snaps to GRID. Edit these, re-run generate_slice.py. See README.md.",
+  "slice_id": "OceanDrive",
+  "seed": 20260618,
+  "grid": 800,
+
+  "_geo": "Barrier-island slice on TRUE Caliber City coordinates so it is literally the future city's Ocean Drive. Bay is west of x=bay_edge, ocean east of x=ocean_edge; land between.",
+  "x_min": 249600,
+  "x_max": 320000,
+  "y_min": -60000,
+  "y_max": 60000,
+  "bay_edge_x": 249600,
+  "ocean_edge_x": 320000,
+  "ground_z": 20,
+
+  "_foundation": "World base for the new map. 'cesium' => georeferenced real Miami terrain + CesiumSunSky (no flat plane, no basic sky rig); the stylized CityBeachStrip city sits on top. 'flat' => make_open_city's flat ground plane + sky rig. lat/lon = build_miami.py's South Beach origin. tileset 'world_terrain' avoids photoreal buildings clashing with our stylized ones; 'google_3d' streams the real city instead.",
+  "foundation": "cesium",
+  "cesium": {
+    "lat": 25.7907,
+    "lon": -80.1300,
+    "height_m": 0.0,
+    "tileset": "world_terrain",
+    "world_terrain_ion_asset_id": 1,
+    "google_3d_tiles_ion_asset_id": 2275207,
+    "snap_buildings_to_terrain": true
+  },
+
+  "_roads": "N-S roads run along Y (the island long axis); cross streets run along X every cross_spacing. centerline x for each N-S road + class. ROW half-widths come from road_classes.",
+  "ns_roads": [
+    { "name": "OceanDrive", "x": 312000, "class": "arterial" },
+    { "name": "Collins",    "x": 295200, "class": "arterial" },
+    { "name": "Washington", "x": 278400, "class": "local" },
+    { "name": "Bayside",    "x": 258400, "class": "local" }
+  ],
+  "cross_spacing": 16000,
+  "cross_class": "local",
+
+  "road_classes": {
+    "arterial":  { "h_row": 2400, "carriageway": 3200 },
+    "collector": { "h_row": 1800, "carriageway": 1600 },
+    "local":     { "h_row": 1200, "carriageway": 1600 },
+    "alley":     { "h_row":  800, "carriageway":  800 }
+  },
+
+  "_overlap": "Constants from the spec overlap_rules. setback dilates ROWs into the no-build BLOCKMASK; plot_inset is the perimeter gap inside a block; side_rear_inset shrinks the building inside its plot.",
+  "setback": 400,
+  "plot_inset": 800,
+  "side_rear_inset": 100,
+  "coastline_buffer": 16000,
+  "furniture_lane": 150,
+
+  "_columns": "Per gap between adjacent N-S roads (outer->ocean side). role drives building palette; party_wall=true => plots share Y walls (gap 0) on the signature Art Deco row; frontage = setback toward the fronting road (east).",
+  "columns": [
+    { "between": ["Bayside", "Washington"],  "role": "background", "party_wall": false, "frontage": 600, "faces": "east" },
+    { "between": ["Washington", "Collins"],  "role": "midrise",    "party_wall": false, "frontage": 200, "faces": "east" },
+    { "between": ["Collins", "OceanDrive"],  "role": "hero_row",   "party_wall": true,  "frontage": 160, "faces": "east" }
+  ],
+
+  "_hero": "Hero hotels (LI_Resort) anchor the strip ends of the hero_row column; mid-rise fills between. hero_end_blocks = how many blocks at each Y extreme are heroes.",
+  "hero_end_blocks": 1,
+
+  "_recenter": "If true, the emitted placement_plan + graphs are shifted so the slice center sits at world origin (the Cesium georeference point = real South Beach). The solver keeps true spec coords internally (overlap is translation-invariant), so the slice still composes into the full city later. header.world_offset records the shift.",
+  "recenter_to_origin": true,
+
+  "player_start": { "x": 311000, "y": 0, "yaw": 180 },
+
+  "namespace_folder": "GTC_CityGen/OceanDrive",
+  "label_prefix": "GTC_CG_OceanDrive_",
+
+  "output_dir_rel": "Content/GTCaliberAssets/Content/CityGen"
+}

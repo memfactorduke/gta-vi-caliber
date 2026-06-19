@@ -1,0 +1,40 @@
+# Ready-to-run payload for ProgrammaticToolset.execute_tool_script (paste as the "script" arg).
+# SIMPLIFIED: BP_GTC_InteriorModule is now SELF-CONTAINED (furnished + built-in RoomLight +
+# embedded openable DoorActor child = BP_DoorFrame). So rollout = place the module (one actor)
+# at each building's entrance + a NavMeshBoundsVolume. Doorway faces local +X.
+# Picks the ground-floor "Base_Door" nearest OPEN, faces the module's doorway toward OPEN.
+# REQUIRES a stable editor + intent to SAVE THE LEVEL afterwards (placements are not external
+# actors, so they vanish on restart unless the level is saved).
+import json, math
+L = "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/CityBeachStrip.CityBeachStrip:PersistentLevel."
+MODULE = "/Game/GTCaliberAssets/Content/GTC_Interiors/Blueprints/BP_GTC_InteriorModule"
+FOLDER = "GTC_Interiors/Pilot_Building01"
+OPEN = (-4000.0, 650.0)         # open-space ref the doorway should face (pool-deck center)
+BBOX = {"min": {"x": -6950, "y": -2450, "z": 0}, "max": {"x": -1699, "y": 3753, "z": 420}, "isValid": True}
+DEPTH = 330.0
+
+def call(n, a): return execute_tool(n, json.dumps(a))["returnValue"]
+def run():
+    doors = call("editor_toolset.toolsets.scene.SceneTools.find_actors",
+                 {"name": "Base_Door", "tag": "", "collision_channels": [], "bounds": BBOX})
+    cand = []
+    for d in doors:
+        t = call("editor_toolset.toolsets.actor.ActorTools.get_actor_transform", {"actor": {"refPath": d["refPath"]}})
+        lo = t["location"]
+        if lo["z"] > 400: continue
+        cand.append((math.hypot(lo["x"]-OPEN[0], lo["y"]-OPEN[1]), d["refPath"], lo))
+    if not cand: return {"error": "no ground-floor doors"}
+    cand.sort(key=lambda c: c[0])
+    _, dref, D = cand[0]
+    fx, fy = OPEN[0]-D["x"], OPEN[1]-D["y"]; fl = math.hypot(fx, fy) or 1.0; fx, fy = fx/fl, fy/fl
+    yaw = math.degrees(math.atan2(fy, fx))
+    rc = {"x": D["x"]-fx*DEPTH, "y": D["y"]-fy*DEPTH, "z": D["z"]}
+    room = call("editor_toolset.toolsets.scene.SceneTools.add_to_scene_from_asset",
+                {"asset_path": MODULE, "name": "GTC_Room", "xform": {"location": rc, "rotation": {"pitch":0,"yaw":yaw,"roll":0}}, "snap_to_ground": False})
+    nav = call("editor_toolset.toolsets.scene.SceneTools.add_to_scene_from_class",
+               {"actor_type": {"refPath": "/Script/NavigationSystem.NavMeshBoundsVolume"}, "name": "GTC_NavBounds", "xform": {"location": {"x": rc["x"], "y": rc["y"], "z": rc["z"]+150}}, "snap_to_ground": False})
+    call("editor_toolset.toolsets.actor.ActorTools.set_actor_transform",
+         {"actor": nav, "xform": {"location": {"x": rc["x"], "y": rc["y"], "z": rc["z"]+150}, "scale": {"x":5.0,"y":5.0,"z":3.5}}, "worldspace": True})
+    for a in (room, nav): call("editor_toolset.toolsets.scene.SceneTools.set_actor_folder", {"actor": a, "folder_path": FOLDER})
+    # IMPORTANT: to persist, the caller must save the LEVEL (these are not external actors).
+    return {"chosen_door": dref, "door_loc": D, "room": room["refPath"], "nav": nav["refPath"], "yaw": yaw, "candidates": len(cand)}

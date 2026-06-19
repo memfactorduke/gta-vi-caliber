@@ -64,13 +64,34 @@ the editor-protect hook + one-editor rule forbid it; the user/CI runs that.
 > only remaining M6 atmosphere work is the **visual hookup**, which needs the
 > live editor — see below. Stop-and-ask reached.
 
-## Blocked on the live editor (stop-and-ask when reached)
+## Live-editor visual hookup
 
-The visual hookup is **not** pure-core and needs the running editor:
-- Lumen GI / volumetric fog tuning for trailer-grade night lighting.
-- The ocean **material graph** (Gerstner verts, foam mask, depth blend) and
-  wiring `MPC_GTCGlobals` / `MPC_GTCWeather` into facade/road/water materials.
-- Spawning/placing the buoyant boat pawn + emitter hookup for wake/foam.
-- Applying any of the above parameter cores onto real components in-editor.
+### Done (2026-06-19, live editor)
+- [x] **Ocean shoreline foam** — added a `DepthFade`-based foam term to the
+  CityBeachStrip ocean master `MM_OceanWater` (mask `(1-DepthFade(ShoreFoamWidth))^1.6
+  * ShoreFoamAmount` lerps base colour → `ShoreFoamColor`); tuned on `MI_Ocean`
+  (width 800, amount 1.3, near-white). Replaces the hard waterline with a natural
+  foam band. **Saved** to both `.uasset`s. Recipe: `apply_ocean_foam.py`
+  (idempotent, self-saving). Verified in daylight via a temp sun rig.
 
-When the next useful step is one of these, **stop and ask** for the live editor.
+> **Editor visual loop that works here** (the prior session said capture needs
+> the user): `unreal_capture_viewport` returns STALE frames — instead drive the
+> camera with `UnrealEditorSubsystem.set_level_viewport_camera_info`, fire
+> `HighResShot <w>x<h>` via `execute_console_command`, and Read the PNG from
+> `Saved/Screenshots/MacEditor/`. `LevelEditorSubsystem.editor_set_viewport_realtime(True)`
+> exists. Editor-static has NO sun (the weather controller's sun is PIE-only), so
+> spawn a temp movable DirectionalLight + SkyAtmosphere + realtime SkyLight
+> (tagged, then destroy) to grade in daylight. vibeue `execute_python_code` has a
+> 30s timeout — `recompile_material` can exceed it (edits still apply); MI param
+> sets + post-compile saves are fast. The ocean = 6 planes at X≈69000, Z=-500
+> using `MI_Ocean`; `MPC_GTCGlobals` is currently UNUSED by any material.
+
+### Still to do (needs the live editor)
+- [ ] Lumen GI / volumetric fog tuning for trailer-grade night lighting.
+- [ ] Daytime turquoise re-grade of `MI_Ocean` (DeepWater/ShallowWater) + optional
+  wave-modulated (non-uniform) foam.
+- [ ] Wire `MPC_GTCGlobals` (`world_wetness`/`world_night_amount`) into the
+  facade/road/water materials (currently unreferenced) for the wet-neon look.
+- [ ] Spawn the buoyant boat pawn + emitter hookup for wake/foam.
+- [ ] Apply the parameter cores onto real components (needs the C++ adapter
+  wiring built into the editor → module rebuild + relaunch, user-gated).
