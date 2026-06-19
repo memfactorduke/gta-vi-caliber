@@ -62,8 +62,10 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
       which approach proceeds, who yields/stops, deterministic tie-break, plus a
       stop-line-as-stopped-leader gap for FTrafficModel, so cars don't pile
       through a junction. `GTC.AI.Traffic.Intersection`. ✅ oracle 11/11.
-- [ ] **Turn / lane choice at junctions** (`FTurnChoice`): pick the next lane
-      at a node (continue / turn), respecting the planned route. `GTC.AI.Traffic.Turn`.
+- [x] **Turn / lane choice at junctions** (`FTurnChoice`): pick the next lane
+      at a node (continue / turn), respecting the planned route, classify the
+      maneuver (straight/left/right/U-turn), straightest free-roam fallback.
+      `GTC.AI.Traffic.Turn`. ✅ oracle 12/12.
 - [x] **Pedestrian path request** (grid A* `FNavGrid`): point-to-point path over
       a walkability grid so peds route *through* walkable space (around solid
       buildings) instead of straight-wandering; waypoints feed
@@ -100,3 +102,6 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
   `GTC.NPC.NavGrid`). Pedestrian octile grid A* (corner-cut prevention) + cell↔world
   mapping; routes peds around solid buildings to feed FNpcSteering::AdvanceWaypoint.
   Out-of-tree oracle 16/16. In-editor run pending.
+- `FTurnChoice` (`AI/Traffic/TurnChoice.{h,cpp}` + `Tests/TurnChoiceTest.cpp`,
+  `GTC.AI.Traffic.Turn`). Junction lane choice (route-follow + straightest fallback)
+  + maneuver classification. Out-of-tree oracle 12/12. In-editor run pending.
