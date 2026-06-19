@@ -58,9 +58,10 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
       position on one lane, find each car's leader + bumper gap (feeds
       `FTrafficModel`), so a queue forms without overlap. `GTC.AI.Traffic.Lane`.
       ✅ oracle 11/11.
-- [ ] **Intersection right-of-way / stop arbitration** (`FIntersection`):
-      which approach proceeds, who yields/stops, deterministic tie-break, so
-      cars don't pile through a junction. `GTC.AI.Traffic.Intersection`.
+- [x] **Intersection right-of-way / stop arbitration** (`FIntersection`):
+      which approach proceeds, who yields/stops, deterministic tie-break, plus a
+      stop-line-as-stopped-leader gap for FTrafficModel, so cars don't pile
+      through a junction. `GTC.AI.Traffic.Intersection`. ✅ oracle 11/11.
 - [ ] **Turn / lane choice at junctions** (`FTurnChoice`): pick the next lane
       at a node (continue / turn), respecting the planned route. `GTC.AI.Traffic.Turn`.
 - [ ] **Pedestrian path request** (grid A* `FNavGrid`): point-to-point path over
@@ -88,3 +89,6 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
   `GTC.World.RoadRoute`). Node path → drivable centerline (+ end threading);
   completes FRoadNetwork A* → FRoadRoute → FLanePath → FTrafficModel pipeline.
   Out-of-tree oracle 11/11. In-editor run pending.
+- `FIntersection` (`AI/Traffic/Intersection.{h,cpp}` + `Tests/IntersectionTest.cpp`,
+  `GTC.AI.Traffic.Intersection`). Right-of-way arbitration (priority → FCFS →
+  yield-to-right) + stop-line gap. Out-of-tree oracle 11/11. In-editor run pending.
