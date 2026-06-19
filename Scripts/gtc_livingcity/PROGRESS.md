@@ -68,10 +68,10 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
       a walkability grid so peds route *through* walkable space (around solid
       buildings) instead of straight-wandering; waypoints feed
       `FNpcSteering::AdvanceWaypoint`. `GTC.NPC.NavGrid`.
-- [ ] **Flee/gawk reaction FSM** (`FReactionState`): rising-edge triggers +
+- [x] **Flee/gawk reaction FSM** (`FReactionState`): rising-edge triggers +
       cooldowns + hysteresis over `FNpcReaction::Decide`, mirroring the repo's
       bark/flinch idiom, so a citizen commits to a reaction instead of
-      flickering. `GTC.NPC.Decision.ReactionState`.
+      flickering. `GTC.NPC.Decision.ReactionState`. ✅ oracle 16/16.
 - [ ] **Crowd spawn/despawn budget** (`FCrowdBudget`): from live count, target,
       ring radii, per-pass cap and per-citizen distances, decide how many to
       spawn and which to retire — invisible to the player. `GTC.NPC.CrowdBudget`.
@@ -92,3 +92,7 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
 - `FIntersection` (`AI/Traffic/Intersection.{h,cpp}` + `Tests/IntersectionTest.cpp`,
   `GTC.AI.Traffic.Intersection`). Right-of-way arbitration (priority → FCFS →
   yield-to-right) + stop-line gap. Out-of-tree oracle 11/11. In-editor run pending.
+- `FReactionState` (`NPC/Decision/ReactionState.{h,cpp}` + `Tests/ReactionStateTest.cpp`,
+  `GTC.NPC.Decision.ReactionState`). Rising-edge + hysteresis FSM over FNpcReaction
+  (instant escalation w/ edge, held de-escalation). Out-of-tree oracle 16/16
+  (enum FSM); UE test also covers the FNpcReaction verb bridge. In-editor run pending.
