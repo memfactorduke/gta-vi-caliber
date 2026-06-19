@@ -52,7 +52,7 @@ the editor-protect hook + one-editor rule forbid it; the user/CI runs that.
 - [x] **WeatherFront** — spatial+temporal clear→overcast→rain front profile
   (a moving front line over the map) and the **MPC_GTCGlobals** scalar values it
   drives (`world_wetness`, `world_night_amount`). `GTC.World.WeatherFront`.
-- [ ] **SurfaceWetness** — rain → accumulation/drying curve so wetness *lags*
+- [x] **SurfaceWetness** — rain → accumulation/drying curve so wetness *lags*
   rain (puddles build, streets dry slowly). Feeds MPC `world_wetness`.
   `GTC.World.Wetness`.
 - [ ] **NightLights** — streetlight/lit-window activation vs time-of-day:
