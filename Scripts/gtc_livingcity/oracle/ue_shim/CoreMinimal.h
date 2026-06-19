@@ -84,6 +84,9 @@ struct TArray
     void Reserve(int32 N) { V.reserve(static_cast<size_t>(N)); }
     void Reset() { V.clear(); }
     void Empty() { V.clear(); }
+    // Order-NOT-preserving remove: swap the last element into Index, then shrink.
+    void RemoveAtSwap(int32 Index) { V[static_cast<size_t>(Index)] = V.back(); V.pop_back(); }
+    T Pop() { T X = V.back(); V.pop_back(); return X; }
 
     T& operator[](int32 I) { return V[static_cast<size_t>(I)]; }
     const T& operator[](int32 I) const { return V[static_cast<size_t>(I)]; }

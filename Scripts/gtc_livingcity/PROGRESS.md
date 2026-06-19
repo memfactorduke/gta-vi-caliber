@@ -64,10 +64,10 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
       through a junction. `GTC.AI.Traffic.Intersection`. ✅ oracle 11/11.
 - [ ] **Turn / lane choice at junctions** (`FTurnChoice`): pick the next lane
       at a node (continue / turn), respecting the planned route. `GTC.AI.Traffic.Turn`.
-- [ ] **Pedestrian path request** (grid A* `FNavGrid`): point-to-point path over
+- [x] **Pedestrian path request** (grid A* `FNavGrid`): point-to-point path over
       a walkability grid so peds route *through* walkable space (around solid
       buildings) instead of straight-wandering; waypoints feed
-      `FNpcSteering::AdvanceWaypoint`. `GTC.NPC.NavGrid`.
+      `FNpcSteering::AdvanceWaypoint`. `GTC.NPC.NavGrid`. ✅ oracle 16/16.
 - [x] **Flee/gawk reaction FSM** (`FReactionState`): rising-edge triggers +
       cooldowns + hysteresis over `FNpcReaction::Decide`, mirroring the repo's
       bark/flinch idiom, so a citizen commits to a reaction instead of
@@ -96,3 +96,7 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
   `GTC.NPC.Decision.ReactionState`). Rising-edge + hysteresis FSM over FNpcReaction
   (instant escalation w/ edge, held de-escalation). Out-of-tree oracle 16/16
   (enum FSM); UE test also covers the FNpcReaction verb bridge. In-editor run pending.
+- `FNavGrid` (`NPC/Navigation/NavGrid.{h,cpp}` + `Tests/NavGridTest.cpp`,
+  `GTC.NPC.NavGrid`). Pedestrian octile grid A* (corner-cut prevention) + cell↔world
+  mapping; routes peds around solid buildings to feed FNpcSteering::AdvanceWaypoint.
+  Out-of-tree oracle 16/16. In-editor run pending.
