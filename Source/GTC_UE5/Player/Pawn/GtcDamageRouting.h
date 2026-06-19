@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -12,7 +12,7 @@ struct FPlayerHealthModel;
  * armor-ownership resolution (docs/W3_WIRING_NOTES.md, "Armor ownership —
  * RESOLVED", commit f0c0c36).
  *
- * The resolution retires the upstream Godot stats->model->health double-soak:
+ * The resolution retires the upstream the reference stats->model->health double-soak:
  * the PlayerStats armor pool is the SOLE armor owner; the health model's armor
  * pool is neutralized (the owning UPlayerHealthComponent constructs its
  * FPlayerHealthModel with ArmorMax = 0, so AddArmor clamps to 0 and Apply soaks

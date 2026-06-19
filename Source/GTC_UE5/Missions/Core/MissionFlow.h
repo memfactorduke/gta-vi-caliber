@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -7,21 +7,21 @@
 /**
  * Pure sequencing + fail-condition helpers layered on a mission's objective set.
  *
- * Godot parity: game/scripts/missions/mission_flow.gd (RefCounted, all-static).
+ * the reference parity: game/scripts/missions/mission_flow.gd (RefCounted, all-static).
  * MissionObjectives owns the objective set and done-flags; this decides which
  * objective is CURRENT (open-world games show one at a time with a waypoint), formats the HUD
  * line, and answers whether a fail condition (timer, player death) has tripped.
  * Static, scene-free, RNG-free — unit-tested headless.
  *
- * Typed-port gap: Godot passes an Array of {id, text, done} Dictionaries; here
+ * Typed-port gap: the reference passes an Array of {id, text, done} Dictionaries; here
  * that is FFlowObjective. Current() returns an empty (invalid) objective in place
- * of Godot's empty-{} sentinel. Waypoints are a TMap<FString,FVector> (Godot
+ * of the reference empty-{} sentinel. Waypoints are a TMap<FString,FVector> (Godot
  * id -> Vector3 Dictionary).
  */
 class GTC_UE5_API MissionFlow
 {
 public:
-    /** Sentinel returned when no objective is current (Godot NO_INDEX). */
+    /** Sentinel returned when no objective is current (the reference NO_INDEX). */
     static constexpr int32 NoIndex = -1;
 
     /** One objective row: {id, text, done}. bValid marks the empty-{} sentinel. */

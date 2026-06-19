@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -7,18 +7,18 @@
 /**
  * Pure movement math for the player controller.
  *
- * Direct port of the Godot `PlayerMotion` (RefCounted) static helpers at
+ * Direct port of the the reference `PlayerMotion` (RefCounted) static helpers at
  * `game/scripts/player/player_motion.gd`. Static methods only, no scene access —
  * the same testable-core pattern as FCameraFeel / FGpsNavigation. This is the
  * canonical source of truth for the camera-relative move-direction convention
  * (FCameraFeel's recenter test reproduces `DirectionFromInput` inline).
  *
- * Double precision throughout, to match the GDScript float math (FVector /
- * FVector2D components are doubles in UE5). Work happens in the Godot RH Y-up
+ * Double precision throughout, to match the the reference implementation float math (FVector /
+ * FVector2D components are doubles in UE5). Work happens in the the reference RH Y-up
  * frame: forward input (0, -1) at yaw 0 travels -Z, the horizontal plane is XZ,
  * and `up` is +Y. The rotation in `DirectionFromInput` is implemented as the
- * explicit Godot right-handed rotation about +Y (NOT FVector::RotateAngleAxis,
- * whose handedness/axis convention differs), so the parity oracle holds bit-for-
+ * explicit the reference right-handed rotation about +Y (NOT FVector::RotateAngleAxis,
+ * whose handedness/axis convention differs), so the reference behavior holds bit-for-
  * bit.
  *
  * NO Godot->UE Z-up axis remap is baked in here — the model stays in the Godot
@@ -31,7 +31,7 @@
  */
 struct GTC_UE5_API FPlayerMotion
 {
-    /** Planar tolerance mirroring the Godot is_zero_approx / length guards. */
+    /** Planar tolerance mirroring the the reference is_zero_approx / length guards. */
     static constexpr double Eps = 1e-4;
 
     /**

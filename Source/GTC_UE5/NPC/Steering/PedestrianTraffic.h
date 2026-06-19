@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -11,20 +11,20 @@
  * nearby car positions+velocities into a threat score, a curb go/no-go decision,
  * and a lateral dodge impulse.
  *
- * Direct port of the Godot `PedestrianTraffic` (RefCounted) at
+ * Direct port of the the reference `PedestrianTraffic` (RefCounted) at
  * `game/scripts/npc/pedestrian_traffic.gd`. All static, FVector-in /
- * scalar-or-FVector-out, no UObject — unit-tested headless via the parity oracle
+ * scalar-or-FVector-out, no UObject — unit-tested headless via the reference behavior
  * (Tests/PedestrianTrafficTest.cpp, prefix GTC.NPC.Steering.PedestrianTraffic).
  *
- * Double precision throughout, to match the GDScript float math. Work happens in
- * the XZ plane (Godot Y-up); inputs are flattened with FNpcSteering::Ground().
+ * Double precision throughout, to match the the reference implementation float math. Work happens in
+ * the XZ plane (the reference Y-up); inputs are flattened with FNpcSteering::Ground().
  *
  * NOTE: no Godot->UE Z-up axis remap is baked in here — the model stays in the
- * Godot XZ frame so the ported unit tests match the oracle bit-for-bit. Porting
+ * the reference XZ frame so the ported unit tests match the oracle bit-for-bit. Porting
  * the axis convention to UE's Z-up space is a DEFERRED Wave-3 concern.
  *
  * PURE-CORE boundary: this is ONLY the per-agent traffic math, computed from
- * caller-supplied pedestrian + car positions / velocities. The Godot `cars`
+ * caller-supplied pedestrian + car positions / velocities. The the reference `cars`
  * Array of `{pos, vel}` dictionaries maps to a TArray<FCar>. Wiring this into a
  * live pedestrian agent (gathering nearby cars, blending dodge into combine,
  * gating curb-stepping) is the deferred Wave-3 adapter — NOT implemented here and
@@ -32,7 +32,7 @@
  */
 struct GTC_UE5_API FPedestrianTraffic
 {
-    /** Planar tolerance mirroring the Godot `EPSILON` constant. */
+    /** Planar tolerance mirroring the the reference `EPSILON` constant. */
     static constexpr double Epsilon = 0.0001;
 
     /** One car's planar state — the UE analogue of the Godot {pos, vel} dictionary. */
@@ -92,7 +92,7 @@ struct GTC_UE5_API FPedestrianTraffic
     /**
      * The most threatening car around the pedestrian. Index is -1 and Threat 0.0
      * when nothing qualifies. Order-preserving: a strict > keeps the first car on a
-     * tie (mirrors the Godot loop).
+     * tie (mirrors the the reference loop).
      */
     static FThreat NearestThreat(
         const FVector& PPos,

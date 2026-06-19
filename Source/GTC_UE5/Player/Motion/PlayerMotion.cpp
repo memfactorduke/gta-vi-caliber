@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "PlayerMotion.h"
 
@@ -7,10 +7,10 @@
 namespace
 {
     /**
-     * Godot's `move_toward(from, to, delta)`: move From toward To by at most Delta,
-     * never overshooting. Matches GDScript semantics (clamps to To once within
-     * Delta, treats a negative Delta as moving away — but callers pass Accel*Delta
-     * which is non-negative in the parity oracle).
+     * Move From toward To by at most Delta, never overshooting (clamps to To
+     * once within Delta). Delta is expected non-negative; callers pass
+     * Accel * DeltaTime. Equivalent to FMath::FInterpConstantTo with the step
+     * precomputed.
      */
     double MoveToward(double From, double To, double Delta)
     {
@@ -25,13 +25,12 @@ namespace
 
 FVector FPlayerMotion::DirectionFromInput(const FVector2D& InputDir, double CameraYaw)
 {
-    // Godot Vector2.is_zero_approx uses a per-component tolerance; the planar
-    // length is the faithful equivalent for the parity oracle.
+    // Treat a near-zero input vector as no input.
     if (InputDir.IsNearlyZero())
     {
         return FVector::ZeroVector;
     }
-    // Local: (x, 0, y). Rotate about +Y (UP) by CameraYaw, Godot right-handed:
+    // Local: (x, 0, y). Rotate about +Y (UP) by CameraYaw (right-handed):
     //   x' =  x*cos + z*sin
     //   z' = -x*sin + z*cos
     const double LocalX = InputDir.X;

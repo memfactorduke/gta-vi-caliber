@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "WorldSerializerSubsystem.h"
 #include "SaveSubsystem.h"
@@ -70,6 +70,6 @@ void UWorldSerializerSubsystem::OnLoadWorld(const TSharedRef<FGtcJsonObject>& Se
 {
     // Restore live world state from the section. A deep clone keeps us independent of the
     // decoded snapshot. An empty section (no saved "world") restores to empty, mirroring
-    // Godot snapshot.get(key, {}).
+    // the reference snapshot.get(key, {}).
     WorldState = SectionIn->DeepClone();
 }

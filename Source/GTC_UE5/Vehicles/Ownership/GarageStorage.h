@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -20,7 +20,7 @@
  *
  * No RNG; fully deterministic.
  *
- * Parity note: Godot's Dictionary/Array iteration is insertion-ordered and Contents()
+ * Parity note: an insertion-ordered map/Array iteration is insertion-ordered and Contents()
  * relies on it. Garage contents and impound order are stored as ordered TArrays; a
  * companion TSet provides O(1) impound lookup.
  */

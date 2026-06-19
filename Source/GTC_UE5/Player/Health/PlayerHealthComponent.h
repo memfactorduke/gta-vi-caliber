@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -8,26 +8,26 @@
 #include "PlayerHealthComponent.generated.h"
 
 /**
- * UPlayerHealthComponent — the UE analogue of the Godot `PlayerHealth` Node
+ * UPlayerHealthComponent — the UE analogue of the the reference `PlayerHealth` Node
  * (`game/scripts/systems/player_health.gd`), which wrapped a PlayerHealthModel.
  *
  * Two layers, mirroring the Wave 2 two-layer approach:
  *
  *  - FPlayerHealthModel : the pure data/logic value type carrying every
  *    parity math (damage/armor soak/regen curve/heal/revive), 1:1 with the
- *    Godot source and its parity oracle test_player_health_model.gd (18 funcs).
+ *    the reference source and its reference behavior test_player_health_model.gd (18 funcs).
  *    No UObject, headless-testable.
  *
  *  - UPlayerHealthComponent : a plain UActorComponent that OWNS an
  *    FPlayerHealthModel and re-exposes it as clamped accessors plus change
- *    delegates (the UE replacement for Godot signals). Heavy maths stay in the
+ *    delegates (the UE replacement for the reference signals). Heavy maths stay in the
  *    model; this is the thin owner + lifecycle + broadcast shell, so the data
  *    can be parity-tested without a world.
  *
  * --------------------------------------------------------------------------
  * DEFERRED-OWNERSHIP (lead-signed, option 1 — own-state, defer write-through)
  * --------------------------------------------------------------------------
- * The Godot design has a HEALTH-FROM-WANTED coupling: the wanted/heat system can
+ * The the reference design has a HEALTH-FROM-WANTED coupling: the wanted/heat system can
  * influence health, regen, and respawn. That coupling is INTENTIONALLY NOT
  * implemented here. Per the approved option 1, this component OWNS its own
  * health state and exposes it ONLY via getters/delegates; it does NOT include,
@@ -39,7 +39,7 @@
  *
  * Likewise PlayerStats integration is runtime/deferred: this component does NOT
  * include or depend on FPlayerStats/UPlayerStatsComponent. (Both this component
- * and PlayerStats model an armor pool 1:1 from their respective Godot sources;
+ * and PlayerStats model an armor pool 1:1 from their respective the reference sources;
  * reconciling the two armor owners is a runtime-wiring decision for Wave 3, not
  * part of this parity port.)
  *
@@ -70,7 +70,7 @@ class GTC_UE5_API UPlayerHealthComponent : public UActorComponent
 public:
     UPlayerHealthComponent();
 
-    // --- Change delegates (Godot signals) --------------------------------------
+    // --- Change delegates (the reference signals) --------------------------------------
 
     UPROPERTY(BlueprintAssignable, Category = "GTC|Player|Health")
     FGtcHealthChanged OnHealthChanged;

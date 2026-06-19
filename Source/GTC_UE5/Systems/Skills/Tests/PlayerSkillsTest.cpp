@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_player_skills.gd. Gains use a diminishing-returns float curve,
 // so level/gain assertions use Eps; tier/clamp/count assertions are exact.
 
@@ -79,7 +79,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FSkillsMalformedDroppedTest::RunTest(const FString& Parameters)
 {
-    // Typed-port note: Godot's {"rate": 1.0} (missing id) row is unrepresentable with a
+    // Typed-port note: the reference {"rate": 1.0} (missing id) row is unrepresentable with a
     // typed FSkillDef (id defaults to ""), so it folds into the empty-id drop path, which
     // is already covered. Empty-id, zero-rate and duplicate-id rows cover the drop path.
     const FPlayerSkills S({
@@ -278,7 +278,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FSkillsLoadIgnoresBadTest::RunTest(const FString& Parameters)
 {
-    // Typed-port note: Godot's "shooting": "bad" (non-number) row is unrepresentable in a
+    // Typed-port note: the reference "shooting": "bad" (non-number) row is unrepresentable in a
     // typed {id->double} map; the load_dict number-type guard drops it so shooting stays 0.
     // We mirror that observable outcome by omitting the unrepresentable bad value, and keep
     // the unknown-id drop ("nope") which IS representable.

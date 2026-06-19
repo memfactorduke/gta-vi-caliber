@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "PropertyOwnership.h"
 
@@ -202,7 +202,7 @@ FPropertyBuyResult PropertyOwnership::Fail(int32 Balance, const FString& Reason)
 
 void PropertyOwnership::Register(const FPropertyDef& Entry)
 {
-    // Drop malformed rows: empty id or negative price. (Godot also drops non-int
+    // Drop malformed rows: empty id or negative price. (the reference also drops non-int
     // price strings; those are unrepresentable with a typed FPropertyDef.)
     if (Entry.Id.IsEmpty() || Entry.Price < 0)
     {
@@ -218,7 +218,7 @@ void PropertyOwnership::Register(const FPropertyDef& Entry)
     {
         Stored.IncomePerDay = 0;
     }
-    // Godot's _catalogue[id] = {...} overwrites on a duplicate id (last-wins), keeping
+    // the reference _catalogue[id] = {...} overwrites on a duplicate id (last-wins), keeping
     // the key's original insertion position. Mirror that: update in place if present.
     if (const int32* FoundIndex = Index.Find(Stored.Id))
     {

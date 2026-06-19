@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -7,9 +7,9 @@
 /**
  * One catalogue entry for a building's shop stock: {Id, Name, Price, Category}.
  *
- * Mirrors the Godot ShopModel catalogue Dictionary
+ * Mirrors the the reference ShopModel catalogue Dictionary
  * (game/scripts/systems/shop_model.gd default_catalogue). Plain value type, no
- * UObject. Price is an integer money unit, matching the Godot int prices.
+ * UObject. Price is an integer money unit, matching the the reference int prices.
  */
 struct GTC_UE5_API FShopItem
 {
@@ -34,12 +34,12 @@ struct GTC_UE5_API FShopItem
  * footprints today and real 3D building assets later both carry a kind, so the
  * same classifier drives interaction wiring straight across the asset swap.
  *
- * Ported 1:1 from the Godot RefCounted `BuildingUse`
+ * Ported 1:1 from the the reference RefCounted `BuildingUse`
  * (game/scripts/world/building_use.gd). Pure static helpers, no UObject — unit
- * tested headless via the parity oracle (World/Buildings/Tests/BuildingUseTest.cpp).
+ * tested headless via the reference behavior (World/Buildings/Tests/BuildingUseTest.cpp).
  *
  * The catalogue lives here (not in a separate ShopModel port): `CatalogueFor`
- * returns the general-store default stock that the Godot source hands back for
+ * returns the general-store default stock that the the reference source hands back for
  * every shop kind, so this port is self-contained and parity-literal with the
  * oracle.
  */
@@ -52,10 +52,10 @@ public:
     /**
      * The shop stock for a kind, as a catalogue Array. For now every shop carries
      * the general-store stock; the Kind parameter is reserved for future per-kind
-     * variation (matching the Godot `_kind` placeholder).
+     * variation (matching the the reference `_kind` placeholder).
      */
     static TArray<FShopItem> CatalogueFor(const FString& Kind);
 
-    /** The built-in general-store stock (Godot ShopModel.default_catalogue). */
+    /** The built-in general-store stock (the reference ShopModel.default_catalogue). */
     static TArray<FShopItem> DefaultCatalogue();
 };

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -7,17 +7,17 @@
 /**
  * FWantedSystem — pure heat/stars model for the wanted/police-response system.
  *
- * UE 5.7 port of Godot `wanted_system.gd` (class WantedSystem, RefCounted). Plain
+ * UE 5.7 port of the reference `wanted_system.gd` (class WantedSystem, RefCounted). Plain
  * C++ value type (no UObject); a UWantedSubsystem owns one and feeds it crimes and
- * time, so the escalation/decay curve is unit-tested headless (parity oracle
+ * time, so the escalation/decay curve is unit-tested headless (reference behavior
  * game/tests/unit/test_wanted_system.gd, 11 funcs). "Heat" is an internal
  * accumulator; players see it quantised into 0-5 stars.
  *
- * double precision throughout (LWC + Godot float parity): heat, decay and the star
- * thresholds are doubles so the curve matches the Godot oracle.
+ * double precision throughout (LWC + the reference float parity): heat, decay and the star
+ * thresholds are doubles so the curve matches the the reference oracle.
  *
  * NOTE: distinct from FWantedLevel (Source/GTC_UE5/World/Police/WantedLevel.h), which
- * is the Wave-1 port of a *different* Godot source (wanted_level.gd). No type-name or
+ * is the Wave-1 port of a *different* the reference source (wanted_level.gd). No type-name or
  * test-prefix collision (GTC.Systems.Wanted.* here vs GTC.World.Police.* there).
  */
 class GTC_UE5_API FWantedSystem
@@ -26,7 +26,7 @@ public:
     /** Maximum star rating. */
     static constexpr int32 MaxStars = 5;
 
-    /** Heat needed for each of the 1..5 stars (Godot STAR_THRESHOLDS). */
+    /** Heat needed for each of the 1..5 stars (the reference STAR_THRESHOLDS). */
     static const TArray<double>& StarThresholds();
 
     double Heat = 0.0;

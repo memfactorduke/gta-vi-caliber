@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -9,7 +9,7 @@
  * a star level summons (beat cops -> cruisers -> SWAT -> helicopter -> military),
  * how hard they press, how often waves reinforce, and what they shoot with.
  *
- * Direct 1:1 port of the Godot RefCounted `PoliceEscalation`
+ * Direct 1:1 port of the the reference RefCounted `PoliceEscalation`
  * (game/scripts/ai/police_escalation.gd). All-static plain functions, no
  * UObject, no scene/RNG state -> the curve is deterministic and unit-tested
  * (Tests/PoliceEscalationTest.cpp, prefix GTC.AI.PoliceDispatch.PoliceEscalation).
@@ -20,7 +20,7 @@
  * how many or where. Stars are clamped to [0, MaxStars] and every curve is
  * monotonic in stars (higher heat is never a weaker response).
  *
- * Double precision throughout (LWC) to match the Godot oracle's float arithmetic.
+ * Double precision throughout (LWC) to match the the reference oracle's float arithmetic.
  *
  * PURE-CORE boundary: this is the entire tested unit. A spawner/AI layer reading
  * ResponseUnits() to instance prefabs is the DEFERRED Wave-3 adapter -- not
@@ -30,7 +30,7 @@
 /**
  * Unit-type identifiers, ordered weakest -> heaviest. Returned by ResponseUnits()
  * as the composition of an active response; a spawner maps each to a prefab.
- * Godot ordinal order preserved (BeatCop=0 .. Military=4).
+ * the reference ordinal order preserved (BeatCop=0 .. Military=4).
  */
 enum class EPoliceUnitType : int32
 {

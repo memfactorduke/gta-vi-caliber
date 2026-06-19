@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_wanted_system.gd (11 funcs). Heat/decay are a float curve, so
 // heat assertions use Eps; star/response-unit counts are exact integers. Compound
 // `a and b` oracle returns are split into separate TestTrue/TestEqual calls.

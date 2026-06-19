@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "ProgressionTracker.h"
 
@@ -53,7 +53,7 @@ void UProgressionTracker::Restore(int32 InTotalXp)
 
 void UProgressionTracker::RestoreGarbage()
 {
-    // Godot SaveData.number_or("junk", 0) -> 0, so a garbage restore is a clean reset.
+    // the reference SaveData.number_or("junk", 0) -> 0, so a garbage restore is a clean reset.
     _Progression.Reset();
     _Progression.AddXp(0);
 }

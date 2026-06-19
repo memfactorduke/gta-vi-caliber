@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -9,12 +9,12 @@
  * businesses, which accrue income over game days into a pending bank collected by
  * visiting. Plain C++ value type (no UObject): a purchase resolves against a wallet
  * balance the caller passes in; income accrues on fed-in game days; Collect() hands
- * back banked cash. Headless-testable (parity oracle test_property_ownership.gd).
+ * back banked cash. Headless-testable (reference behavior test_property_ownership.gd).
  *
  * Each catalogue entry is {Id, Name, Price, IncomePerDay, bIsSafehouse}. Garbage
  * entries (empty id, negative price/income) are dropped at construction.
  *
- * Parity note: owned ids are returned sorted (Godot sorts them). Pending income is
+ * Parity note: owned ids are returned sorted (the reference sorts them). Pending income is
  * stored as double, carrying the sub-unit remainder across collections.
  */
 struct GTC_UE5_API FPropertyDef
@@ -36,7 +36,7 @@ struct GTC_UE5_API FPropertyDef
     }
 };
 
-/** Result of a buy attempt — mirrors Godot's {success, cost, new_balance, reason}. */
+/** Result of a buy attempt — mirrors the reference {success, cost, new_balance, reason}. */
 struct GTC_UE5_API FPropertyBuyResult
 {
     bool bSuccess = false;

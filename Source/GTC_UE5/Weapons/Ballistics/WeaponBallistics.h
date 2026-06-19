@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -8,25 +8,25 @@
 /**
  * Pure gunplay math a weapon controller applies to each shot: distance falloff,
  * hit-zone multipliers, cone spread, and a stateful recoil/bloom accumulator.
- * Direct port of the Godot `WeaponBallistics` (RefCounted) at
+ * Direct port of the the reference `WeaponBallistics` (RefCounted) at
  * `game/scripts/weapons/weapon_ballistics.gd`.
  *
  * The static helpers are scene-free (or take an explicit RNG), so they unit-test
- * deterministically via the parity oracle (Tests/WeaponBallisticsTest.cpp,
+ * deterministically via the reference behavior (Tests/WeaponBallisticsTest.cpp,
  * prefix GTC.Weapons.WeaponBallistics). This complements the lower-level
  * FBallistics (which takes a pre-drawn disk sample); here SpreadDirection draws
  * its own cone offset from a caller-supplied RNG, and the nested Bloom carries
  * per-shot spread growth/recovery across frames.
  *
- * Double precision throughout to match the GDScript float math. Distances are
+ * Double precision throughout to match the the reference implementation float math. Distances are
  * metres, angles radians. Tolerance mirrors is_equal_approx (Eps = 1e-4).
  *
- * NOTE: no Godot->UE Z-up axis remap — the model stays in the Godot frame (the
- * Godot `Vector3.UP`/`Vector3.RIGHT` basis helpers are preserved verbatim so the
+ * NOTE: no Godot->UE Z-up axis remap — the model stays in the the reference frame (the
+ * the reference `Vector3.UP`/`Vector3.RIGHT` basis helpers are preserved verbatim so the
  * cone-containment tests match). Axis remap is a DEFERRED Wave-3 concern.
  *
  * RNG parity note: SpreadDirection uses FRandomStream, which is deterministic
- * and seed-reproducible WITHIN UE5 — it is NOT a Godot PCG32 reimplementation,
+ * and seed-reproducible WITHIN UE5 — it is NOT a the reference PCG32 reimplementation,
  * so the exact perturbed vectors are NOT byte-identical to Godot. This is safe:
  * the oracle never pins a seed to an exact spread vector; it only asserts the
  * statistical/range properties (result normalized, within the cone half-angle,
@@ -38,7 +38,7 @@
  */
 struct GTC_UE5_API FWeaponBallistics
 {
-    /** Tolerance mirroring the Godot is_equal_approx / length guard. */
+    /** Tolerance mirroring the the reference is_equal_approx / length guard. */
     static constexpr double Eps = 1e-4;
 
     /** Default hit-zone multipliers (head rewards precision, limbs punish sloppy aim). */
@@ -93,7 +93,7 @@ struct GTC_UE5_API FWeaponBallistics
      * Stateful recoil/bloom accumulator: the cone widens as fire is sustained and
      * tightens back toward its base while the trigger rests, so tapping stays
      * accurate and spraying walks off. An instance per live weapon. Nested type
-     * mirroring the Godot inner class `WeaponBallistics.Bloom`.
+     * mirroring the the reference inner class `WeaponBallistics.Bloom`.
      */
     struct GTC_UE5_API FBloom
     {

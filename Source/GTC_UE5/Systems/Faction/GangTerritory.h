@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -13,7 +13,7 @@
  * {Id, Owner, HomeOwner, Influence}; takeover flips owner to "player" once influence is
  * full.
  *
- * Parity note: Godot's Dictionary is insertion-ordered and PlayerDistricts()/Serialize()/
+ * Parity note: an insertion-ordered map is insertion-ordered and PlayerDistricts()/Serialize()/
  * ControlledFraction() rely on it. TMap does NOT preserve order, so an explicit ordered
  * backing store (TArray<FEntry> + TMap<FString,int32> index) is used. Influence is stored
  * as double to avoid 32-bit drift.
@@ -29,7 +29,7 @@ public:
     {
         FString Id;
         FString Owner;
-        /** When unset (HomeOwner.IsEmpty()), defaults to Owner — matches Godot's dict.get fallback. */
+        /** When unset (HomeOwner.IsEmpty()), defaults to Owner — matches the reference dict.get fallback. */
         FString HomeOwner;
         bool bHasHomeOwner = false;
         double Influence = 0.0;

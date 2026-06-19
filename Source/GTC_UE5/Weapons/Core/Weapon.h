@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -8,14 +8,14 @@
 
 /**
  * Runtime firing state for one carried weapon: ammo, cooldown, reload, bloom.
- * Direct port of the Godot `Weapon` (RefCounted) at
+ * Direct port of the the reference `Weapon` (RefCounted) at
  * `game/scripts/weapons/weapon.gd`.
  *
  * Holds mutable state but no scene access and no RNG — the owner ticks it, asks
  * CanFire(), calls Fire(), and does the raycast itself using the exposed Spread.
  * This keeps the whole fire/reload/bloom state machine unit-testable
  * (Tests/WeaponTest.cpp, prefix GTC.Weapons.Core.Weapon) against a plain
- * FWeaponStats. Double precision matches the GDScript float math.
+ * FWeaponStats. Double precision matches the the reference implementation float math.
  *
  * PURE-CORE boundary: this is ONLY the per-weapon ammo/cooldown/bloom state
  * machine. The WeaponController that ticks many of these, drives GAS abilities,

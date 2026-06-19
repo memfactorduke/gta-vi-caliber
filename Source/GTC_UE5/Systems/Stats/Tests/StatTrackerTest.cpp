@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to a func in the Godot parity oracle
+// Each test below maps 1:1 to a func in the the reference reference behavior
 // game/tests/unit/test_stat_tracker.gd (21 funcs), with identical literals/tolerances.
 // Counter values are double; ratio/percent assertions use Eps (is_equal_approx), and
 // achievement/empty/count assertions are exact. Compound `a and b` oracle returns are
@@ -320,7 +320,7 @@ bool FStatTrackerSerializeRoundTripTest::RunTest(const FString& Parameters)
     return true;
 }
 
-// test_restore_malformed_resets — the Godot oracle passes {"stats": "not a dictionary"};
+// test_restore_malformed_resets — the the reference oracle passes {"stats": "not a dictionary"};
 // a non-dictionary "stats" resets and returns. The C++ Restore takes a typed empty/clean
 // snapshot for the same malformed case: Restore({}) resets then has nothing to load.
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -331,7 +331,7 @@ bool FStatTrackerRestoreMalformedTest::RunTest(const FString& Parameters)
 {
     FStatTracker S;
     S.Add(TEXT("kills"), 80.0);
-    // Malformed/empty snapshot: Restore resets first (Godot restore() resets, then the
+    // Malformed/empty snapshot: Restore resets first (the reference restore() resets, then the
     // non-dictionary "stats" causes an early return leaving the clean slate).
     S.Restore(TArray<TPair<FString, double>>());
     TestEqual(TEXT("kills == 0"), S.GetStat(TEXT("kills")), 0.0, Eps);

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -9,19 +9,19 @@
  * The census of who lives in this city — a catalog of absurd citizens, each a
  * bundle of {daily routine, personality, dialogue voice, visual tint, quirk}.
  *
- * Direct PURE-CORE port of the Godot `NpcArchetypes` (RefCounted) at
+ * Direct PURE-CORE port of the the reference `NpcArchetypes` (RefCounted) at
  * `game/scripts/npc/npc_archetypes.gd`. Pure data + deterministic selection,
  * scene-free, unit-tested headless (Tests/NpcArchetypesTest.cpp, prefix
- * GTC.NPC.Archetypes). Computed precision is `double` to match GDScript; tints
- * are linear float RGB to match the Godot `Color(r, g, b)` literals.
+ * GTC.NPC.Archetypes). Computed precision is `double` to match the reference implementation; tints
+ * are linear float RGB to match the the reference `Color(r, g, b)` literals.
  *
  * Schedule templates are expressed as ordered TArray<FNpcScheduleBlock> (reusing
- * the already-ported FNpcSchedule), preserving the Godot Array author order that
+ * the already-ported FNpcSchedule), preserving the the reference Array author order that
  * NpcSchedule scanning observes (first covering block wins). The citizen census
  * is likewise an ordered TArray so All()/Pick() seeding is stable.
  *
  * DEFERRED — Wave 3 adapter (NOT implemented, NOT tested here): the engine
- * coupling that the Godot comment describes — the spawner reading `Tint` onto
+ * coupling that the the reference comment describes — the spawner reading `Tint` onto
  * the shared procedural HumanoidBody, NpcDialogue reading `Voice`, and any
  * Citizen actor / appearance / DataTable wiring — is an engine-feel adapter that
  * belongs to Wave 3. This file ports only the pure model (the census data and
@@ -29,9 +29,9 @@
  */
 
 /**
- * One citizen archetype. Mirrors the Godot dict
+ * One citizen archetype. Mirrors the the reference dict
  * {id, name, schedule, personality{discipline}, voice, tint, quirk}.
- * `Tint` is a linear float colour (Godot Color). `Discipline` in [-1, 1] is the
+ * `Tint` is a linear float colour (the reference Color). `Discipline` in [-1, 1] is the
  * only personality field the model carries.
  */
 struct GTC_UE5_API FNpcArchetype

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Locomotion.h"
 
@@ -6,15 +6,15 @@
 
 namespace
 {
-    // Godot TAU/PI as doubles, matching GDScript's 64-bit float constants. These
+    // the reference TAU/PI as doubles, matching the reference implementation's 64-bit float constants. These
     // are written inline as (2.0 * UE_DOUBLE_PI) and UE_DOUBLE_PI at each call
     // site: a file-scope constant is NOT unity-isolated and could redefine
     // another TU's same-named symbol in a shared unity build.
 
     /**
-     * Inline port of Godot's `fposmod(x, y)`: a modulo whose result carries the
+     * Inline port of the reference `fposmod(x, y)`: a modulo whose result carries the
      * sign of the divisor y, so the wrapped phase always lands in [0, y) for the
-     * positive y used here. Mirrors Godot semantics exactly.
+     * positive y used here. Mirrors the reference semantics exactly.
      */
     double Fposmod(double X, double Y)
     {

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -8,7 +8,7 @@
 #include "../ChopShop.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_vehicle_condition.gd (23 tests). sedan: tank 60L, economy 0.0009 L/m.
 // One test (ConditionBlendsWearAndFeedsChopShop) composes FChopShop, mirroring the cross-ref oracle.
 

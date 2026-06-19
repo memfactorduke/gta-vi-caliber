@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -8,19 +8,19 @@
 #include "SaveSubsystem.generated.h"
 
 /**
- * USaveSubsystem — the UE port of Godot `save_manager.gd` (class SaveManager, a Node).
+ * USaveSubsystem — the UE port of the reference `save_manager.gd` (class SaveManager, a Node).
  *
  * Owns the save snapshot (the pure GtcSaveData model) plus the file IO and coordinates
- * persistence through a *registration interface*: instead of the Godot version reaching
+ * persistence through a *registration interface*: instead of the the reference version reaching
  * into the scene tree by group ("player", "wanted", "vehicles", ...), coordinators
  * register a named save/load hook pair here. On Save the subsystem walks every registered
  * hook in registration order, asks each to write its section into the snapshot, wraps it
  * via GtcSaveData::Encode (version 4 header) and writes user-equivalent text to disk. On
  * Load it reads + decodes + migrates the text, then walks each hook to restore from its
  * section. Discovery is by registration, so this stays streaming/Partition-ready and
- * needs no scene edits — the UE analogue of Godot's group-discovery design.
+ * needs no scene edits — the UE analogue of the reference group-discovery design.
  *
- * Why a GameInstanceSubsystem (not a WorldSubsystem): the Godot SaveManager is a single
+ * Why a GameInstanceSubsystem (not a WorldSubsystem): the the reference SaveManager is a single
  * persistent Node that survives scene/level changes (quick-save/quick-load across the
  * streamed world); a GameInstanceSubsystem has exactly that lifetime — one per running
  * game, outliving individual worlds. Matches the APPROVED design (option 3).
@@ -97,7 +97,7 @@ public:
 
     /**
      * Read + decode + migrate + apply a save file. Missing file / unreadable / empty is a
-     * no-op that returns false (matches Godot load_game's early-outs).
+     * no-op that returns false (matches the reference load_game's early-outs).
      */
     bool LoadFromFile(const FString& AbsolutePath);
 
@@ -112,7 +112,7 @@ private:
         FLoadHook OnLoad;
     };
 
-    /** Registration-ordered hooks (mirrors Godot's gather/apply ordering over trackers). */
+    /** Registration-ordered hooks (mirrors the reference gather/apply ordering over trackers). */
     TArray<FHookEntry> Hooks;
     /** Section -> index into Hooks. */
     TMap<FString, int32> Index;

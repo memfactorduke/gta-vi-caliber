@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FPoliceEscalation, mapped 1:1 from the Godot oracle
+ * Parity tests for FPoliceEscalation, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_police_escalation.gd. Tolerance mirrors the oracle's
  * is_equal_approx (Eps = 1e-4); sizes, enum equality, booleans and integer tiers
  * assert exactly. Grouped by oracle concern (prefix

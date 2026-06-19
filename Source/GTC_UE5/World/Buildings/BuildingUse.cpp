@@ -1,10 +1,10 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "BuildingUse.h"
 
 namespace
 {
-    // Public-facing kinds that read as storefronts (Godot SHOP_KINDS). Membership
+    // Public-facing kinds that read as storefronts (the reference SHOP_KINDS). Membership
     // is the only observable property, so a simple set lookup matches the oracle.
     bool IsShopKind(const FString& Kind)
     {

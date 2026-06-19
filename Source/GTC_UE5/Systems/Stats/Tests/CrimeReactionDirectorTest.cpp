@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -10,7 +10,7 @@
 
 using GtcTest::Eps;
 
-// Subsystem LOGIC-PARITY tests (Wave 2). A Godot oracle DOES exist —
+// Subsystem LOGIC-PARITY tests (Wave 2). A the reference oracle DOES exist —
 // game/tests/crime_reaction_probe.gd (a SceneTree wiring probe) — which asserts that a
 // wanted spike files a news headline AND heats the active district (heat > 0), then that
 // _process decay cools it (heat drops). These tests align with that logic via the
@@ -72,7 +72,7 @@ bool FCrimeReactionNoHeatOnFallTest::RunTest(const FString& Parameters)
     Director->OnStarsChanged(3);
     const double HeatAfterRise = Director->GetDistricts().HeatIn(TEXT("downtown"));
     const int32 PendingAfterRise = Director->GetNews().PendingCount();
-    // Stars fall: no extra heat, no new headline (Godot only reacts when stars > last).
+    // Stars fall: no extra heat, no new headline (the reference only reacts when stars > last).
     Director->OnStarsChanged(1);
     TestEqual(TEXT("heat unchanged on fall"),
         Director->GetDistricts().HeatIn(TEXT("downtown")), HeatAfterRise, Eps);

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "PedestrianTraffic.h"
 
@@ -105,7 +105,7 @@ FVector FPedestrianTraffic::DodgeVelocity(
     }
     const FVector Perp = FVector(Heading.Z, 0.0, -Heading.X).GetSafeNormal();
     const double Dot = FVector::DotProduct(Offset, Perp);
-    // Godot signf(0.0) == 0.0, then the explicit fallback flips it to 1.0.
+    // the reference signf(0.0) == 0.0, then the explicit fallback flips it to 1.0.
     double Side = (Dot > 0.0) ? 1.0 : ((Dot < 0.0) ? -1.0 : 0.0);
     if (Side == 0.0)
     {

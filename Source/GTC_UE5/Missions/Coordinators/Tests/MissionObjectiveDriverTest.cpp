@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -11,10 +11,10 @@
 
 using GtcTest::Eps;
 
-// PARITY tests (1:1). Each test below maps to one assertion in the Godot parity
+// PARITY tests (1:1). Each test below maps to one assertion in the the reference parity
 // oracle game/tests/unit/test_mission_objective_driver.gd (8 funcs). Constants,
 // positions, radii, durations and tolerances are the oracle's, independent of the
-// implementation. Godot's compound {satisfied, held} return is split into the
+// implementation. the reference compound {satisfied, held} return is split into the
 // FVerdict fields bSatisfied / Held.
 
 namespace MissionObjectiveDriverTestNS

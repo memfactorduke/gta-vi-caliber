@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -11,14 +11,14 @@
  * over N laps; the model tracks the current gate, lap count, progress, placement
  * against rivals, and race/lap timing.
  *
- * Godot parity: game/scripts/missions/street_race.gd (RefCounted). Two halves,
+ * the reference parity: game/scripts/missions/street_race.gd (RefCounted). Two halves,
  * both scene-free: a STATEFUL race instance (checkpoint advance, lap wrap,
  * finish, timing) and a bank of STATIC helpers (placement, gap-to-rival, reward
  * by placement). Deterministic, unit-tested headless.
  *
- * Spatial parity: Godot reasons on the XZ ground plane (y is up) and that
+ * Spatial parity: the reference reasons on the XZ ground plane (y is up) and that
  * convention is preserved verbatim — Ground() drops the y component. NO Z-up
- * remap is applied (literal parity with the Godot source).
+ * remap is applied (literal parity with the the reference source).
  *
  * Plain C++ value type (no UObject): checkpoint actors / overlap volumes / HUD
  * wiring are deferred to W2/W3 and are NOT part of this parity port.
@@ -29,7 +29,7 @@ public:
     /**
      * A race = ordered Checkpoints over Laps laps. An empty checkpoint list is a
      * degenerate race that starts already finished. Laps is floored at 1. Copies
-     * the input array (Godot duplicate()), so later edits don't alias.
+     * the input array (the reference duplicate()), so later edits don't alias.
      */
     explicit StreetRace(const TArray<FVector>& Checkpoints, int32 Laps = 1);
 

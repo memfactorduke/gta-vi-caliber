@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -10,7 +10,7 @@
 
 using GtcTest::Eps;
 
-// BEHAVIOR tests (Wave 2 rule) — UMissionController has NO Godot parity oracle of
+// BEHAVIOR tests (Wave 2 rule) — UMissionController has NO the reference reference behavior of
 // its own (only the single accessor sequence pinned in MissionObjectiveDriverTest).
 // These assert the UE port's ownership / lifecycle: the owned objective-set state
 // machine, delegate emission, the timer/fail driver, and retry-via-Reset — all

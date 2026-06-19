@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "SaveJson.h"
 
@@ -151,7 +151,7 @@ namespace
 
     void WriteValue(const FGtcJsonValuePtr& Value, const TSharedRef<FGtcJsonWriter>& Writer);
 
-    // Numbers carry one `double` type (Godot has no int/float split). Integral values that fit
+    // Numbers carry one `double` type (the reference has no int/float split). Integral values that fit
     // exactly are written through the int64 overload to keep version/count fields clean; all
     // others go through the double overload (17 sig-digits). Exact text is NOT contractual
     // (round-trip tolerance contract) — this only mirrors the prior writer's clean integers.
@@ -167,7 +167,7 @@ namespace
         }
     }
 
-    // Object fields are emitted in OrderedKeys() order — this is how Godot's observable
+    // Object fields are emitted in OrderedKeys() order — this is how the reference observable
     // Dictionary key order survives serialization on top of engine JSON.
     void WriteObject(const TSharedRef<FGtcJsonObject>& Obj, const TSharedRef<FGtcJsonWriter>& Writer)
     {
@@ -254,7 +254,7 @@ namespace
     // Build a value for the token the reader currently sits on. For containers, recurse and
     // consume to the matching End. Object fields are appended in document order via Set(),
     // so the ordered key list rebuilds exactly as written. Any malformed token / reader error
-    // surfaces as bOk = false (silent — Godot returns an invalid value, never logs).
+    // surfaces as bOk = false (silent — the reference returns an invalid value, never logs).
     FGtcJsonValuePtr ReadValue(const TSharedRef<FGtcJsonReader>& Reader, EJsonNotation Notation, bool& bOk);
 
     FGtcJsonValuePtr ReadObject(const TSharedRef<FGtcJsonReader>& Reader, bool& bOk)
@@ -337,7 +337,7 @@ namespace GtcJson
             return nullptr;
         }
 
-        // Reject trailing non-whitespace (Godot rejects it). After a complete top-level value
+        // Reject trailing non-whitespace (the reference rejects it). After a complete top-level value
         // the next ReadNext must report end-of-stream (ReadNext returns false), not another
         // token. A trailing-content error also returns false, which is the same reject path.
         if (Reader->ReadNext(Notation))

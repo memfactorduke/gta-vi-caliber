@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Disguise.h"
 
@@ -6,7 +6,7 @@ const FString FDisguise::DefaultLook = TEXT("default");
 
 const TArray<FString>& FDisguise::OrderedSlots()
 {
-    // Godot WEIGHTS key order: outfit, mask, vehicle, hair.
+    // the reference WEIGHTS key order: outfit, mask, vehicle, hair.
     static const TArray<FString> Slots = {
         TEXT("outfit"), TEXT("mask"), TEXT("vehicle"), TEXT("hair")};
     return Slots;
@@ -14,7 +14,7 @@ const TArray<FString>& FDisguise::OrderedSlots()
 
 double FDisguise::WeightOf(const FString& Slot)
 {
-    // Godot WEIGHTS: outfit 0.3, mask 0.4, vehicle 0.2, hair 0.1 (sum 1.0).
+    // the reference WEIGHTS: outfit 0.3, mask 0.4, vehicle 0.2, hair 0.1 (sum 1.0).
     if (Slot == TEXT("outfit")) { return 0.3; }
     if (Slot == TEXT("mask")) { return 0.4; }
     if (Slot == TEXT("vehicle")) { return 0.2; }
@@ -76,7 +76,7 @@ double FDisguise::Recognition() const
         const FString* Wanted = _WantedLook.Find(Slot);
         const bool bCurMatch = (Cur != nullptr);
         const bool bWantedMatch = (Wanted != nullptr);
-        // Godot compares _current.get(slot) == _wanted_look.get(slot); both null -> equal.
+        // the reference compares _current.get(slot) == _wanted_look.get(slot); both null -> equal.
         if (bCurMatch == bWantedMatch && (!bCurMatch || *Cur == *Wanted))
         {
             Score += WeightOf(Slot);

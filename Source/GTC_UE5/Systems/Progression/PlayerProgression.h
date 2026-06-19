@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -8,13 +8,13 @@
  * Pure respect/XP progression model: levels on a rising curve plus per-level
  * unlocks earned through play. Plain C++ value type (no UObject) — a subsystem
  * (ProgressionTracker) owns one and feeds it respect payouts. Headless-testable
- * (parity oracle game/tests/unit/test_player_progression.gd).
+ * (reference behavior game/tests/unit/test_player_progression.gd).
  *
  * Curve: leaving level L costs XP_PER_LEVEL_STEP * L; cumulative respect to first
  * reach level L is the triangular sum 100 * (L-1) * L / 2.
  *
  * Parity note: integer XP/level math is exact (int32). UNLOCK_TABLE is iterated in
- * the Godot insertion order via an ordered TArray of gate rows so IsUnlocked /
+ * the the reference insertion order via an ordered TArray of gate rows so IsUnlocked /
  * UnlocksAt match observable order. level_progress() is double.
  */
 class GTC_UE5_API FPlayerProgression
@@ -72,7 +72,7 @@ public:
     bool IsUnlocked(const FString& FeatureId) const;
 
 private:
-    /** One unlock gate row, kept in Godot insertion order. */
+    /** One unlock gate row, kept in the reference insertion order. */
     struct FUnlockGate
     {
         int32 GateLevel;

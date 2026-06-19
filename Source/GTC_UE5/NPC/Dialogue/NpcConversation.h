@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -8,7 +8,7 @@
  * Two citizens talking — gloriously past each other. Zips two voices' "chat"
  * banks (NpcDialogue) into an alternating exchange.
  *
- * Direct PURE-CORE port of the Godot `NpcConversation` (RefCounted) at
+ * Direct PURE-CORE port of the the reference `NpcConversation` (RefCounted) at
  * `game/scripts/npc/npc_conversation.gd`. Pure + deterministic (same voices +
  * seed = same scene), unit-tested headless (Tests/NpcConversationTest.cpp,
  * prefix GTC.NPC.Conversation).

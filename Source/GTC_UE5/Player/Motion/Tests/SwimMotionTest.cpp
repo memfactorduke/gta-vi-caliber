@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 #include "Math/UnrealMathUtility.h"
 
 /**
- * Parity tests for FSwimMotion, mapped 1:1 from the Godot oracle
+ * Parity tests for FSwimMotion, mapped 1:1 from the the reference oracle
  * game/tests/unit/test_swim_motion.gd. The oracle uses `==` for exact cases
  * (submersion zero/one/degenerate, vertical_axis, oxygen clamps) and
  * `absf(...) < 0.0001` for approx cases — mirrored here with exact-equal and

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -16,22 +16,22 @@
  *   - A small stateful in-progress report (an instance): a witness has started dialling;
  *     Tick() runs the timer down, Silence() cancels it.
  *
- * All XZ-plane math is ported faithfully. Godot is Y-up and uses the X/Z plane for the
+ * All XZ-plane math is ported faithfully. the reference is Y-up and uses the X/Z plane for the
  * ground; per the Wave-2 "no Z-up remap" rule we keep the SAME axes the oracle uses —
- * the FVector components map 1:1 to Godot's Vector3 (X->X, Y->Y, Z->Z) and "ground"
+ * the FVector components map 1:1 to the reference Vector3 (X->X, Y->Y, Z->Z) and "ground"
  * means dropping Y, exactly as Godot _ground() drops y. double precision for float parity.
  *
- * Observer payloads: Godot passes Dictionaries {pos, facing, is_police, node}. Here an
+ * Observer payloads: the reference passes Dictionaries {pos, facing, is_police, node}. Here an
  * observer is the FCrimeObserver struct; CountWitnesses/CollectWitnesses iterate an
  * ordered TArray so witness order is preserved where the oracle observes it. The opaque
- * "node" scene payload (Godot's Node3D ride-along for pending-report bookkeeping) is a
+ * "node" scene payload (the reference Node3D ride-along for pending-report bookkeeping) is a
  * Wave-3 concern and is represented as an opaque void* carried through untouched — the
  * subsystem behavior tests never dereference it.
  */
 
 /**
- * One observer for the LOS pass. Mirrors the Godot observer Dictionary. A "malformed"
- * Godot entry (non-dict, or missing pos/facing keys) decoded to a zero facing that can
+ * One observer for the LOS pass. Mirrors the the reference observer Dictionary. A "malformed"
+ * the reference entry (non-dict, or missing pos/facing keys) decoded to a zero facing that can
  * never witness anything; the equivalent here is a default FCrimeObserver (zero facing).
  */
 struct GTC_UE5_API FCrimeObserver

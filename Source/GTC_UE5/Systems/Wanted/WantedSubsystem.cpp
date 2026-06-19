@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "WantedSubsystem.h"
 
@@ -6,7 +6,7 @@ void UWantedSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
     // Rebuild the owned heat model from the configured tuning (the @export defaults
-    // feed WantedSystem.new(decay_rate, heat_cap) in Godot _ready).
+    // feed WantedSystem.new(decay_rate, heat_cap) in the reference _ready).
     _Wanted = FWantedSystem(DecayRate, HeatCap);
     _Evasion = FWantedEvasion();
     _PendingReports.Reset();
@@ -69,7 +69,7 @@ void UWantedSubsystem::ReportWitnessedCrime(
         return;
     }
 
-    // Civilian witnesses: queue a delayed report. The Godot version also stashes the
+    // Civilian witnesses: queue a delayed report. The the reference version also stashes the
     // witness Node3D list to silence the report if they all die — that liveness probe is
     // a Wave-3 scene concern and is DEFERRED; the report simply ticks to completion.
     _PendingReports.Emplace(ReportDelaySec, Heat);

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -10,7 +10,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to a test_* func in the Godot parity oracle
+// Each test below maps 1:1 to a test_* func in the the reference reference behavior
 // game/tests/unit/test_wardrobe.gd (12 funcs). Money/counts are exact integer checks; the
 // composition recognition check uses Eps. Compound `a and b` returns are split into separate
 // Test* calls. The composition test (#12) drives FDisguise (the in-branch sibling), exactly
@@ -24,7 +24,7 @@ namespace
                                             bool bHasId = true)
     {
         FWardrobe::FInputItem Item;
-        // Godot's "no id" entry has no id key at all; we model that as an empty Id (both the
+        // the reference "no id" entry has no id key at all; we model that as an empty Id (both the
         // empty-string entry and the missing-key entry hit the same drop in Register()).
         Item.Id = bHasId ? Id : FString();
         Item.Slot = Slot;

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -10,7 +10,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_district_economy.gd. Float compares use Eps. Includes a
 // GangTerritory composition test (turf influence feeds district desirability).
 

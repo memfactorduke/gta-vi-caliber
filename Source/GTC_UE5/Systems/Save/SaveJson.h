@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -11,13 +11,13 @@
  * (see SaveJson.cpp) is implemented on UE's `TJsonWriter` / `TJsonReader` (the `Json` module,
  * a Private dependency added to GTC_UE5.Build.cs). The wrapper exists for one reason the
  * engine type cannot satisfy on its own: engine `FJsonObject` stores fields in an UNORDERED
- * `TMap`, but Godot's Dictionary key order is observable across the save round-trip, so this
+ * `TMap`, but an insertion-ordered map key order is observable across the save round-trip, so this
  * model keeps an explicit ordered key list alongside the map. Serialization walks that list
  * (ordered `TJsonWriter` writes); parsing rebuilds it from the reader's in-document-order
  * token stream — so serialize->parse preserves key order exactly.
  *
- * Semantics mirrored from Godot:
- *  - Objects are INSERTION-ORDERED (Godot Dictionary order is observable on save text).
+ * Semantics mirrored from the reference implementation:
+ *  - Objects are INSERTION-ORDERED (the reference Dictionary order is observable on save text).
  *  - Numbers are `double` (int and float are one numeric type, matching `is float or is int`).
  *  - Parse is silent on malformed input (returns an invalid/null value, never logs).
  *
@@ -42,7 +42,7 @@ enum class EGtcJsonType : uint8
 class FGtcJsonValue;
 using FGtcJsonValuePtr = TSharedPtr<FGtcJsonValue>;
 
-/** Insertion-ordered string->value map (mirrors Godot Dictionary order). */
+/** Insertion-ordered string->value map (mirrors the reference Dictionary order). */
 class GTC_UE5_API FGtcJsonObject
 {
 public:
@@ -70,7 +70,7 @@ public:
     int32 Num() const { return Keys.Num(); }
     const TArray<FString>& OrderedKeys() const { return Keys; }
 
-    /** Deep clone (Godot duplicate(true)) — keeps Migrate pure. */
+    /** Deep clone (the reference duplicate(true)) — keeps Migrate pure. */
     TSharedRef<FGtcJsonObject> DeepClone() const;
 
 private:

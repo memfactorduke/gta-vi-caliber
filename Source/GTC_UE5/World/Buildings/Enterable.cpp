@@ -1,10 +1,10 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Enterable.h"
 
 namespace
 {
-    // OSM building types that get an interior (Godot PUBLIC_TYPES). Membership is
+    // OSM building types that get an interior (the reference PUBLIC_TYPES). Membership is
     // the only observable property, so a direct set lookup matches the oracle.
     bool IsPublicType(const FString& Kind)
     {

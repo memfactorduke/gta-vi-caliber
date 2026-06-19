@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -7,7 +7,7 @@
 /**
  * Pure pool of NPC one-liners ("barks") by situation.
  *
- * Direct PURE-CORE port of the Godot `BarkPool` (RefCounted) at
+ * Direct PURE-CORE port of the the reference `BarkPool` (RefCounted) at
  * `game/scripts/npc/bark_pool.gd`. Scene-free + deterministic so line selection
  * and cooldown gating are unit-tested headless (Tests/BarkPoolTest.cpp, prefix
  * GTC.NPC.Bark). A BarkDirector picks a situation and an index (counter/RNG) and
@@ -17,7 +17,7 @@
  * Pedestrian runtime wiring.
  */
 
-/** Situation buckets, matching the Godot own enum `Situation { IDLE, ALARMED, FLEE }`. */
+/** Situation buckets, matching the the reference own enum `Situation { IDLE, ALARMED, FLEE }`. */
 enum class EBarkSituation : uint8
 {
 	IDLE,
@@ -28,7 +28,7 @@ enum class EBarkSituation : uint8
 struct GTC_UE5_API FBarkPool
 {
 	/**
-	 * The line for a situation at the given index, wrapping (Godot posmod) so any
+	 * The line for a situation at the given index, wrapping (the reference posmod) so any
 	 * counter/RNG value is valid. Returns "" for an unknown/empty situation.
 	 */
 	static FString Line(EBarkSituation Situation, int32 Index);

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "MissionObjectives.h"
 
@@ -53,7 +53,7 @@ void FMissionObjectives::Fail()
 
 FIntPoint FMissionObjectives::Progress() const
 {
-    // Godot progress(): Vector2i(done, total).
+    // the reference progress(): Vector2i(done, total).
     int32 Done = 0;
     for (const MissionFlow::FFlowObjective& Objective : Objectives)
     {

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -10,7 +10,7 @@
 
 /**
  * Self-wiring coordinator that makes the city REACT to the player's heat — the UE 5.7
- * port of Godot's CrimeReactionDirector Node. It owns an FNewsBulletin and an
+ * port of the reference CrimeReactionDirector Node. It owns an FNewsBulletin and an
  * FDistrictEconomy (the merged Economy model, reused via #include — NOT re-ported) and
  * drives both from the player's wanted level: a rising wanted level files a
  * severity-scaled news headline AND heats up the active district (dragging its
@@ -22,7 +22,7 @@
  * DEFERRED-OWNERSHIP (option-1 own-state): CrimeReactionDirector OWNS the news + district
  * models and takes the wanted level as INPUT via explicit driver methods (OnStarsChanged /
  * Tick). It reuses the merged FDistrictEconomy and FWantedTracker/wanted star data as
- * INPUT; it never reaches into the live WantedSubsystem. The Godot scene-graph wiring —
+ * INPUT; it never reaches into the live WantedSubsystem. The the reference scene-graph wiring —
  * resolving the "wanted" group, binding the stars_changed signal, and the per-frame
  * _process heat decay — is Wave 3 engine wiring. The radio/news ACTOR wiring (the radio
  * NEWS slot draining News, the news-bulletin display) is ALSO DEFERRED to Wave 3; here
@@ -56,7 +56,7 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-    // --- Event drivers (ported from the Godot Node) ------------------------
+    // --- Event drivers (ported from the the reference Node) ------------------------
 
     /**
      * The wanted star count changed to Stars. A rise heats the active district by

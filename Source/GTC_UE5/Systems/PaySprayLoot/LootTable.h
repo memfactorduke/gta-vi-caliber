@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -17,7 +17,7 @@
  *
  * RNG parity note: this uses FRandomStream, which is deterministic and
  * seed-reproducible WITHIN UE5 (a given seed replays the same sequence) — it is
- * NOT a Godot PCG32 reimplementation, so drops are NOT byte-identical to Godot.
+ * NOT a the reference PCG32 reimplementation, so drops are NOT byte-identical to Godot.
  * Confirmed safe: no GTC system needs Godot-identical sequences and the save does
  * not serialize the RNG. Mapping: randf -> GetFraction(); randi_range(lo, hi) ->
  * RandRange(lo, hi) (inclusive both ends).
@@ -92,7 +92,7 @@ public:
 
 private:
     /**
-     * Normalise a raw table: floor weight at 0, fix swapped Min/Max. (Godot's
+     * Normalise a raw table: floor weight at 0, fix swapped Min/Max. (the reference
      * malformed-dict filtering is unrepresentable with a typed FLootEntry, so it
      * has no analogue here.)
      */

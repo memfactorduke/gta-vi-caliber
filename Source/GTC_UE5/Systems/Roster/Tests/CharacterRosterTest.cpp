@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to a test_* function in the Godot parity oracle
+// Each test below maps 1:1 to a test_* function in the the reference reference behavior
 // game/tests/unit/test_character_roster.gd (14 functions). Identical literals/tolerances;
 // compound boolean returns are split into independent assertions. Deterministic numbers.
 
@@ -47,7 +47,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FRosterMalformedDroppedTest::RunTest(const FString& Parameters)
 {
-    // Godot rows: {"ok","OK"}, {"","Empty"} (empty id), {"NoId"} (missing id -> empty),
+    // the reference rows: {"ok","OK"}, {"","Empty"} (empty id), {"NoId"} (missing id -> empty),
     // {"ok","Dupe"} (duplicate id). Typed-port note: a missing-"id" dict is unrepresentable
     // with a typed FRosterCharacter; the empty-id row covers the same drop path 1:1, and a
     // second empty-id row stands in for the missing-id row.
@@ -204,7 +204,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FRosterPositionPersistsTest::RunTest(const FString& Parameters)
 {
     FCharacterRoster Roster;
-    // No Z-up remap: Godot Vector3(10,0,20)/(-5,0,8) carried 1:1 into FVector.
+    // No Z-up remap: the reference Vector3(10,0,20)/(-5,0,8) carried 1:1 into FVector.
     Roster.SetPosition(TEXT("mara"), FVector(10, 0, 20));
     Roster.SetPosition(TEXT("rico"), FVector(-5, 0, 8));
     TestTrue(TEXT("mara pos"), Roster.PositionOf(TEXT("mara")).Equals(FVector(10, 0, 20), Eps));

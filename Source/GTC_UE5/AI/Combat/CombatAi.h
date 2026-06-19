@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -11,23 +11,23 @@
  * an actual shootout — when to close distance, when to open fire, when to break
  * the line of sight, when to take cover.
  *
- * Direct port of the Godot `CombatAi` (RefCounted) at
+ * Direct port of the the reference `CombatAi` (RefCounted) at
  * `game/scripts/ai/combat_ai.gd`. All-static plain functions, no UObject, no
  * scene access, no RNG, no node state — so behaviour is deterministic and
  * unit-tested headless (Tests/CombatAiTest.cpp, prefix GTC.AI.Combat.CombatAi).
  * The owning enemy/officer node holds mutable state (current cover point, fire
  * cooldown, strafe side) and feeds these helpers each tick. "Planar" means the
- * XZ plane with Y ignored, matching the Godot source — NO Z-up remap.
+ * XZ plane with Y ignored, matching the the reference source — NO Z-up remap.
  *
  * PURE-CORE boundary: the helpers take distance/positions/flags as plain inputs.
  * The EQS cover query, Behavior Tree wiring, and line-of-fire/LOS traces that
  * feed `los_clear`/`in_arc` are the DEFERRED Wave-3 adapter — NOT implemented
  * here and NOT covered by the parity tests. Computed precision is `double` to
- * match the GDScript oracle's float arithmetic.
+ * match the the reference implementation oracle's float arithmetic.
  */
 
 /**
- * Discrete combat actions. Godot enum ordinal order preserved.
+ * Discrete combat actions. the reference enum ordinal order preserved.
  */
 enum class ECombatAction : uint8
 {

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -7,7 +7,7 @@
 /**
  * Pure swim-stamina / oxygen meter for the player when in water.
  *
- * Direct port of the Godot `SwimStamina` (RefCounted) stateful instance at
+ * Direct port of the the reference `SwimStamina` (RefCounted) stateful instance at
  * `game/scripts/player/swim_stamina.gd`. No scene access — a plain value type
  * (same pattern as FGpsNavigation's stateless math, but this one holds the
  * oxygen/stamina state). The swim node owns one and feeds it
@@ -16,11 +16,11 @@
  * the surface; stamina drains while swimming (more when sprinting) and recovers
  * while idle/floating.
  *
- * Double precision throughout, to match the GDScript float math. No engine
+ * Double precision throughout, to match the the reference implementation float math. No engine
  * wiring; driving this from a real water volume is a DEFERRED Wave-3 adapter.
  *
  * NOTE: this system is marked UNUSED in the migration inventory, but it has a
- * live Godot test oracle (game/tests/unit/test_swim_stamina.gd), so it is ported
+ * live the reference test oracle (game/tests/unit/test_swim_stamina.gd), so it is ported
  * with full parity coverage per the Wave-1 "port any that have an oracle" rule.
  *
  * Parity coverage: Tests/SwimStaminaTest.cpp, prefix GTC.Player.Motion,

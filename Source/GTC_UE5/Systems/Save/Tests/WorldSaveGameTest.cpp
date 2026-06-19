@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -10,9 +10,9 @@
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 
-// PURE-MODEL PARITY TEST for FWorldSaveGame, the UE port of Godot `save_game.gd`.
+// PURE-MODEL PARITY TEST for FWorldSaveGame, the UE port of the reference `save_game.gd`.
 // 1:1 with the oracle test_save_game.gd (7 funcs): identical literals/tolerances, compound
-// boolean returns SPLIT into independent assertions. The Godot SAMPLE Dictionary is rebuilt
+// boolean returns SPLIT into independent assertions. The the reference SAMPLE Dictionary is rebuilt
 // here over the in-module ordered JSON model so the round-trip semantics match exactly.
 
 namespace

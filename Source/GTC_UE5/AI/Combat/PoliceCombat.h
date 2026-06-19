@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -15,15 +15,15 @@
  *   - FCombatAi       — the tactical decision brain (advance/engage/reposition/…)
  *   - FPoliceResponse — maps wanted stars -> aggression (fire rate, chase speed)
  *
- * Direct port of the Godot `PoliceCombat` (RefCounted) at
+ * Direct port of the the reference `PoliceCombat` (RefCounted) at
  * `game/scripts/ai/police_combat.gd`. All-static plain functions, no UObject, no
  * scene/RNG/node state, "planar" = XZ with Y ignored — same convention as the
- * Godot source (NO Z-up remap). The Police node owns the mutable state (fire
+ * the reference source (NO Z-up remap). The Police node owns the mutable state (fire
  * cooldown, ammo, aim heading) and just executes the plan.
  *
  * PURE-CORE boundary: `los_clear`/`to_target_dir` come from Wave-3 LOS/aim
  * adapters NOT implemented or tested here. Computed precision is `double` to
- * match the GDScript oracle.
+ * match the the reference implementation oracle.
  */
 
 class GTC_UE5_API FPoliceCombat
@@ -41,7 +41,7 @@ public:
 
     /**
      * The whole per-tick decision for one officer, as a small deterministic
-     * record (the Godot `plan()` Dictionary as a nested value type):
+     * record (the the reference `plan()` Dictionary as a nested value type):
      *   Action     — FCombatAi action to execute this tick
      *   bFire      — true iff the officer should pull the trigger now
      *   bInArc     — whether the target is within the firing arc (debug/feel)

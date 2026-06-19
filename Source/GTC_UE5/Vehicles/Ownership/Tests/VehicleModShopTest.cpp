@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -6,7 +6,7 @@
 
 #include "../VehicleModShop.h"
 
-// Each test below maps 1:1 to an assertion in the Godot parity oracle
+// Each test below maps 1:1 to an assertion in the the reference reference behavior
 // game/tests/unit/test_vehicle_mod_shop.gd (22 tests).
 
 static constexpr double ModShopEps = 1.0e-4;

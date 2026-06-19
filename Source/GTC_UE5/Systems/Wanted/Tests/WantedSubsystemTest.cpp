@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "Misc/AutomationTest.h"
 
@@ -13,8 +13,8 @@ using GtcTest::Eps;
 // Subsystem BEHAVIOR tests (Wave 2 rule): these verify UWantedSubsystem OWNS its three
 // pure models (FWantedSystem, the FCrimeWitness report timers, FWantedEvasion) and that
 // crime/tick/evasion drivers wire them correctly — they do NOT re-test the pure
-// heat/LOS/evasion math (that is the 11/25/19 parity oracles above). The Godot
-// wanted_tracker.gd has NO parity oracle, so these are behavior assertions for the port,
+// heat/LOS/evasion math (that is the 11/25/19 reference behaviors above). The Godot
+// wanted_tracker.gd has NO reference behavior, so these are behavior assertions for the port,
 // not 1:1 parity. Scene-graph wiring (WeaponController signal, observer gathering from
 // "pedestrians"/"police" groups, witness-down liveness) is Wave 3 and DEFERRED.
 
@@ -178,7 +178,7 @@ bool FWantedSubsystemSerializeRoundTripTest::RunTest(const FString& Parameters)
     UWantedSubsystem* Restored = MakeWantedSubsystemForTest();
     Restored->RestoreHeat(Snapshot);
     TestEqual(TEXT("heat restored"), Restored->GetWantedSystem().Heat, Snapshot, Eps);
-    // Negative restore floors at 0 (Godot maxf guard).
+    // Negative restore floors at 0 (the reference maxf guard).
     Restored->RestoreHeat(-5.0);
     TestEqual(TEXT("negative floors to 0"), Restored->GetWantedSystem().Heat, 0.0, Eps);
     Subsystem->Deinitialize();

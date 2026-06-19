@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -11,10 +11,10 @@
  * deterministic and unit-tested headless (Tests/CombatCoverTest.cpp, prefix
  * GTC.AI.Combat.CombatCover).
  *
- * Direct port of the Godot `CombatCover` (RefCounted) at
- * `game/scripts/ai/combat_cover.gd`. The Godot cover point is a Dictionary
+ * Direct port of the the reference `CombatCover` (RefCounted) at
+ * `game/scripts/ai/combat_cover.gd`. The the reference cover point is a Dictionary
  * {pos: Vector3, normal: Vector3}; here it is the plain `FCoverPoint` value type
- * (nested Godot Dictionary -> nested C++ struct). `Normal` is the direction the
+ * (nested the reference Dictionary -> nested C++ struct). `Normal` is the direction the
  * cover FACES — its open side, the side an agent stands on to be protected.
  * Convention: a threat is blocked when it sits on the faced side, i.e.
  * dot(threat - pos, normal) > 0 (the wall is between the agent and the threat).
@@ -26,7 +26,7 @@
  * PURE-CORE boundary: best-cover scoring runs over caller-supplied candidate
  * positions. The EQS query that produces those candidates and the physics LOS
  * traces are the DEFERRED Wave-3 adapter — NOT implemented/tested here. Computed
- * precision is `double` to match the GDScript oracle.
+ * precision is `double` to match the the reference implementation oracle.
  */
 
 class GTC_UE5_API FCombatCover

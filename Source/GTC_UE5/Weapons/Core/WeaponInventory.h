@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -6,7 +6,7 @@
 
 /**
  * Pure owned-weapon / ammo model for the player's arsenal and weapon-wheel.
- * Direct port of the Godot `WeaponInventory` (RefCounted) at
+ * Direct port of the the reference `WeaponInventory` (RefCounted) at
  * `game/scripts/weapons/weapon_inventory.gd`.
  *
  * No scene access — a node (e.g. WeaponController) owns one and asks it what is
@@ -20,7 +20,7 @@
  * The inventory starts with the always-present unarmed "fists" slot equipped, so
  * CurrentId() is never empty and the wheel always has at least one entry.
  *
- * Parity note: Godot's Array/Dictionary iteration is insertion-ordered and
+ * Parity note: the reference Array/Dictionary iteration is insertion-ordered and
  * OwnedIds()/cycling rely on it, so the slots are stored as an ordered TArray
  * with a companion TMap for O(1) id lookup (the GarageStorage pattern).
  */

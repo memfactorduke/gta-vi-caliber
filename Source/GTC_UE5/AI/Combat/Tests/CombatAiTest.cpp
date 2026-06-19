@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #if WITH_AUTOMATION_TESTS
 
@@ -9,7 +9,7 @@
 using GtcTest::Eps;
 
 // Parity oracle: game/tests/unit/test_combat_ai.gd. Each It(...) maps 1:1 to one
-// Godot test_* function, asserting the SAME conditions as the oracle. Godot
+// the reference test_* function, asserting the SAME conditions as the oracle. Godot
 // is_equal_approx is rendered with the shared GtcTest::Eps tolerance.
 BEGIN_DEFINE_SPEC(FCombatAiSpec, "GTC.AI.Combat.CombatAi",
     EAutomationTestFlags::ProductFilter | EAutomationTestFlags_ApplicationContextMask)

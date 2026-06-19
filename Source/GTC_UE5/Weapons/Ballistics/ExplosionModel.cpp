@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "ExplosionModel.h"
 
@@ -6,7 +6,7 @@
 
 namespace
 {
-    // Godot's `Vector3.UP` is (0, 1, 0). The model stays in the Godot frame (no
+    // the reference `Vector3.UP` is (0, 1, 0). The model stays in the the reference frame (no
     // Z-up remap), so the upward bias must be along +Y here — NOT UE's
     // FVector::UpVector (0, 0, 1). The oracle asserts k.y > 0 and k.z == 0.
     const FVector GodotUp(0.0, 1.0, 0.0);

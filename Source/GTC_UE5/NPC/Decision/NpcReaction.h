@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -8,14 +8,14 @@
  * How a citizen reacts to the player: ignore, gawk, or flee. Pure decision math
  * — distance + how threatening the player currently is + this NPC's own nerve.
  *
- * Direct port of the Godot `NpcReaction` (RefCounted) at
+ * Direct port of the the reference `NpcReaction` (RefCounted) at
  * `game/scripts/npc/npc_reaction.gd`. Unit-tested headless
  * (Tests/NpcReactionTest.cpp, prefix GTC.NPC.Decision.NpcReaction). Threat is a
  * 0..1 read of the player right now; bravery and curiosity are per-NPC traits.
  *
  * PURE-CORE boundary: the agent acting on the verb (locomotion / panic spread
  * wiring) is the DEFERRED Wave-3 adapter and is NOT covered by the parity tests.
- * Computed precision is `double` to match GDScript.
+ * Computed precision is `double` to match the reference implementation.
  */
 struct GTC_UE5_API FNpcReaction
 {

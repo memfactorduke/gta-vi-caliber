@@ -1,16 +1,16 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
 #include "CoreMinimal.h"
 
 /**
- * Pure reactive-news model — the UE 5.7 port of Godot's NewsBulletin (RefCounted).
+ * Pure reactive-news model — the UE 5.7 port of the reference NewsBulletin (RefCounted).
  * Turns the player's notable deeds (crimes, rampages, heists, clean escapes, stunts)
  * into radio/TV headlines, so the world talks about YOU. A controller calls Report()
  * when something newsworthy happens; the radio's NEWS slot pulls NextBulletin() for the
  * anchor to read. Wording escalates with severity. Plain C++ value type (no UObject).
- * Headless-testable (parity oracle game/tests/unit/test_news_bulletin.gd).
+ * Headless-testable (reference behavior game/tests/unit/test_news_bulletin.gd).
  *
  * No nodes, no scene access, deterministic (templates chosen by severity, not RNG): a
  * controller (CrimeReactionDirector) owns one and drains it. Report(kind, severity,
@@ -45,7 +45,7 @@ public:
     /**
      * Report a newsworthy event, enqueuing a headline. Severity is clamped to 1..5;
      * Place defaults to "the city" and Count to 0. Returns the headline text, or "" for
-     * an unknown kind. Mirrors Godot report(kind, severity, context).
+     * an unknown kind. Mirrors the reference report(kind, severity, context).
      */
     FString Report(const FString& Kind, int32 Severity, const FString& Place = TEXT("the city"), int32 Count = 0);
 
@@ -55,7 +55,7 @@ public:
 
     /**
      * Pull the next headline for the news anchor (FIFO). Returns Filler when nothing is
-     * queued, so the slot always has something to read. Mirrors Godot next_bulletin().
+     * queued, so the slot always has something to read. Mirrors the reference next_bulletin().
      */
     FString NextBulletin();
 

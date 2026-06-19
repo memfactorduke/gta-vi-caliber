@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "WeaponBallistics.h"
 
@@ -53,7 +53,7 @@ FVector FWeaponBallistics::SpreadDirection(const FVector& AimDir, double SpreadR
     {
         return Aim;
     }
-    // An orthonormal basis spanning the plane perpendicular to Aim (Godot frame).
+    // An orthonormal basis spanning the plane perpendicular to Aim (the reference frame).
     const FVector Helper = FMath::Abs(FVector::DotProduct(Aim, FVector::UpVector)) < 0.99
         ? FVector::UpVector
         : FVector::RightVector;

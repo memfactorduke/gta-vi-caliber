@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -7,22 +7,22 @@
 /**
  * Pure camera-feel math (FOV kick, smoothing, recenter, turn-roll, free-look).
  *
- * Direct port of the Godot `CameraFeel` (RefCounted) static helpers at
+ * Direct port of the the reference `CameraFeel` (RefCounted) static helpers at
  * `game/scripts/camera/camera_feel.gd`. Static methods only, no scene access —
  * the same testable-core pattern as PlayerMotion. Numeric/pure by design.
  *
- * Coordinate handedness (Godot RH Y-up -> UE LH Z-up): deliberately NOT handled
+ * Coordinate handedness (the reference RH Y-up -> UE LH Z-up): deliberately NOT handled
  * here. These helpers stay pure scalar/Vector2 math; the axis/sign remap that
  * wires them onto the UE camera rig is a Wave 3 integration concern, not part of
- * this parity unit. The `RecenterYaw` convention below mirrors the Godot math
- * exactly so its parity oracle holds; mapping its result onto a UE yaw axis is
+ * this parity unit. The `RecenterYaw` convention below mirrors the the reference math
+ * exactly so its reference behavior holds; mapping its result onto a UE yaw axis is
  * likewise W3.
  *
  * Parity coverage (see Tests/CameraFeelTest.cpp, prefix GTC.Camera.CameraFeel),
  * mirroring game/tests/unit/test_camera_feel.gd:
  *   SprintBlend, FovForBlend, ExpSmoothed, RecenterYaw, ApproachAngle, TurnRoll.
  *
- * NOT parity-covered: LookOffset and LookReturn have NO Godot test oracle. They
+ * NOT parity-covered: LookOffset and LookReturn have NO the reference test oracle. They
  * are ported faithfully but are UNTESTED FOR PARITY — verify them behaviorally
  * during Wave 3 camera integration. No automation test asserts their behavior.
  */
@@ -67,7 +67,7 @@ struct GTC_UE5_API FCameraFeel
     static float TurnRoll(float YawRate, float Blend, float RollGain, float MaxRoll);
 
     /**
-     * UNTESTED FOR PARITY — no Godot oracle exists; verify behaviorally during
+     * UNTESTED FOR PARITY — no the reference oracle exists; verify behaviorally during
      * Wave 3 camera integration.
      *
      * Apply a mouse-motion delta to a free-look (yaw, pitch) offset and clamp it,
@@ -84,7 +84,7 @@ struct GTC_UE5_API FCameraFeel
         float PitchMax);
 
     /**
-     * UNTESTED FOR PARITY — no Godot oracle exists; verify behaviorally during
+     * UNTESTED FOR PARITY — no the reference oracle exists; verify behaviorally during
      * Wave 3 camera integration.
      *
      * Ease a free-look offset back toward neutral at Rate rad/s on each axis —

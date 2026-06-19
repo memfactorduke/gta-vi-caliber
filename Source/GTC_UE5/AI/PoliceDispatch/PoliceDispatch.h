@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -9,7 +9,7 @@
  * should be in the field at a given heat, where to spawn reinforcements (rings
  * that widen with the stars), and which existing units to recall.
  *
- * Direct 1:1 port of the Godot RefCounted `PoliceDispatch`
+ * Direct 1:1 port of the the reference RefCounted `PoliceDispatch`
  * (game/scripts/ai/police_dispatch.gd). All-static plain functions, no UObject,
  * no scene/RNG/node state -- RNG samples are injected by the caller -- so the
  * escalation math is deterministic and unit-tested
@@ -19,10 +19,10 @@
  * World/Police/PoliceResponse.h.
  *
  * "Planar" means the XZ plane (X = cos(angle)*r, Z = sin(angle)*r) with Y carried
- * from the spawn centre -- ported VERBATIM from the Godot source's Vector3 math
+ * from the spawn centre -- ported VERBATIM from the the reference source's Vector3 math
  * with NO Z-up remap, matching the bit-for-bit oracle.
  *
- * Double precision throughout (LWC) to match the Godot oracle's float arithmetic.
+ * Double precision throughout (LWC) to match the the reference oracle's float arithmetic.
  *
  * PURE-CORE boundary: these helpers take positions/counts/RNG samples as plain
  * inputs. Actual unit spawning (instancing police prefabs at the returned

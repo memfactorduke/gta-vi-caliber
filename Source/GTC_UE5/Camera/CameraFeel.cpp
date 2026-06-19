@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "CameraFeel.h"
 
@@ -7,8 +7,8 @@
 namespace
 {
     /**
-     * Inline port of Godot's `move_toward(a, b, step)`: step `a` toward `b` by at
-     * most `abs(step)`, never overshooting. Mirrors Godot semantics exactly.
+     * Inline port of the reference `move_toward(a, b, step)`: step `a` toward `b` by at
+     * most `abs(step)`, never overshooting. Mirrors the reference semantics exactly.
      */
     float MoveToward(float A, float B, float Step)
     {
@@ -46,16 +46,16 @@ float FCameraFeel::RecenterYaw(float VelocityX, float VelocityZ)
     {
         return 0.0f;
     }
-    // Godot atan2(y, x) -> FMath::Atan2(Y, X): recenter_yaw = atan2(-vx, -vz).
+    // the reference atan2(y, x) -> FMath::Atan2(Y, X): recenter_yaw = atan2(-vx, -vz).
     return FMath::Atan2(-VelocityX, -VelocityZ);
 }
 
 float FCameraFeel::ApproachAngle(float Current, float Target, float MaxStep)
 {
     // wrapf(target - current, -PI, PI) -> shortest signed arc in (-PI, PI].
-    // Known non-bit-exact divergence from the Godot oracle at the antipodal
+    // Known non-bit-exact divergence from the the reference oracle at the antipodal
     // (180-off) tie-break: for a diff of exactly +/-PI, FMath::UnwindRadians
-    // resolves to +PI (range (-PI, PI]) whereas Godot wrapf(diff, -PI, PI)
+    // resolves to +PI (range (-PI, PI]) whereas the reference wrapf(diff, -PI, PI)
     // resolves to -PI (range [-PI, PI)), so the step direction flips. No parity
     // test hits this measure-zero input and the difference is behaviorally
     // negligible, but it is documented here for honesty.
@@ -76,7 +76,7 @@ FVector2D FCameraFeel::LookOffset(
     float PitchMin,
     float PitchMax)
 {
-    // UNTESTED FOR PARITY — no Godot oracle; verify behaviorally in Wave 3.
+    // UNTESTED FOR PARITY — no the reference oracle; verify behaviorally in Wave 3.
     return FVector2D(
         FMath::Clamp(Current.X - MouseRelative.X * Sensitivity, -YawLimit, YawLimit),
         FMath::Clamp(Current.Y - MouseRelative.Y * Sensitivity, PitchMin, PitchMax));
@@ -84,7 +84,7 @@ FVector2D FCameraFeel::LookOffset(
 
 FVector2D FCameraFeel::LookReturn(const FVector2D& Current, float Rate, float Delta)
 {
-    // UNTESTED FOR PARITY — no Godot oracle; verify behaviorally in Wave 3.
+    // UNTESTED FOR PARITY — no the reference oracle; verify behaviorally in Wave 3.
     const float Step = Rate * Delta;
     return FVector2D(MoveToward(Current.X, 0.0f, Step), MoveToward(Current.Y, 0.0f, Step));
 }

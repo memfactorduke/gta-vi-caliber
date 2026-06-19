@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -10,14 +10,14 @@
  * sell high in another, with per-district price multipliers driving arbitrage and
  * carried contraband raising bust risk. Plain C++ value type (no UObject):
  * buys/sells never mutate the wallet; the caller applies the result. Headless-testable
- * (parity oracle test_contraband_market.gd).
+ * (reference behavior test_contraband_market.gd).
  *
  * Each good is {Id, BasePrice}. Garbage entries (empty id, non-positive price) are
  * dropped at construction. Per-district price = BasePrice * a district multiplier
  * derived from a STABLE HASH of the district id (so every district pays a fixed,
  * different rate without a hand-maintained table) and drifting via Fluctuate().
  *
- * Parity note: Godot uses its built-in hash(); we use a deterministic FNV-1a string
+ * Parity note: the reference uses its built-in hash(); we use a deterministic FNV-1a string
  * hash instead. The oracle never pins exact hash values — it derives expected prices
  * from MultiplierFor() itself and only asserts band membership and that distinct
  * districts differ — so any stable distinct mapping satisfies it.
@@ -102,7 +102,7 @@ public:
 
     /** Nudge every known district's multiplier; deterministic for a given seed. */
     void Fluctuate(FRandomStream& Rng, double Volatility);
-    /** No-rng overload mirroring Godot's `fluctuate(null, ...)`: a no-op. */
+    /** No-rng overload mirroring the reference `fluctuate(null, ...)`: a no-op. */
     void FluctuateNoRng(double Volatility);
 
     /** Determinism helper: a fresh stream seeded with Seed. */

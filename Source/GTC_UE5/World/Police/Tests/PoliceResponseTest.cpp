@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #if WITH_AUTOMATION_TESTS
 
@@ -6,7 +6,7 @@
 #include "../PoliceResponse.h"
 
 // Parity oracle: game/tests/unit/test_police_response.gd. Each It(...) maps 1:1
-// to one Godot test function, asserting the SAME conditions as the oracle with
+// to one the reference test function, asserting the SAME conditions as the oracle with
 // no added tolerances. The profile() dict-key-presence check is rendered as a
 // typed field-equality assertion against the source functions (APPROVED).
 BEGIN_DEFINE_SPEC(FPoliceResponseSpec, "GTC.World.Police.PoliceResponse",

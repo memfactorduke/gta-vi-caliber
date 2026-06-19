@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -8,12 +8,12 @@
 #include "ProgressionTracker.generated.h"
 
 /**
- * Live respect/XP tracker — the UE 5.7 port of Godot's self-wiring ProgressionTracker
+ * Live respect/XP tracker — the UE 5.7 port of the reference self-wiring ProgressionTracker
  * Node. Awards respect/XP as the player completes mission objectives and missions, so
  * levels climb during play, and exposes level()/level_progress() for the HUD.
  *
  * Lifecycle: a UGameInstanceSubsystem (progression is player-global and outlives any
- * single world/level, like the Godot autoload-adjacent group "progression"). It owns a
+ * single world/level, like the the reference autoload-adjacent group "progression"). It owns a
  * single FPlayerProgression for its whole lifetime.
  *
  * OWNERSHIP MODEL (approved design — option 1): ProgressionTracker OWNS the progression
@@ -75,12 +75,12 @@ public:
     /**
      * Rebuild from a Serialize() snapshot: reset and replay lifetime XP through the
      * curve, reconstructing level and within-level progress exactly. Negative input is
-     * floored to 0 (Godot maxi(..., 0)).
+     * floored to 0 (the reference maxi(..., 0)).
      */
     void Restore(int32 InTotalXp);
 
     /**
-     * Garbage-restore path: Godot's restore() runs the value through SaveData.number_or,
+     * Garbage-restore path: the reference restore() runs the value through SaveData.number_or,
      * so a non-number ("junk") becomes 0 — a clean reset. Mirrors that branch.
      */
     void RestoreGarbage();

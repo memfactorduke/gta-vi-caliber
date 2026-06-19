@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -21,11 +21,11 @@
  * non-positive tank are dropped; duplicate ids are dropped.
  *
  * Parity notes:
- * - double throughout; identical literals/tolerances to the Godot oracle.
- * - Godot's Dictionary is insertion-ordered and Ids()/ToState() rely on it; TMap does NOT preserve
+ * - double throughout; identical literals/tolerances to the the reference oracle.
+ * - an insertion-ordered map is insertion-ordered and Ids()/ToState() rely on it; TMap does NOT preserve
  *   order, so an ordered backing store (TArray<FVehicleEntry> + TMap index) mirrors that, like the
  *   sibling FactionStanding/VehicleModShop.
- * - Godot's _is_num (float-or-int) and the to_dict round-trip map to typed fields; LoadState's
+ * - the reference _is_num (float-or-int) and the to_dict round-trip map to typed fields; LoadState's
  *   "non-numeric values ignored" is preserved via an explicit bHasFuel/etc. per-field flag struct.
  *
  * Deferred Wave-3 adapters (NOT implemented/tested here): the Car component that drives this model,
@@ -59,7 +59,7 @@ public:
         double TireWear = 0.0;
     };
 
-    /** Outcome of a Drive() call (mirrors the Godot result Dictionary). */
+    /** Outcome of a Drive() call (mirrors the the reference result Dictionary). */
     struct FDriveResult
     {
         double FuelUsed = 0.0;

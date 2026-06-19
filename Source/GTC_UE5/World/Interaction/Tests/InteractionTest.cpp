@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #if WITH_AUTOMATION_TESTS
 
@@ -6,9 +6,9 @@
 #include "../Interaction.h"
 
 // Parity oracle: game/tests/unit/test_interaction.gd. Each It(...) maps 1:1 to one
-// Godot test function. The selection is integer index identity, so no float
+// the reference test function. The selection is integer index identity, so no float
 // tolerance is needed; distances use FVector::Dist exactly as Godot
-// Vector3.distance_to. Positions stay in the Godot XZ frame (no Z-up remap).
+// Vector3.distance_to. Positions stay in the the reference XZ frame (no Z-up remap).
 BEGIN_DEFINE_SPEC(FInteractionSpec, "GTC.World.Interaction",
     EAutomationTestFlags::ProductFilter | EAutomationTestFlags_ApplicationContextMask)
 END_DEFINE_SPEC(FInteractionSpec)

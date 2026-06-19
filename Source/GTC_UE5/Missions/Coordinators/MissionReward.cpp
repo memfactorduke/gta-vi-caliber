@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "MissionReward.h"
 
@@ -15,7 +15,7 @@ void UMissionReward::Deinitialize()
 
 void UMissionReward::BindController(UMissionController* Controller)
 {
-    // Re-bind cleanly so we never double-subscribe (Godot connects once in _ready).
+    // Re-bind cleanly so we never double-subscribe (the reference connects once in _ready).
     UnbindController();
     if (Controller == nullptr)
     {

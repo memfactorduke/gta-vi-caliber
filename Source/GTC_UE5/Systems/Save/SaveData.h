@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #pragma once
 
@@ -6,11 +6,11 @@
 #include "SaveJson.h"
 
 /**
- * Pure (de)serialization for a save snapshot — the UE port of Godot `save_data.gd`
+ * Pure (de)serialization for a save snapshot — the UE port of the reference `save_data.gd`
  * (class SaveData, RefCounted). No file or scene access: the SaveSubsystem gathers a
  * plain JSON object of game state, this wraps it with a version header and turns it
  * to/from JSON text, and the round-trip + malformed-input handling is unit-tested
- * (Tests/SaveDataTest.cpp, parity oracle game/tests/unit/test_save_data.gd, 21 funcs).
+ * (Tests/SaveDataTest.cpp, reference behavior game/tests/unit/test_save_data.gd, 21 funcs).
  * Decode never throws / never crashes: bad input yields an empty snapshot.
  *
  * JSON backing: a small in-module JSON model (SaveJson.h) — NOT the engine `Json` module.
@@ -18,9 +18,9 @@
  * Json type would require adding "Json" to PublicDependencyModuleNames (a forbidden
  * Build.cs edit — Json is only a transitive public dep and does not link into this module),
  * so the in-module model is the sanctioned equivalent. Object member order is insertion
- * order, matching Godot's observable Dictionary order.
+ * order, matching the reference observable Dictionary order.
  *
- * Schema versioning (matches the Godot model exactly):
+ * Schema versioning (matches the the reference model exactly):
  *   v2 added stats (money/armor), progression XP, property ownership and boat/bike
  *      vehicle entries on top of v1's position/health/wanted/cars.
  *   v3 added lifetime/100%-completion stats as a separate section.
@@ -29,7 +29,7 @@
  * --- ROUND-TRIP TOLERANCE CONTRACT (read before relying on parity) ---
  * Round-trip parity for this model is by *value within tolerance / structural equality*,
  * NOT byte-identity. The Wave 1 ports feed values produced by FRandomStream and `double`
- * literals that are deterministic-per-seed but NOT byte-identical to Godot's RNG / float
+ * literals that are deterministic-per-seed but NOT byte-identical to the reference RNG / float
  * text, so JSON number text may differ in the least-significant digits across the
  * Godot<->UE boundary. Callers and tests MUST compare floats with GtcTest::Eps (shared
  * Tests/GtcTestTolerances.h), never via byte/string equality of the serialized text.
@@ -37,7 +37,7 @@
  * integers, strings and bools round-trip exactly; only floating-point text is tolerance-bound.
  *
  * Plain C++ value namespace (no UObject): static-style free functions, exactly like the
- * Godot static SaveData API. The owning USaveSubsystem is the UObject layer.
+ * the reference static SaveData API. The owning USaveSubsystem is the UObject layer.
  */
 namespace GtcSaveData
 {

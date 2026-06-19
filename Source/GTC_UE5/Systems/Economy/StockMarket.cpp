@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) 2026 GTC contributors
 
 #include "StockMarket.h"
 
@@ -368,7 +368,7 @@ void StockMarket::Move(const FString& Id, double Magnitude)
         return;
     }
     const double Effective = Magnitude * Company->Volatility;
-    // Mirror Godot is_zero_approx (CMP_EPSILON = 1e-5): a zero-volatility / zero net
+    // Mirror the reference is_zero_approx (CMP_EPSILON = 1e-5): a zero-volatility / zero net
     // move leaves the price untouched.
     if (FMath::Abs(Effective) < 1e-5)
     {
