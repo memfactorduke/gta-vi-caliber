@@ -74,9 +74,10 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
       cooldowns + hysteresis over `FNpcReaction::Decide`, mirroring the repo's
       bark/flinch idiom, so a citizen commits to a reaction instead of
       flickering. `GTC.NPC.Decision.ReactionState`. ✅ oracle 16/16.
-- [ ] **Crowd spawn/despawn budget** (`FCrowdBudget`): from live count, target,
+- [x] **Crowd spawn/despawn budget** (`FCrowdBudget`): from live count, target,
       ring radii, per-pass cap and per-citizen distances, decide how many to
-      spawn and which to retire — invisible to the player. `GTC.NPC.CrowdBudget`.
+      spawn, where, which to retire (farthest first), and the distance-LOD tick —
+      invisible to the player. `GTC.NPC.CrowdBudget`. ✅ oracle 16/16.
 
 ## Done log
 
@@ -105,3 +106,26 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
 - `FTurnChoice` (`AI/Traffic/TurnChoice.{h,cpp}` + `Tests/TurnChoiceTest.cpp`,
   `GTC.AI.Traffic.Turn`). Junction lane choice (route-follow + straightest fallback)
   + maneuver classification. Out-of-tree oracle 12/12. In-editor run pending.
+- `FCrowdBudget` (`NPC/Population/CrowdBudget.{h,cpp}` + `Tests/CrowdBudgetTest.cpp`,
+  `GTC.NPC.CrowdBudget`). Spawn/despawn/ring/LOD streaming math extracted from
+  UGTCCrowdSubsystem. Out-of-tree oracle 16/16. In-editor run pending.
+
+## Status
+
+**Pure-core checklist exhausted** — all 8 pieces landed on `m4/living-city-pure-core`
+(PR #197), each out-of-tree-verified (8 oracles, 121 assertions, `oracle/run.sh`).
+The M4 vertical slice is feature-complete in pure-core: a car can route the true
+road graph (FindPath → RoadRoute → LanePath), keep spacing (TrafficLane +
+TrafficModel), arbitrate junctions (Intersection + TurnChoice); a citizen can path
+the navmesh grid (NavGrid) and commit to flee/gawk (ReactionState); the crowd
+streams around the camera (CrowdBudget).
+
+**Outstanding — needs the live editor (stop-and-ask):**
+1. In-editor UnrealBuildTool build of `GTC_UE5Editor` + `Automation RunTests GTC.`
+   (the load-bearing check that could not run while the editor was up).
+2. Adapter wiring: a traffic actor/subsystem driving Chaos vehicles along the
+   FLanePath/FTrafficLane pipeline, citizen wiring of FNavGrid paths +
+   FReactionState onto the existing OnContactReaction/locomotion seams, and
+   feeding FCrowdBudget back into UGTCCrowdSubsystem's StreamPopulation.
+3. Baking the per-district walkability grid + road centerlines from the level
+   (navmesh / OSM), and dressing/spawning one fully-alive district block.
