@@ -37,8 +37,9 @@ So in this module the streaming core is greenfield. Build it fresh under
   tile ops (or M ms of work) per tick so a burst of newly-needed tiles spreads
   across frames instead of hitching.
   `World/Streaming/StreamBudget.{h,cpp}`, tests `GTC.World.Streaming.Budget.*`.
-- [ ] **Residency / VRAM accounting** — track resident-set bytes against a
+- [x] **Residency / VRAM accounting** — track resident-set bytes against a
   budget; pick eviction victims (lowest priority / farthest) when over budget.
+  `World/Streaming/ResidencyBudget.{h,cpp}`, tests `GTC.World.Streaming.Residency.*`.
 - [ ] **Residency planner** — ties grid + priority + hysteresis + budget into a
   deterministic per-frame *(load list, unload list)* decision, fed by a priority
   queue ordering. The headless brain the runtime adapter will drive.
