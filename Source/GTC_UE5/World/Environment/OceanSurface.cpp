@@ -6,12 +6,12 @@
 namespace
 {
 	constexpr double TwoPi = 2.0 * UE_DOUBLE_PI;
-	constexpr double Eps = 1e-9;
+	constexpr double OceanEps = 1e-9;
 }
 
 double FOceanSurface::Wavenumber(double Wavelength)
 {
-	if (Wavelength <= Eps)
+	if (Wavelength <= OceanEps)
 	{
 		return 0.0;
 	}
@@ -21,7 +21,7 @@ double FOceanSurface::Wavenumber(double Wavelength)
 double FOceanSurface::AngularFrequency(const FGerstnerWave& Wave, double Gravity)
 {
 	const double K = Wavenumber(Wave.Wavelength);
-	if (K <= Eps)
+	if (K <= OceanEps)
 	{
 		return 0.0;
 	}
@@ -58,7 +58,7 @@ FOceanSample FOceanSurface::Sample(const FGerstnerWave* Waves, int32 Count,
 
 		// Normalise the travel direction; skip a degenerate (zero-direction) wave.
 		const double DirLen = FMath::Sqrt(W.DirX * W.DirX + W.DirY * W.DirY);
-		if (DirLen <= Eps)
+		if (DirLen <= OceanEps)
 		{
 			continue;
 		}
@@ -66,7 +66,7 @@ FOceanSample FOceanSurface::Sample(const FGerstnerWave* Waves, int32 Count,
 		const double Dy = W.DirY / DirLen;
 
 		const double K = Wavenumber(W.Wavelength);
-		if (K <= Eps)
+		if (K <= OceanEps)
 		{
 			continue;
 		}
@@ -103,7 +103,7 @@ FOceanSample FOceanSurface::Sample(const FGerstnerWave* Waves, int32 Count,
 	double Ny = -SlopeY;
 	double Nz = 1.0 - NzReduce;
 	const double NLen = FMath::Sqrt(Nx * Nx + Ny * Ny + Nz * Nz);
-	if (NLen > Eps)
+	if (NLen > OceanEps)
 	{
 		Nx /= NLen;
 		Ny /= NLen;

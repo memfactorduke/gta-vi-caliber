@@ -6,7 +6,7 @@
 namespace
 {
 	// Smoothstep with explicit edges, clamped — C1-continuous 0->1 ramp.
-	double SmoothStep(double Edge0, double Edge1, double X)
+	double NightSmoothStep(double Edge0, double Edge1, double X)
 	{
 		if (Edge1 <= Edge0)
 		{
@@ -42,5 +42,5 @@ double FNightLights::LitFraction(double Daylight, double OnThreshold, double Off
 	const double On = FMath::Min(OnThreshold, OffThreshold);
 	const double Off = FMath::Max(OnThreshold, OffThreshold);
 	// All lit below the dusk edge, all dark above the dawn edge, smooth in between.
-	return 1.0 - SmoothStep(On, Off, Daylight);
+	return 1.0 - NightSmoothStep(On, Off, Daylight);
 }

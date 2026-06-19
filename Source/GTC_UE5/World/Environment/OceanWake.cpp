@@ -6,7 +6,7 @@
 namespace
 {
 	// Smoothstep with explicit edges, clamped — C1-continuous 0->1 ramp.
-	double SmoothStep(double Edge0, double Edge1, double X)
+	double WakeSmoothStep(double Edge0, double Edge1, double X)
 	{
 		if (Edge1 <= Edge0)
 		{
@@ -46,7 +46,7 @@ double FOceanWake::WakeStrength01(double Speed, double PlaningSpeed)
 	{
 		return Speed > 0.0 ? 1.0 : 0.0;
 	}
-	return SmoothStep(0.0, PlaningSpeed, FMath::Max(0.0, Speed));
+	return WakeSmoothStep(0.0, PlaningSpeed, FMath::Max(0.0, Speed));
 }
 
 double FOceanWake::BowFoamRate(double Speed, double PlaningSpeed, double MaxRate)
@@ -63,7 +63,7 @@ double FOceanWake::WhitecapFoam01(double Jacobian, double FoamJacobian)
 	// Foam onsets as the surface folds: full coverage at/below Jacobian 0, none
 	// once the sea is smoother than the onset threshold.
 	const double Onset = FMath::Max(1e-6, FoamJacobian);
-	return 1.0 - SmoothStep(0.0, Onset, FMath::Clamp(Jacobian, 0.0, Onset));
+	return 1.0 - WakeSmoothStep(0.0, Onset, FMath::Clamp(Jacobian, 0.0, Onset));
 }
 
 double FOceanWake::TrailFade01(double AgeSeconds, double LifetimeSeconds)
