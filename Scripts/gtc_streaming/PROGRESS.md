@@ -23,9 +23,10 @@ So in this module the streaming core is greenfield. Build it fresh under
   center/bounds, Chebyshev tile distance, square residency-window enumeration.
   The coordinate substrate every other piece sits on.
   `World/Streaming/StreamingGrid.{h,cpp}`, tests `GTC.World.Streaming.Grid.*`.
-- [ ] **Load/unload priority from camera position + velocity vector** —
-  `FTileStreamPriority`: score each candidate tile so tiles *ahead* of the
-  camera's motion load first; behind-and-far unload first.
+- [x] **Load/unload priority from camera position + velocity vector** —
+  `FTileStreamPriority`: anticipatory look-ahead distance so tiles *ahead* of the
+  camera's motion load first; behind-and-far are least urgent.
+  `World/Streaming/TileStreamPriority.{h,cpp}`, tests `GTC.World.Streaming.Priority.*`.
 - [ ] **Boundary hysteresis** — separate load vs. unload radii (+ optional dwell)
   so tiles straddling a ring boundary don't thrash load/unload every frame.
 - [ ] **Per-tile LOD / impostor distance selection** — choose a tile's detail
