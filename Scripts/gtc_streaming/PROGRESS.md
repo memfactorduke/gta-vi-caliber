@@ -30,8 +30,9 @@ So in this module the streaming core is greenfield. Build it fresh under
 - [x] **Boundary hysteresis** — separate load vs. unload radii (+ optional dwell)
   so tiles straddling a ring boundary don't thrash load/unload every frame.
   `World/Streaming/TileHysteresis.{h,cpp}`, tests `GTC.World.Streaming.Hysteresis.*`.
-- [ ] **Per-tile LOD / impostor distance selection** — choose a tile's detail
+- [x] **Per-tile LOD / impostor distance selection** — choose a tile's detail
   band (full / HLOD / impostor / unloaded) from camera distance with hysteresis.
+  `World/Streaming/TileLodSelect.{h,cpp}`, tests `GTC.World.Streaming.Lod.*`.
 - [ ] **Frame-budget scheduler** — one bounded step per frame: admit at most N
   tile ops (or M ms of work) per tick so a burst of newly-needed tiles spreads
   across frames instead of hitching.
