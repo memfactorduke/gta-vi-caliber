@@ -49,7 +49,7 @@ the editor-protect hook + one-editor rule forbid it; the user/CI runs that.
   `GTC.World.Ocean.Shore`.
 
 ### Weather / lighting
-- [ ] **WeatherFront** — spatial+temporal clear→overcast→rain front profile
+- [x] **WeatherFront** — spatial+temporal clear→overcast→rain front profile
   (a moving front line over the map) and the **MPC_GTCGlobals** scalar values it
   drives (`world_wetness`, `world_night_amount`). `GTC.World.WeatherFront`.
 - [ ] **SurfaceWetness** — rain → accumulation/drying curve so wetness *lags*
