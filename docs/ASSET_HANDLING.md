@@ -63,6 +63,8 @@ new asset set is introduced or first referenced by an actor entry.
 | `LevelPrototyping/` | **Epic Games** | **UE EULA** | gray-box template prototyping assets |
 | `Input/` | **Epic Games** | **UE EULA** | template Enhanced Input assets |
 | `CesiumSettings/` | **Cesium for Unreal** | per Cesium plugin terms | geospatial config |
+| `Characters/Mannequins/Anims/Emotes/` (`MM_Wave`, `MM_MiddleFinger`, `MM_Piss`) | **project-authored** (hand-keyed on the Manny skeleton in Blender, 2026-06-19) | **CC0** | original player emotes (wave / middle-finger / piss); full-body one-shots played on the ABP `DefaultSlot` |
+| `Characters/Mannequins/Anims/Locomotion/` (`MM_Crouch_Idle`, `MM_Crouch_Walk`, `MM_Swim_Idle`, `MM_Swim_Fwd`) | **Quaternius — Universal Animation Library**, retargeted to `SK_Mannequin` | **CC0 1.0** | crouch + swim, from `opengameart.org/content/universal-animation-library`; Quaternius rig → Manny via rotation-delta retarget (2026-06-19) |
 
 License obligations differ per row — honor each set's own terms at ship (Fab Standard License for
 PropHaus, UE EULA for Epic content, Cesium terms for Cesium). The "no AI ingestion" rule below applies

@@ -98,6 +98,21 @@ public:
      */
     static double HeatForCrime(double BaseHeat, int32 WitnessCount);
 
+    /** Floor on a scaled report delay — even a close crowd needs this long to dial, so
+     *  the player always gets a beat to silence the witnesses. */
+    static constexpr double MinReportDelay = 0.5;
+
+    /**
+     * GTC-original (NOT in the Godot oracle): how `BaseDelay` shortens when a crime is
+     * seen by more people, and by people standing closer. A lone witness at the edge of
+     * sight takes the full BaseDelay; a numerous, point-blank crowd phones it in much
+     * faster (down to MinReportDelay). Feed the result into the FCrimeWitness(ReportDelay)
+     * constructor so the in-progress report ticks at a crowd-aware pace. WitnessCount is
+     * clamped to >= 1 (callers only scale once CollectWitnesses found someone); a
+     * non-positive SightRange or BaseDelay returns BaseDelay unscaled.
+     */
+    static double ReportDelayFor(double BaseDelay, int32 WitnessCount, double NearestDistance, double SightRange);
+
     // --- Stateful in-progress report ---------------------------------------
 
     /**

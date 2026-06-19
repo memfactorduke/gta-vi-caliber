@@ -23,21 +23,32 @@ So in this module the streaming core is greenfield. Build it fresh under
   center/bounds, Chebyshev tile distance, square residency-window enumeration.
   The coordinate substrate every other piece sits on.
   `World/Streaming/StreamingGrid.{h,cpp}`, tests `GTC.World.Streaming.Grid.*`.
-- [ ] **Load/unload priority from camera position + velocity vector** —
-  `FTileStreamPriority`: score each candidate tile so tiles *ahead* of the
-  camera's motion load first; behind-and-far unload first.
-- [ ] **Boundary hysteresis** — separate load vs. unload radii (+ optional dwell)
+- [x] **Load/unload priority from camera position + velocity vector** —
+  `FTileStreamPriority`: anticipatory look-ahead distance so tiles *ahead* of the
+  camera's motion load first; behind-and-far are least urgent.
+  `World/Streaming/TileStreamPriority.{h,cpp}`, tests `GTC.World.Streaming.Priority.*`.
+- [x] **Boundary hysteresis** — separate load vs. unload radii (+ optional dwell)
   so tiles straddling a ring boundary don't thrash load/unload every frame.
-- [ ] **Per-tile LOD / impostor distance selection** — choose a tile's detail
+  `World/Streaming/TileHysteresis.{h,cpp}`, tests `GTC.World.Streaming.Hysteresis.*`.
+- [x] **Per-tile LOD / impostor distance selection** — choose a tile's detail
   band (full / HLOD / impostor / unloaded) from camera distance with hysteresis.
-- [ ] **Frame-budget scheduler** — one bounded step per frame: admit at most N
+  `World/Streaming/TileLodSelect.{h,cpp}`, tests `GTC.World.Streaming.Lod.*`.
+- [x] **Frame-budget scheduler** — one bounded step per frame: admit at most N
   tile ops (or M ms of work) per tick so a burst of newly-needed tiles spreads
   across frames instead of hitching.
-- [ ] **Residency / VRAM accounting** — track resident-set bytes against a
+  `World/Streaming/StreamBudget.{h,cpp}`, tests `GTC.World.Streaming.Budget.*`.
+- [x] **Residency / VRAM accounting** — track resident-set bytes against a
   budget; pick eviction victims (lowest priority / farthest) when over budget.
-- [ ] **Residency planner** — ties grid + priority + hysteresis + budget into a
+  `World/Streaming/ResidencyBudget.{h,cpp}`, tests `GTC.World.Streaming.Residency.*`.
+- [x] **Residency planner** — ties grid + priority + hysteresis + budget into a
   deterministic per-frame *(load list, unload list)* decision, fed by a priority
   queue ordering. The headless brain the runtime adapter will drive.
+  `World/Streaming/ResidencyPlanner.{h,cpp}`, tests `GTC.World.Streaming.Planner.*`.
+
+> **Pure-core checklist COMPLETE (2026-06-19).** All seven editor-free pieces are
+> implemented, compiled green together (`Build.sh GTC_UE5Editor` → Result:
+> Succeeded), and covered by `GTC.World.Streaming.*` automation tests. The
+> remaining work below all needs the LIVE editor — stop and ask before attempting.
 
 ## Needs the LIVE editor (STOP and ask — do not attempt headless)
 

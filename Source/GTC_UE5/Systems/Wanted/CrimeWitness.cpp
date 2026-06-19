@@ -85,6 +85,26 @@ double FCrimeWitness::HeatForCrime(double BaseHeat, int32 WitnessCount)
     return BaseHeat * Fraction;
 }
 
+double FCrimeWitness::ReportDelayFor(double BaseDelay, int32 WitnessCount, double NearestDistance, double SightRange)
+{
+    if (BaseDelay <= 0.0 || SightRange <= 0.0)
+    {
+        return BaseDelay; // nothing meaningful to scale against
+    }
+
+    const int32 Witnesses = FMath::Max(1, WitnessCount);
+
+    // Proximity: a point-blank witness reports in half the base time, one at the edge of
+    // sight takes the full base time.
+    const double Proximity = FMath::Clamp(FMath::Max(0.0, NearestDistance) / SightRange, 0.0, 1.0);
+    const double ProximityFactor = 0.5 + 0.5 * Proximity;
+
+    // A crowd phones in faster than a lone witness, with diminishing returns.
+    const double CrowdFactor = 1.0 / FMath::Sqrt(static_cast<double>(Witnesses));
+
+    return FMath::Max(MinReportDelay, BaseDelay * ProximityFactor * CrowdFactor);
+}
+
 void FCrimeWitness::Tick(double Delta)
 {
     if (_bSilenced || IsReported())

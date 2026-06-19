@@ -87,3 +87,5 @@ DerivedDataCache/*
 # untracks an already-staged entry, and this pattern does not match the bare
 # path "Content/GTCaliberAssets"). See docs/ASSET_HANDLING.md.
 /Content/GTCaliberAssets/**
+
+assets/*

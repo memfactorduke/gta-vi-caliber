@@ -7,6 +7,7 @@
 #include "InteractionComponent.generated.h"
 
 class AActor;
+class UAnimSequence;
 
 /**
  * UGTCInteractionComponent — the player-side interaction adapter. The UE
@@ -113,6 +114,20 @@ public:
     float InteractReach = 250.0f;
 
     /**
+     * Gesture the owning character plays on a successful interact (door push,
+     * lever pull, ...). Played through the ABP's shared "DefaultSlot" via
+     * PlaySlotAnimationAsDynamicMontage, so the SAME clip works on ANY character
+     * model on the Mannequin skeleton — the component animates its owner's mesh,
+     * the interactable stays anim-ignorant. A missing/unset clip is a silent
+     * no-op, so this never breaks the build.
+     *
+     * Defaults to a placeholder reach motion (pistol-equip) — swap to a dedicated
+     * door-push clip when one is authored; it's a property edit, no code change.
+     */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Interaction")
+    TSoftObjectPtr<UAnimSequence> InteractAnim;
+
+    /**
      * Fire Interact() on the currently selected target (re-checking CanInteract).
      * Bound to IA_Interact by the owning player character. Returns true if a
      * target was interacted with. Safe to call with no selection (returns false).
@@ -141,6 +156,13 @@ private:
 
     /** Set the selection and broadcast if it changed. */
     void SetSelectedTarget(AActor* NewTarget);
+
+    /**
+     * Play InteractAnim on the owning character's body mesh through "DefaultSlot".
+     * Model-agnostic (any Mannequin-skeleton character) and fully guarded — no
+     * mesh, no anim instance, or no clip means it quietly does nothing.
+     */
+    void PlayInteractGesture();
 
     UPROPERTY(Transient)
     TObjectPtr<AActor> SelectedTarget = nullptr;

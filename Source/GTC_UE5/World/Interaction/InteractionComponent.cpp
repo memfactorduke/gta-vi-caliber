@@ -5,9 +5,13 @@
 #include "Interaction.h"   // merged FInteraction selection model (W1-tested) — reused, not re-ported
 #include "Interactable.h"  // IGTCInteractable contract
 
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimSequence.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Engine/OverlapResult.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "WorldCollision.h"
 
 UGTCInteractionComponent::UGTCInteractionComponent()
@@ -16,6 +20,13 @@ UGTCInteractionComponent::UGTCInteractionComponent()
     // cheap forward overlap. Owners that prefer on-demand can disable tick and
     // call UpdateSelection() themselves.
     PrimaryComponentTick.bCanEverTick = true;
+
+    // Placeholder reach gesture so press-E plays a visible motion today; it's an
+    // existing Mannequin-skeleton clip, so it works on any character model. Swap
+    // for a dedicated door-push clip later via this property — no code change.
+    InteractAnim = TSoftObjectPtr<UAnimSequence>(FSoftObjectPath(
+        TEXT("/Game/GTCaliberAssets/Content/Characters/Mannequins/Anims/Pistol/"
+             "MM_Pistol_Equip.MM_Pistol_Equip")));
 }
 
 int32 UGTCInteractionComponent::SelectBest(const TArray<FGtcInteractionCandidate>& Candidates,
@@ -74,7 +85,43 @@ bool UGTCInteractionComponent::TriggerInteract()
     }
 
     IGTCInteractable::Execute_Interact(Target, Instigator);
+
+    // The interact landed — play the owning character's reach/push gesture. This
+    // is the only place animation enters: the interactable itself stays
+    // anim-ignorant, and the gesture plays on whatever model the owner wears.
+    PlayInteractGesture();
     return true;
+}
+
+void UGTCInteractionComponent::PlayInteractGesture()
+{
+    UAnimSequence* Seq = InteractAnim.LoadSynchronous();
+    if (Seq == nullptr)
+    {
+        return; // no clip assigned — nothing to play (stays compilable/no-op)
+    }
+
+    // Prefer the character's canonical body mesh (GetMesh) so face/hair follower
+    // meshes don't get picked; fall back to any skeletal mesh for non-Character
+    // owners. Model-agnostic: the clip rides the shared "DefaultSlot".
+    USkeletalMeshComponent* Body = nullptr;
+    if (const ACharacter* OwnerChar = Cast<ACharacter>(GetOwner()))
+    {
+        Body = OwnerChar->GetMesh();
+    }
+    if (Body == nullptr && GetOwner() != nullptr)
+    {
+        Body = GetOwner()->FindComponentByClass<USkeletalMeshComponent>();
+    }
+    if (Body == nullptr)
+    {
+        return;
+    }
+
+    if (UAnimInstance* AnimInstance = Body->GetAnimInstance())
+    {
+        AnimInstance->PlaySlotAnimationAsDynamicMontage(Seq, FName(TEXT("DefaultSlot")), 0.1f, 0.1f);
+    }
 }
 
 void UGTCInteractionComponent::UpdateSelection()

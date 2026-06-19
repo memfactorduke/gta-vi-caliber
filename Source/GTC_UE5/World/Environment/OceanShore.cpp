@@ -6,7 +6,7 @@
 namespace
 {
 	// Smoothstep with explicit edges, clamped — C1-continuous 0->1 ramp.
-	double SmoothStep(double Edge0, double Edge1, double X)
+	double ShoreSmoothStep(double Edge0, double Edge1, double X)
 	{
 		if (Edge1 <= Edge0)
 		{
@@ -28,7 +28,7 @@ double FOceanShore::ShoreBlend01(double Depth, double ShallowDepth)
 	{
 		return 0.0; // dry land / exactly at the waterline
 	}
-	return SmoothStep(0.0, FMath::Max(1e-6, ShallowDepth), Depth);
+	return ShoreSmoothStep(0.0, FMath::Max(1e-6, ShallowDepth), Depth);
 }
 
 double FOceanShore::ShoreFoam01(double Depth, double FoamDepth)
@@ -41,15 +41,15 @@ double FOceanShore::ShoreFoam01(double Depth, double FoamDepth)
 	// A band that rises from 0 at the waterline, peaks just offshore, falls to 0
 	// by FoamDepth — continuous at both ends so it never pops on the sand.
 	const double Edge = Band * 0.25;
-	const double Rise = SmoothStep(0.0, Edge, Depth);
-	const double Fall = 1.0 - SmoothStep(Edge, Band, Depth);
+	const double Rise = ShoreSmoothStep(0.0, Edge, Depth);
+	const double Fall = 1.0 - ShoreSmoothStep(Edge, Band, Depth);
 	return FMath::Clamp(Rise * Fall, 0.0, 1.0);
 }
 
 double FOceanShore::WetSand01(double TerrainZ, double SwashTopZ, double DryBand)
 {
 	// Fully wet at/below the swash top, drying out over DryBand above it.
-	return 1.0 - SmoothStep(SwashTopZ, SwashTopZ + FMath::Max(1e-6, DryBand), TerrainZ);
+	return 1.0 - ShoreSmoothStep(SwashTopZ, SwashTopZ + FMath::Max(1e-6, DryBand), TerrainZ);
 }
 
 double FOceanShore::DepthColorFade01(double Depth, double FadeDistance)

@@ -12,6 +12,18 @@
 	],
 	"Plugins": [
 		{
+			"Name": "CesiumForUnreal",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/87b0d05800a545d49bf858ef3458c4f7",
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Mac",
+				"Linux",
+				"Android",
+				"IOS"
+			]
+		},
+		{
 			"Name": "ModelingToolsEditorMode",
 			"Enabled": true,
 			"TargetAllowList": [
@@ -27,16 +39,28 @@
 			"Enabled": true
 		},
 		{
-			"Name": "MassEntity",
-			"Enabled": true
-		},
-		{
 			"Name": "MassGameplay",
 			"Enabled": true
 		},
 		{
 			"Name": "AndroidFileServer",
 			"Enabled": false
+		},
+		{
+			"Name": "PythonScriptPlugin",
+			"Enabled": true
+		},
+		{
+			"Name": "EditorScriptingUtilities",
+			"Enabled": true
+		},
+		{
+			"Name": "UnrealClaude",
+			"Enabled": true
+		},
+		{
+			"Name": "VibeUE",
+			"Enabled": true
 		}
 	]
 }
