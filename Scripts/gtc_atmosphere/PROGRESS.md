@@ -41,7 +41,7 @@ the editor-protect hook + one-editor rule forbid it; the user/CI runs that.
 - [x] **Buoyancy** — sample N hull points against the surface height → Archimedes
   buoyant force + restoring torque + linear/angular drag at the waterline.
   `GTC.World.Ocean.Buoyancy`.
-- [ ] **Wake & foam** — from boat speed/heading + hull, Kelvin wake half-angle,
+- [x] **Wake & foam** — from boat speed/heading + hull, Kelvin wake half-angle,
   wake strength, foam spawn rate; whitecap foam from wave steepness/Jacobian.
   `GTC.World.Ocean.Wake`.
 - [ ] **Shoreline** — shore blend + wetness band from wave height vs terrain
