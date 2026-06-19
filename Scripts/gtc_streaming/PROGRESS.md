@@ -33,9 +33,10 @@ So in this module the streaming core is greenfield. Build it fresh under
 - [x] **Per-tile LOD / impostor distance selection** — choose a tile's detail
   band (full / HLOD / impostor / unloaded) from camera distance with hysteresis.
   `World/Streaming/TileLodSelect.{h,cpp}`, tests `GTC.World.Streaming.Lod.*`.
-- [ ] **Frame-budget scheduler** — one bounded step per frame: admit at most N
+- [x] **Frame-budget scheduler** — one bounded step per frame: admit at most N
   tile ops (or M ms of work) per tick so a burst of newly-needed tiles spreads
   across frames instead of hitching.
+  `World/Streaming/StreamBudget.{h,cpp}`, tests `GTC.World.Streaming.Budget.*`.
 - [ ] **Residency / VRAM accounting** — track resident-set bytes against a
   budget; pick eviction victims (lowest priority / farthest) when over budget.
 - [ ] **Residency planner** — ties grid + priority + hysteresis + budget into a
