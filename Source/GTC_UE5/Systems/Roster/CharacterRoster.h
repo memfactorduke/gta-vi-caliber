@@ -1,17 +1,17 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 
 /**
- * Pure dual-protagonist roster — UE 5.7 port of the reference `character_roster.gd` (class
+ * Pure dual-protagonist roster — UE 5.7 port of Godot's `character_roster.gd` (class
  * CharacterRoster, a RefCounted). The modern open-world "switch between playable leads"
  * mechanic: each character keeps INDEPENDENT persistent state (wallet, wanted level,
  * world position); switching parks the current lead where they are and resumes the
  * other exactly where you left them, after a short cooldown.
  *
- * Plain C++ value type (no UObject), headless-testable against the reference behavior
+ * Plain C++ value type (no UObject), headless-testable against the parity oracle
  * game/tests/unit/test_character_roster.gd (14 assertions). No nodes, no scene access.
  *
  * Each character is {Id, Name, Money}; Wanted/Position start neutral and accrue in play.
@@ -23,7 +23,7 @@
  *
  * This roster OWNS per-character SNAPSHOT BLOBS — money, position, and wanted stars — as
  * PLAIN VALUES. It does NOT include, reference, or depend on any PlayerStats / Wanted /
- * armor UE type. The snapshot is self-contained, exactly as the the reference oracle exercises it
+ * armor UE type. The snapshot is self-contained, exactly as the Godot oracle exercises it
  * over plain {id, name, money} dicts plus neutral position/wanted.
  *
  * At Wave 3, a live character switch will SNAPSHOT/RESTORE the canonical runtime state:
@@ -138,7 +138,7 @@ private:
         FVector Position = FVector::ZeroVector;
     };
 
-    /** Insertion-ordered ids (the reference Dictionary key order is observable: ids()/roster order). */
+    /** Insertion-ordered ids (Godot Dictionary key order is observable: ids()/roster order). */
     TArray<FString> Order;
     /** Id -> live state. */
     TMap<FString, FState> Characters;

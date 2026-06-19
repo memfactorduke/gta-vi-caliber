@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -14,7 +14,7 @@
  *
  * Parity note: skills are stored in first-seen insertion order via an ordered TArray
  * plus a TMap id->index, so Skills() / ToDict() / OverallMastery() iterate exactly as
- * the the reference Dictionary did. Values/rates are double. Garbage entries (missing/empty
+ * the Godot Dictionary did. Values/rates are double. Garbage entries (missing/empty
  * id, non-positive rate, duplicate id) are dropped at construction.
  */
 struct GTC_UE5_API FSkillDef

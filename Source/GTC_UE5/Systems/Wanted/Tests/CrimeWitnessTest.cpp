@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -9,13 +9,13 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the the reference reference behavior
+// Each test below maps 1:1 to an assertion in the Godot parity oracle
 // game/tests/unit/test_crime_witness.gd (25 funcs). LOS booleans / witness counts are
 // exact; heat/progress are float curves checked with Eps. Compound `a and b` oracle
 // returns are split into separate Test* calls.
 //
 // Vector axes: the oracle works on the X/Z ground plane with Y up; FVector maps 1:1 to
-// the reference Vector3 (X->X, Y->Y, Z->Z), so the literals below are the oracle's literals.
+// Godot Vector3 (X->X, Y->Y, Z->Z), so the literals below are the oracle's literals.
 
 namespace
 {
@@ -180,7 +180,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FCrimeWitnessSkipsMalformedTest::RunTest(const FString& Parameters)
 {
-    // The the reference oracle mixes a non-dict and a missing-facing entry into the array; both
+    // The Godot oracle mixes a non-dict and a missing-facing entry into the array; both
     // decode to "can't see" (a non-dict is skipped, a missing facing -> zero facing).
     // The struct port expresses the same shapes: a default observer (zero facing, the
     // non-dict/garbage case) and a pos-only observer with zero facing.

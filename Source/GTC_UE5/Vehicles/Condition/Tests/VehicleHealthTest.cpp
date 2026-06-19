@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -9,10 +9,10 @@
 
 #include <limits>
 
-// Each test below maps 1:1 to an assertion in the the reference reference behavior
+// Each test below maps 1:1 to an assertion in the Godot parity oracle
 // game/tests/unit/test_vehicle_health.gd (24 tests). Concrete numbers: max 1000, fire at 0.2.
 
-// the reference `== INF` (exact positive-infinity) check.
+// Godot's `== INF` (exact positive-infinity) check.
 static bool VehicleHealthIsPosInf(double Value)
 {
     return Value == std::numeric_limits<double>::infinity();

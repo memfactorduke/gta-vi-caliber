@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
@@ -10,14 +10,35 @@ public class GTC_UE5 : ModuleRules
 	
 		// "UMG": the HUD C++ base (UI/Hud/GTCHudWidget) derives from UUserWidget and subscribes to the
 		// W2 player-component change delegates. Public because GTCHudWidget.h includes the UMG UserWidget
-		// header in its public API. Slate/SlateCore are NOT added: the C++ base touches no Slate types
-		// directly (the meta=(BindWidget) ProgressBars/TextBlocks live in the future WBP, not in this base).
+		// header in its public API.
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" });
+
+		// "Slate"/"SlateCore": the ported in-world + front-end UI are pure C++/Slate widgets
+		// (UI/Phone/SGTCPhone, UI/Menus/SGTCPauseMenu, FrontEnd/SGTCFrontEnd, FrontEnd/SGTCLoadingScreen).
+		// Public because those S-widget headers derive from SCompoundWidget and are included by the
+		// player controller / front-end controller inside this module.
+		PublicDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+
+		// Front-end boot flow (intro videos + looping menu + loading cover): the videos play through the
+		// Media framework with runtime-created MediaPlayer/MediaTexture (no editor-authored assets), and
+		// the loading cover rides the MoviePlayer across the blocking world travel. Private — no
+		// Media/MoviePlayer type crosses this module's public boundary.
+		PrivateDependencyModuleNames.AddRange(new string[] { "Media", "MediaAssets", "MediaUtils", "MoviePlayer" });
 
 		// "Json": engine JSON model used only inside Systems/Save/SaveJson.cpp (FJsonObject /
 		// FJsonSerializer / TJsonReader / TJsonWriter). Private — no engine Json type crosses the
 		// Save headers' module boundary; the public Save API is the in-module ordered wrapper.
 		PrivateDependencyModuleNames.AddRange(new string[] { "Json" });
+
+		// "AIModule" + "NavigationSystem": the living-NPC layer (NPC/Agent) spawns AGTCCitizen
+		// pawns that auto-possess a default AAIController so CharacterMovement consumes the
+		// steering input (Pawn::AddMovementInput needs a controller to feed the movement
+		// component), and so citizens can later path on the world NavMesh. Private — no
+		// AIController/Navigation type crosses an NPC public header (the Citizen header only
+		// forward-declares engine types and includes the scene-free pure-core NPC structs).
+		// Both are standard runtime modules compiled for every target, so the editor-closed
+		// headless build stays clean.
+		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "NavigationSystem" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

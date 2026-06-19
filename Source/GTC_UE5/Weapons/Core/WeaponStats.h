@@ -1,14 +1,14 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 
 /**
- * Tunable data for one weapon archetype. Direct port of the the reference `WeaponStats`
+ * Tunable data for one weapon archetype. Direct port of the Godot `WeaponStats`
  * (a Resource) at `game/scripts/weapons/weapon_stats.gd`.
  *
- * In the reference this is a Resource so designers can author `.tres` variants; here it
+ * In Godot this is a Resource so designers can author `.tres` variants; here it
  * is a plain value struct (the intra-entry dependency of FWeapon — there is no
  * dedicated test oracle, WeaponStats is exercised through FWeapon). The firing
  * logic that consumes it (FWeapon, FWeaponBallistics) stays pure and unit-tested.

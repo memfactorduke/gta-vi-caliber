@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MissionCampaign.h"
 
@@ -41,9 +41,9 @@ UMissionCampaign::FCampaignObjective UMissionCampaign::MakeHold(
 
 TArray<UMissionCampaign::FCampaignMission> UMissionCampaign::OpeningArc()
 {
-    // Five-mission opening arc — verbatim from the reference implementation mission_campaign.gd _missions().
+    // Five-mission opening arc — verbatim from Godot mission_campaign.gd _missions().
     // Absolute world coordinates near the downtown spawn (FloatingOrigin conversion
-    // is Wave 3); kinds/radii/durations match the the reference table exactly.
+    // is Wave 3); kinds/radii/durations match the Godot table exactly.
     TArray<FCampaignMission> Missions;
 
     {
@@ -188,7 +188,7 @@ void UMissionCampaign::LoadCurrent()
     Controller->ObjectiveDefs = MoveTemp(ObjectiveDefs);
     Controller->Waypoints = MoveTemp(Waypoints);
     Controller->TimeLimit = Mission.TimeLimit;
-    Controller->Reset(); // the reference has_method("reset") -> reset(): rebuild + begin.
+    Controller->Reset(); // Godot has_method("reset") -> reset(): rebuild + begin.
 
     Driver.Defs = MoveTemp(DriverDefs);
     Driver.Bind();
@@ -201,7 +201,7 @@ void UMissionCampaign::HandleMissionPassed()
     {
         return;
     }
-    // the reference defers _load_current to let the controller finish emitting; the UE
+    // Godot defers _load_current to let the controller finish emitting; the UE
     // delegate broadcast has already returned to the controller by the time this
     // runs, so a direct load is safe (no re-entrant rebuild mid-broadcast).
     LoadCurrent();

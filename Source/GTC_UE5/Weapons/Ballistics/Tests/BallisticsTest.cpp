@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -8,9 +8,9 @@
 #include "../../../Tests/GtcTestTolerances.h"
 #include "Math/UnrealMathUtility.h"
 
-// Each test maps 1:1 to an assertion in the the reference reference behavior
+// Each test maps 1:1 to an assertion in the Godot parity oracle
 // game/tests/unit/test_ballistics.gd. Float/vector compares use Eps (1e-4),
-// mirroring is_equal_approx. The model stays in the the reference frame (forward = -Z).
+// mirroring is_equal_approx. The model stays in the Godot frame (forward = -Z).
 namespace
 {
     using GtcTest::Eps;

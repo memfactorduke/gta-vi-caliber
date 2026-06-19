@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -9,16 +9,16 @@
 /**
  * Pure routing from FLocomotion states to the rig's animation state machine.
  *
- * Direct port of the the reference `AnimRouter` (RefCounted) at
+ * Direct port of the Godot `AnimRouter` (RefCounted) at
  * `game/scripts/player/anim_router.gd`. Static methods only, no scene access.
  * Resolves which state-machine node to travel to, where the move blend sits, and
  * which yaw the model should face — the thin-adapter `AnimatedRig` stays headless
  * by delegating these decisions here. References FLocomotion (the intra-entry
  * partner) for its state enum, move-blend and idle-speed epsilon.
  *
- * Double precision throughout, to match the the reference implementation float math. Godot
+ * Double precision throughout, to match the GDScript float math. Godot
  * StringName node names map to FName. No Godot->UE Z-up axis remap is baked in
- * (the facing math stays in the the reference XZ frame for oracle parity).
+ * (the facing math stays in the Godot XZ frame for oracle parity).
  *
  * PURE-CORE boundary: the actual AnimInstance state-machine `travel()` calls,
  * BlendSpace1D asset wiring and model-yaw application are a DEFERRED Wave-3
@@ -61,7 +61,7 @@ struct GTC_UE5_API FAnimRouter
 
     /**
      * Step an angle toward a target along the shortest arc, capped at MaxStep.
-     * Parity-covered by the the reference oracle test_anim_router_facing.gd.
+     * Parity-covered by the Godot oracle test_anim_router_facing.gd.
      */
     static double RotateTowardAngle(double Current, double Target, double MaxStep);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -6,9 +6,9 @@
 
 #include "../MissionObjectives.h"
 
-// PARITY tests (1:1). Each test below maps to one func in the the reference reference behavior
+// PARITY tests (1:1). Each test below maps to one func in the Godot parity oracle
 // game/tests/unit/test_mission_objectives.gd (7 funcs), with the oracle's own
-// literals. the reference compound `a and b` returns are split into separate assertions.
+// literals. Godot compound `a and b` returns are split into separate assertions.
 
 namespace MissionObjectivesTestNS
 {

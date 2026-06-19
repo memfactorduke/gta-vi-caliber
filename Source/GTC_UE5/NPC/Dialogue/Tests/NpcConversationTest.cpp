@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -7,7 +7,7 @@
 #include "../NpcConversation.h"
 
 /**
- * Parity tests for FNpcConversation, mapped 1:1 from the the reference oracle
+ * Parity tests for FNpcConversation, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_npc_conversation.gd (6 funcs). Each TestTrue corresponds
  * to one oracle assertion with the oracle's own literals/seeds. Compound returns
  * are split into independent TestTrue calls.

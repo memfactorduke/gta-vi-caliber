@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -13,16 +13,16 @@ struct FNpcNeeds;
  * single concrete intent — "go here and do this, because...". Sits *above* the
  * reflexive NpcBrain wander/flee FSM.
  *
- * Direct port of the the reference `NpcMind` (RefCounted) at
+ * Direct port of the Godot `NpcMind` (RefCounted) at
  * `game/scripts/npc/npc_mind.gd`. The routine is the baseline, but a drive that
  * gets desperate enough crosses the NPC's personal interrupt threshold and
  * hijacks the plan. Pure decision math (state in, intent out), scene-free,
  * unit-tested headless (Tests/NpcMindTest.cpp, prefix GTC.NPC.Decision.NpcMind).
- * Computed precision is `double` to match the reference implementation.
+ * Computed precision is `double` to match GDScript.
  */
 
 /**
- * The chosen intent. Mirrors the the reference return dict {activity, place, reason,
+ * The chosen intent. Mirrors the Godot return dict {activity, place, reason,
  * urgency}. `Reason` is "schedule" or "need:<drive>" so debug HUD / dialogue can
  * explain the choice.
  */
@@ -36,7 +36,7 @@ struct GTC_UE5_API FNpcIntent
 
 /**
  * One drive's resolution: the activity/place it sends the NPC to when it boils
- * over. Mirrors an entry of the the reference NEED_ACTIVITY dict.
+ * over. Mirrors an entry of the Godot NEED_ACTIVITY dict.
  */
 struct GTC_UE5_API FNpcNeedActivity
 {
@@ -52,7 +52,7 @@ struct GTC_UE5_API FNpcMind
 
     /**
      * Which activity / place resolves each drive when it boils over. Ordered to
-     * mirror the the reference NEED_ACTIVITY dict (insertion order preserved).
+     * mirror the Godot NEED_ACTIVITY dict (insertion order preserved).
      */
     static const TArray<FNpcNeedActivity>& NeedActivity();
 
@@ -62,7 +62,7 @@ struct GTC_UE5_API FNpcMind
      *
      * `Discipline` in [-1, 1] — how stubbornly it sticks to the schedule. A
      * disciplined NPC tolerates more discomfort before bailing; a flake bails at
-     * the first twinge. Default 0 (the the reference personality dict default).
+     * the first twinge. Default 0 (the Godot personality dict default).
      *
      * Returns the chosen FNpcIntent.
      */

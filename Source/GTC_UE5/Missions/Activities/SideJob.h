@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -9,7 +9,7 @@
  * (taxi fare, parcel delivery, vigilante hit, towing) that hand the player a
  * fast objective and cash without touching the main mission chain.
  *
- * the reference parity: game/scripts/missions/side_job.gd (RefCounted). Two halves,
+ * Godot parity: game/scripts/missions/side_job.gd (RefCounted). Two halves,
  * both scene-free: a bank of STATIC reward/eligibility helpers (fare, vigilante
  * bounty, par-time bonus, combined payout, streak multiplier) callable with no
  * instance, and a small STATEFUL active-job tracker (pickup -> dropoff ->
@@ -19,7 +19,7 @@
  * Plain C++ value type (no UObject): the activity actor / spawn / HUD wiring is
  * deferred to W2/W3 and is NOT part of this parity port.
  *
- * Typed-port gap: the reference stores a job as an untyped Dictionary
+ * Typed-port gap: Godot stores a job as an untyped Dictionary
  * ({kind, pickup, dropoff, base_reward}). Here that is modelled as the nested
  * value struct FJob (mirroring the dictionary verbatim).
  */
@@ -52,7 +52,7 @@ public:
     static constexpr double ChainStep = 0.1;
 
     /**
-     * One job definition. Mirrors the reference untyped job Dictionary
+     * One job definition. Mirrors Godot's untyped job Dictionary
      * ({kind, pickup, dropoff, base_reward}).
      */
     struct FJob

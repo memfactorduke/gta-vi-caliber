@@ -1,0 +1,193 @@
+{
+  "summary": "Caliber City: a Miami-scale, organic, roughly-circular open-world for UE5.8, designed as a SPEC for procedural generation then hand-finish. Units = Unreal cm; axes +X east, +Y north, +Z up; yaw 0 faces +X; center at world origin (0,0); ground Z=0. The land mass is an organic coastline (polar curve r(theta) with sinusoidal lobes + jitter, mean radius 360,000 cm / 3.6 km, diameter 7.2 km), NOT a true circle, with the Atlantic carved out on the EAST: the mainland bay-shore sits near X=+150,000, Biscayne Bay fills X[+150k..+250k], a thin barrier island (South Beach) sits X[+250k..+320k], open ocean east of +320k. EVERYTHING snaps to an 800 cm (8 m) grid, confirmed from the shipped lane_graph.json (380 nodes, 800 cm pitch, ~50,884 x 99,272 cm strip), which is also the node format the generator should emit. Strict hierarchy laid in order: organic coastline, then ring highway (beltway) + I-95 spine, then radial arteries, then ring road, then per-district collectors, then local streets, then alleys, then plots, then buildings. NO-OVERLAP is guaranteed by construction: each road class has a fixed ROW half-width; rasterize all ROWs to a forbidden BLOCKMASK, dilate by a 400 cm setback, carve blocks only from free land cells, subdivide into plots with an 800 cm perimeter inset + 800 cm inter-plot gap, inset buildings further by a per-district frontage setback. Critical math fix carried from proposal 2: local-street spacing must satisfy D >= 2*H_row + 2*setback + min_plot_depth, so locals are spaced 8,000 cm (NOT the naive 4,800-6,400 which would make ROWs touch). Result: building is a strict subset of plot, subset of block, subset of (land minus road-ROW minus water minus bridges); adjacent buildings are >=400 cm apart (party-wall districts share walls by construction, still non-overlapping). Six recognizable Miami districts: Downtown/Brickell high-rise core hugging the bay, South Beach/Ocean Drive Art Deco strip on the barrier island, Wynwood arts/warehouse, Little Havana low-rise, Port/Marina at the south bay, plus an outer suburban ring. Three causeways (MacArthur central, north Tuttle-analog, south/port) plus river bridges cross the water. All asset paths verified on disk under /Game/GTCaliberAssets/Content/CityBeachStrip/. ASSET GAPS to hand-finish: no bridge/causeway/ramp mesh (compose from road tiles on piers + SM_Carpark_DoorRamp), no marina dock/crane/boat, no beach-sand mesh (use landscape material).",
+  "scale": {
+    "radius_cm": 360000,
+    "center_x": 0,
+    "center_y": 0,
+    "ground_z": 0
+  },
+  "boundary": {
+    "base_radius_cm": 360000,
+    "lobe_count": 3,
+    "lobe_amplitude_cm": 57600,
+    "notes": "Coastline is a closed polar curve, NOT a circle. Generate r(theta), theta CCW from +X (east), sampled every 2deg (180 pts): r(theta) = 360000 * (1 + 0.16*sin(3*theta+0.7) + 0.09*sin(5*theta-1.2) + 0.05*sin(7*theta)) + fBm_noise (amplitude +/-12000 cm, ~6 octaves, seeded) for a non-repeating organic edge. lobe_count=3 and lobe_amplitude_cm=57600 (=0.16*360000) capture the dominant headland harmonic for tools that only read the simple fields. Then CARVE THE ATLANTIC on the east: for theta in [-60deg,+60deg] pull the mainland shoreline WEST to a roughly north-south bay front near X=+150000 (subtract a smooth bell, e.g. -130000*exp(-(theta/40deg)^2)). The beach itself is a DETACHED barrier island east of the bay (see South Beach district + scale notes), so the silhouette reads Miami: round-ish west/south/north, straightish bay front east, offshore beach island. Post-process: 2 passes of Chaikin corner-cutting for a smooth spline, then snap all shoreline vertices to the 800 cm grid so coastal road tiles seat cleanly. Hard rules: single non-self-intersecting closed spline; reject any sample where r < 0.45*R on non-bay arcs (prevents pinching). No buildable plots within 16000 cm of the raw coastline (shoreline buffer). Water plane Z=-50; land pad Z~+20 so land reads above water. Water bodies: Atlantic (x > ~+320000), Biscayne Bay (x[+150000..+250000], y[-180000..+180000]), a Miami-River-analog canal cut 6000-9000 cm wide from (+150000,-10000) inland to (-40000,-25000) dividing Downtown(N) from Brickell(S), and a dredged Port basin (see Port district)."
+  },
+  "roads": {
+    "ring_roads": [
+      {
+        "radius_cm": 256000,
+        "width_cm": 4800,
+        "kind": "highway_beltway",
+        "asset": "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Street/SM_Road01_8x8"
+      },
+      {
+        "radius_cm": 120000,
+        "width_cm": 3200,
+        "kind": "ring_road_arterial",
+        "asset": "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Street/SM_Street_8m_02"
+      }
+    ],
+    "radial_arteries": {
+      "count": 8,
+      "width_cm": 3200,
+      "asset": "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Street/SM_Street_8m_02_b"
+    },
+    "local_grid": {
+      "spacing_cm": 8000,
+      "width_cm": 1600,
+      "asset": "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Street/SM_Street_8m_01"
+    },
+    "causeways": [
+      {
+        "from_x": 150000,
+        "from_y": 5000,
+        "to_x": 255000,
+        "to_y": -5000,
+        "width_cm": 2400,
+        "asset": "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Street/SM_Road01_8m"
+      },
+      {
+        "from_x": 120000,
+        "from_y": 110000,
+        "to_x": 255000,
+        "to_y": 120000,
+        "width_cm": 2400,
+        "asset": "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Street/SM_Road01_8m"
+      },
+      {
+        "from_x": 90000,
+        "from_y": -120000,
+        "to_x": 150000,
+        "to_y": -120000,
+        "width_cm": 2400,
+        "asset": "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Street/SM_Road01_8m"
+      }
+    ],
+    "notes": "Hierarchy laid strictly top-down; lower tiers terminate into higher tiers and never cross a higher tier except at a defined junction/bridge. ROW half-widths (centerline to outer sidewalk edge = the hard keep-out used for plot setback), all grid-aligned, with derived street spacing satisfying D >= 2*H_row + 2*setback(400) + min_plot_depth so ROWs never touch: HIGHWAY beltway/I-95 carriageway 4800 + 1600 verge each side, H_row=5000, grade-separated viaduct (Z~+1400) over arteries so zero at-grade highway crossings; full ROW=10000. CAUSEWAY carriageway 2400, H_row=3600, deck Z~+1200-1400 on piers. ARTERIAL carriageway 3200 (4 lane + median), sidewalk 400 (SM_Street_Sidewalk_8x4m), H_row=2400, spacing >=13600. RING ROAD (r=120000) carriageway 3200, H_row=2400, AT-GRADE with arteries -> 8 signalized crossings (SM_CrossRoad01, SM_TrafficLightsDouble_01). COLLECTOR carriageway 1600, sidewalk 250 (SM_Street_Sidewalk_8x2_5m_02), H_row=1800, per-district spacing ~11200. LOCAL carriageway 1600, sidewalk 200 (SM_Street_Sidewalk_8x2m), H_row=1200, spacing 8000 -> 4800 buildable block (one core plot module). ALLEY carriageway 800, H_row=800 (BackStreets/SM_BackStreet_01_8m), mid-block service in dense districts. I-95-LIKE SPINE: near-straight expressway x~-140000 (or bent toward bay x+120000->+90000), y[-300000..+300000], highway class, feeds the beltway via cloverleaf nodes (12000 cm keep-out radius, no plots). 8 radial arteries at 45deg (theta=0,45,...315) from core edge (r~64000) out through the beltway; the east artery (theta=0) becomes the MacArthur causeway. Inside the core (r<64000) arteries dock into a downtown rectangular grid ROTATED 18deg (Miami's real downtown grain) rather than meeting at one star point. Outer districts use a deformed polar grid (radial collectors between arteries, tangential locals as chords) for organic feel; each district rotates its local grid by its own angle so the city never looks like one uniform mesh. Organic shaping: arteries/rings are 800-grid polylines that drift +/-1 cell every ~16000 cm using SM_Street_Curve_01/02, SM_Street_Bend_60_01/02, SM_Street_Bend_120, SM_Street_Turn_15. Junctions: SM_CrossRoad01 / SM_CrossRoad02, SM_T_Junction01/02/03, SM_StreetCorner_60. Markings: SM_RoadLines_01_8m / SM_RoadLines_02_8m / SM_RoadLine_Single01-03 / SM_Arrow_Straight. Caps where roads meet water: SM_Street_End. River cut crossed by 3 short arterial bridges at x~-5000/+35000/+75000 linking Downtown<->Brickell. ASSET GAP: no bridge/ramp mesh, compose causeway decks/viaducts from road tiles on custom piers + SM_Carpark_DoorRamp/SM_Carpark_DoorRamp2 for approach ramps (hand-finish)."
+  },
+  "districts": [
+    {
+      "name": "Downtown/Brickell core",
+      "center_x": 110000,
+      "center_y": 10000,
+      "radius_cm": 70000,
+      "zone": "downtown_highrise",
+      "density": "high",
+      "building_footprint_cm": 6400,
+      "building_assets": [
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_Skyscraper_03",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_Skyscraper_04",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_Skyscraper_01",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_Skyscraper_02",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_01",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_03",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_03",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_07"
+      ],
+      "notes": "Mainland, hugging the bay's west shore; Biscayne Bay to its east. Tallest skyline. Downtown grid ROTATED 18deg from +X. Tight 800-grid blocks; build-to-line (frontage setback 0, plots meet sidewalk). Bay-front + intersection corners get hero LI_/tall towers; Skyscrapers fill; BackgroundBuilding for far silhouette. Split N(Downtown)/S(Brickell) by the Miami-River-analog canal cut at y~-12000..-25000. Brickell (south of cut, toward bay) is luxury high-rise residential/financial: tall LI_Building_* + LI_Resort_* with pools (SwimmingPool/LI_PoolLight), slightly larger setbacks (~500) for plazas, palm-lined Brickell-Ave-analog artery N-S to the bayfront. Footprints 3200x3200 to 6400x6400."
+    },
+    {
+      "name": "South Beach / Ocean Drive",
+      "center_x": 290000,
+      "center_y": 0,
+      "radius_cm": 230000,
+      "zone": "beach_artdeco",
+      "density": "high",
+      "building_footprint_cm": 2400,
+      "building_assets": [
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Resort_01",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Resort_02",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Resort_03",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_02",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_04",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_05",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Architecture/SM_Awning_01_3m",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Signs/SM_HotelVentura_Sign_01",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Signs/SM_SunsetHotel_Sign",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Signs/SM_Amorando_Hotel",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Signs/SM_Lanthorn_Hotel",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Signs/Neon/SM_OpenNeonSign"
+      ],
+      "notes": "SIGNATURE district, exactly what the asset pack was built for. NOT a disc centered at origin: it is a long thin BARRIER ISLAND east of the bay, x[+250000..+320000] (~70000 cm wide), y[-200000..+200000] (~4 km long), organic tapered tips. center_x/center_y/radius here describe the island's geometric center and long-axis half-length for tools that only read those fields. East (ocean) face = beach + dune palms (beach is a landscape material, no sand mesh in kit). Ocean Drive = arterial-class spine along the east face at x~+312000; buildings ONLY on its WEST side (beach east). Collins-Ave-analog second arterial x~+295000 (taller resort towers behind). Bay side (x~+258000) = marinas/low residential. 3-6 story Art Deco, tight ~16000 cm blocks, party-wall row plots (gap 0), frontage setback 0-300 for terrace cafes. Hero hotels = LI_Resort_01/02/03 at strip ends, LI_Building_* mid-rise along the row. Dress with SM_Awning_01..06_*, named neon (Ventura/Sunset/Amorando/Lanthorn/Clearwater/Almare), lit LI_HotelVentura_Sign_Lights, fairy-light palms PalmTree_Lit/SM_PalmTree_0X_FairyLights, SM_LampPostBeach_01, cafe terraces OutdoorFurniture/LI_MetalTableSet_* + Umbrella/SM_Umbrella. Connected to mainland only by MacArthur + north causeways."
+    },
+    {
+      "name": "Wynwood",
+      "center_x": 40000,
+      "center_y": 90000,
+      "radius_cm": 48000,
+      "zone": "wynwood_midrise",
+      "density": "medium",
+      "building_footprint_cm": 4000,
+      "building_assets": [
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_09",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_10",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_11",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_01",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_04",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_05",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_06"
+      ],
+      "notes": "Mainland NW of Downtown, outside-ish the ring road. Arts/warehouse: low-rise (1-2 story) wide-footprint blocks, big rectangular ~34000 cm blocks, irregular angled local grid (rotate ~12deg). Larger plots (4000-8000 frontage), generous mid-block alleys (BackStreets/SM_BackStreet_01_8m). Lots of blank wall for murals (hand-finish facades with Architecture/SM_Base_Wall_* shutter modules). Footprints 2400x3200 to 4000x4800, setback 200. Accent SM_JacarandaTree. Industrial-to-hip transition; medium-low density."
+    },
+    {
+      "name": "Little Havana",
+      "center_x": 10000,
+      "center_y": -80000,
+      "radius_cm": 60000,
+      "zone": "lowrise_residential",
+      "density": "high",
+      "building_footprint_cm": 2400,
+      "building_assets": [
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_14",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_15",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_16",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_02",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_05",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_06",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Signs/SM_CafeBar_Sign_01",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Signs/SM_HotlineBurger_Sign01"
+      ],
+      "notes": "Mainland SW. Low-rise 1-3 story, regular fine local grid (0deg, E-W streets), small lots. Continuous street wall with 0 cm party-wall plots (rowhouse/storefront) along a Calle-Ocho-analog E-W arterial at y~-80000. Footprints 1600x2000 to 2400x2800, setback 200-400, inter-plot gap 200 (non-party). Fill cheap silhouettes SM_CityBeach_BackgroundBuilding_02/05/06 + scattered LI_Building_* shopfronts with SM_CafeBar_Sign_01, SM_Hotline*_Sign food signs, awnings, SM_OpenNeonSign. Street trees Jacaranda + palms, SM_Bench, SM_WoodPlanter. High lot count, high density."
+    },
+    {
+      "name": "Port / Marina",
+      "center_x": 150000,
+      "center_y": -120000,
+      "radius_cm": 55000,
+      "zone": "port_marina",
+      "density": "low",
+      "building_footprint_cm": 6400,
+      "building_assets": [
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Resort_01",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Resort_03",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_03",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_07",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/Street/SM_Carpark_DoorRamp"
+      ],
+      "notes": "South end of the bay, mainland east shore. Dredged rectangular PORT BASIN (water) from (+150000,-150000) to (+215000,-95000), quay walls on the 800 grid (edge with Boulders/SM_Boulder01-03). Cruise-terminal long sheds (LI_Resort_* as big sheds) + cargo + parking decks (SM_Carpark_DoorRamp). Small-craft MARINA slips on the calmer bay edge near (+160000,-95000). Big open plots 4800x6400+, low density. Connected to mainland by the south/port causeway + a high-clearance bridge over the river mouth at (+148000,-12000) so boats reach the bay. ASSET GAP: no dock/crane/boat mesh, hand-finish or new asset."
+    },
+    {
+      "name": "Outer suburban ring",
+      "center_x": -180000,
+      "center_y": 40000,
+      "radius_cm": 120000,
+      "zone": "lowrise_residential",
+      "density": "low",
+      "building_footprint_cm": 2400,
+      "building_assets": [
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_24",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_25",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_26",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/Buildings/LI_Building_27",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_02",
+        "/Game/GTCaliberAssets/Content/CityBeachStrip/Meshes/BackgroundBuildings/SM_CityBeach_BackgroundBuilding_05"
+      ],
+      "notes": "Occupies the band between the ring road (r~120000) and the beltway (r~256000) on the west/north/south arcs, wherever no other district reaches. center_x/center_y mark the western fill centroid; it is really an annular fill, not a disc. Large lots, low-rise residential, looser CURVING local streets (SM_Street_Curve_01, SM_Street_Bend_60_01) for organic feel. Footprints ~2000x2400 on big lots, setback 600, inter-plot gap >=400. Fill SM_CityBeach_BackgroundBuilding_* + mid LI_Building_*. Jacarandas + palms. Density ~20/km2."
+    }
+  ],
+  "overlap_rules": {
+    "min_building_gap_cm": 400,
+    "road_buffer_cm": 400,
+    "notes": "THE GUARANTEE (no building touches a road or another building), proven by construction on the 800 cm grid (G=800), all widths integer multiples of 800 so tiles seat seamlessly and overlap tests are exact integer math. Pipeline (organize-first): (1) build LAND/WATER/BRIDGE masks from the coastline curve + bay + island + river + port basin; (2) lay roads strictly top-down (beltway -> I-95 spine + causeways -> arteries -> ring road -> per-district collectors -> locals -> alleys); (3) for each road of class k, its ROW polygon = centerline buffered by H_row[k] (highway 5000, causeway 3600, arterial 2400, collector 1800, local 1200, alley 800); (4) rasterize ALL ROW polygons onto the 800 grid -> boolean ROADMASK; (5) DILATE ROADMASK by setback SB=400 (road_buffer_cm) -> BLOCKMASK (forbidden to buildings); (6) connected free regions of (NOT BLOCKMASK AND LAND AND NOT WATER AND NOT BRIDGE) are the city blocks; (7) subdivide each block into plots in steps of the district plot module (multiples of 800), leaving an 800 cm perimeter inset inside the block AND >=800 cm between adjacent plots (one empty lattice row/col); (8) building footprint inset further by per-district frontage setback FS (core 0 build-to-line; suburbs 2400; Ocean Drive 1600; Wynwood/Havana 200) and by >=100 cm side/rear inset. road_buffer_cm=400 is the SB dilation between any ROW edge and any plot; min_building_gap_cm=400 is the guaranteed clear distance between two buildings in adjacent non-party-wall plots (200 inter-plot gap + 2x100 inset). CRITICAL SPACING CONSTRAINT (the only place geometry could self-intersect, fixed): street spacing D must satisfy D >= 2*H_row + 2*SB + min_plot_depth. With local H_row=1200, SB=400, min_plot_depth=4800 -> D_local=8000 (yields exactly a 4800 buildable block = one core plot module); collector D=11200; arterial D=13600. The naive 4800-6400 local spacing in early drafts would make adjacent ROWs touch; DO NOT use it. CORNER CLIP: at every intersection chamfer plot corners 45deg by the larger road's H_row (visibility triangle) so corner buildings never poke into junction tiles. FURNITURE LANE: reserve outer 150 cm of each sidewalk for palms/lamps/signs (SM_PalmTree_*, SM_LampPostBeach_01, SM_TrafficLightsDouble_01, StreetSigns/SM_Sign_*) so props never overlap the walkable path or buildings. VALIDATION (must pass before commit): build an R-tree of {all ROW polygons, all plot polygons, all water polygons} and REJECT generation if any two intersect; since building is a strict subset of plot is a subset of block is a subset of (land minus ROW minus water minus bridge), building-vs-road and building-vs-building overlaps are then impossible by transitivity. Party-wall districts (Downtown, South Beach, Little Havana main drag) set inter-plot gap to 0 only inside one block; buildings share a wall and remain non-overlapping by construction. Bridge/causeway keep-out: 1500 cm no-build at highway abutments, 6000 cm each side of any bridge deck centerline (pylons/water only). Coastline keep-out: no plot within 16000 cm of raw shoreline. Emit lane_graph.json + sidewalk_graph.json in the shipped node format snapped to 800, then run these assertions as automated tests; any violation fails the build."
+  }
+}

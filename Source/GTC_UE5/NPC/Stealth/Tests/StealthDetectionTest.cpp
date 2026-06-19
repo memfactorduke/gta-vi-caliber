@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to a test_* function in the the reference reference behavior
+// Each test below maps 1:1 to a test_* function in the Godot parity oracle
 // game/tests/unit/test_stealth_detection.gd.
 
 // test_starts_unaware_at_zero

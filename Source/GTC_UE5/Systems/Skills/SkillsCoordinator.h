@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -8,17 +8,17 @@
 #include "SkillsCoordinator.generated.h"
 
 /**
- * Live bridge for PlayerSkills — the UE 5.7 port of the reference self-wiring
+ * Live bridge for PlayerSkills — the UE 5.7 port of Godot's self-wiring
  * SkillsCoordinator Node. Owns the pure FPlayerSkills model and trains it from
  * player activity: on-foot distance trains stamina, driven-vehicle distance trains
  * driving, confirmed weapon hits train shooting. Exposes level()/tier()/bonus()/
  * overall_mastery() and Serialize/Restore for the save system.
  *
- * Lifecycle: a UGameInstanceSubsystem (skills are player-global, like the the reference group
+ * Lifecycle: a UGameInstanceSubsystem (skills are player-global, like the Godot group
  * "player_skills"). It owns a single FPlayerSkills for its whole lifetime.
  *
  * OWNERSHIP MODEL: SkillsCoordinator OWNS the skills model and exposes it via getters.
- * The the reference scene-graph wiring — resolving the player/vehicle Node3D, planar-distance
+ * The Godot scene-graph wiring — resolving the player/vehicle Node3D, planar-distance
  * accumulation from global_position deltas, weapon "hit_confirmed" signal binding — is
  * Wave 3 engine wiring. Here the pure motion math is preserved as explicit driver
  * methods (TrainFromOnFootMove / TrainFromVehicleMove / OnHitConfirmed) that a future
@@ -57,7 +57,7 @@ public:
     /** Const access to the owned pure model (ownership stays with the subsystem). */
     const FPlayerSkills& GetSkills() const { EnsureModel(); return *_Skills; }
 
-    // --- Drivers (motion math ported from the the reference Node) ------------------
+    // --- Drivers (motion math ported from the Godot Node) ------------------
 
     /**
      * On-foot movement from `From` to `To` (planar X/Z). Trains stamina by the

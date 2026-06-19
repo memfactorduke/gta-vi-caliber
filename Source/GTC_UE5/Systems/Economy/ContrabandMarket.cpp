@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ContrabandMarket.h"
 
@@ -231,7 +231,7 @@ double ContrabandMarket::SeedMultiplier(const FString& DistrictId)
 uint32 ContrabandMarket::StableHash(const FString& Value)
 {
     // FNV-1a over UTF-8 bytes: a stable, well-distributed deterministic hash. We do
-    // NOT need the reference hash() — the oracle pins no exact hash values, only band
+    // NOT need Godot's hash() — the oracle pins no exact hash values, only band
     // membership and that distinct districts differ.
     uint32 Hash = 2166136261u;
     const FTCHARToUTF8 Utf8(*Value);

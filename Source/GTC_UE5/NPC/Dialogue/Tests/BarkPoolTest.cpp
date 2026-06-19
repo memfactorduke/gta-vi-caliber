@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -7,7 +7,7 @@
 #include "../BarkPool.h"
 
 /**
- * Parity tests for FBarkPool, mapped 1:1 from the the reference oracle
+ * Parity tests for FBarkPool, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_bark_pool.gd (7 funcs). Each TestTrue corresponds to one
  * oracle assertion with the oracle's own literals/indices. Compound `a and b`
  * returns are split into independent TestTrue calls.

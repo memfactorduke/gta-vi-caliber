@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -10,15 +10,15 @@
  * chopper orbits above the target, how wide its searchlight footprint is, and
  * whether the target is currently lit.
  *
- * Direct port of the the reference `HelicopterPursuit` (RefCounted) at
+ * Direct port of the Godot `HelicopterPursuit` (RefCounted) at
  * `game/scripts/ai/helicopter_pursuit.gd`. All static, FVector-in,
  * FVector/scalar/bool-out, no UObject — unit-tested headless via the parity
  * oracle (Tests/HelicopterPursuitTest.cpp, prefix
  * GTC.AI.Pursuit.HelicopterPursuit).
  *
- * Double precision throughout, to match the the reference implementation float math. "Planar" is the
- * XZ ground plane (the reference Y-up); altitude is the +Y component. No Godot->UE Z-up
- * axis remap — the model stays in the the reference XZ frame so tests match the oracle
+ * Double precision throughout, to match the GDScript float math. "Planar" is the
+ * XZ ground plane (Godot Y-up); altitude is the +Y component. No Godot->UE Z-up
+ * axis remap — the model stays in the Godot XZ frame so tests match the oracle
  * bit-for-bit; the axis convention is a DEFERRED Wave-3 concern.
  *
  * Depends on the merged FPoliceResponse (World/Police) for the deploy threshold;

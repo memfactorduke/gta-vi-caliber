@@ -1,15 +1,15 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "WantedLevel.h"
 
 // Out-of-line storage for the static threshold table, ported VERBATIM from the
-// the reference STAR_THRESHOLDS constant (game/scripts/world/wanted_level.gd).
+// Godot STAR_THRESHOLDS constant (game/scripts/world/wanted_level.gd).
 const double FWantedLevel::StarThresholds[6] = {0.0, 1.0, 3.0, 6.0, 10.0, 15.0};
 
 const TMap<FString, double>& FWantedLevel::CrimeHeat()
 {
     // Function-local static: heat added per crime kind, ported VERBATIM from the
-    // the reference CRIME_HEAT dictionary.
+    // Godot CRIME_HEAT dictionary.
     static const TMap<FString, double> Table = {
         {TEXT("trespass"), 0.5},
         {TEXT("theft"), 1.5},

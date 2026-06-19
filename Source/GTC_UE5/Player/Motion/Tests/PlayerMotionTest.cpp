@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 #include "Math/UnrealMathUtility.h"
 
 /**
- * Parity tests for FPlayerMotion, mapped 1:1 from the the reference oracle
+ * Parity tests for FPlayerMotion, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_player_motion.gd. Tolerances mirror the oracle's
  * is_equal_approx epsilon (1e-4); is_equal cases assert exactly.
  *

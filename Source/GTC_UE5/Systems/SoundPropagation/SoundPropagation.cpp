@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "SoundPropagation.h"
 
@@ -31,7 +31,7 @@ double FSoundPropagation::BaseLoudness(ESoundKind Kind)
 
 double FSoundPropagation::BaseLoudnessForInt(int32 KindRaw)
 {
-    // Mirror the reference match-on-int: only the defined ordinals map; all else -> 0.0.
+    // Mirror Godot's match-on-int: only the defined ordinals map; all else -> 0.0.
     if (KindRaw < static_cast<int32>(ESoundKind::Gunshot)
         || KindRaw > static_cast<int32>(ESoundKind::GlassBreak))
     {

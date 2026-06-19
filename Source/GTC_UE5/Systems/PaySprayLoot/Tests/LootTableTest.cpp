@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to an assertion in the the reference reference behavior
+// Each test below maps 1:1 to an assertion in the Godot parity oracle
 // game/tests/unit/test_loot_table.gd. Float compares use Eps.
 //
 // RNG note: rolls use FRandomStream (seed-reproducible WITHIN UE5, not

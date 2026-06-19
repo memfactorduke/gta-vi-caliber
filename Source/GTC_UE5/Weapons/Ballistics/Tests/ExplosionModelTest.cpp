@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -7,10 +7,10 @@
 #include "../ExplosionModel.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test maps 1:1 to an assertion in the the reference reference behavior
+// Each test maps 1:1 to an assertion in the Godot parity oracle
 // game/tests/unit/test_explosion_model.gd. Curve under test is LINEAR falloff.
-// Float/vector compares use Eps (1e-4). The model stays in the the reference frame, so
-// the upward knockback bias is along +Y (the reference Vector3.UP).
+// Float/vector compares use Eps (1e-4). The model stays in the Godot frame, so
+// the upward knockback bias is along +Y (Godot's Vector3.UP).
 namespace
 {
     using GtcTest::Eps;

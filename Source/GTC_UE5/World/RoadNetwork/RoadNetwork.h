@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -10,9 +10,9 @@
  * segments (both directions, since lanes are two-way here). Traffic agents walk
  * segment->segment, picking a continuation at each junction.
  *
- * Direct port of the the reference `RoadNetwork` (RefCounted) at
+ * Direct port of the Godot `RoadNetwork` (RefCounted) at
  * `game/scripts/world/road_network.gd`. Plain value type, no UObject —
- * unit-tested headless via the reference behavior (Tests/RoadNetworkTest.cpp, prefix
+ * unit-tested headless via the parity oracle (Tests/RoadNetworkTest.cpp, prefix
  * GTC.World.RoadNetwork).
  *
  * Geometry comes in ALREADY projected to local metres via FGeoProjection
@@ -22,19 +22,19 @@
  * a separate Wave-2/3 data-loading concern. The pure graph core takes
  * already-local FVector polylines via AddPolyline.
  *
- * Double precision throughout, to match the the reference implementation math (the the reference store is
+ * Double precision throughout, to match the GDScript math (the Godot store is
  * PackedFloat32Array, but parity asserts are well within float<->double; we keep
  * doubles for the A* cost/heuristic accumulation determinism).
  *
  * Axis convention (Godot, Y-up): work happens on the XZ plane, Y is height. No
- * Godot->UE Z-up axis remap is baked in here — the model stays in the the reference XZ
+ * Godot->UE Z-up axis remap is baked in here — the model stays in the Godot XZ
  * frame so the ported unit tests match the oracle bit-for-bit. Porting the axis
  * convention to UE's Z-up space is a DEFERRED Wave-3 concern.
  *
  * Determinism: nodes/segments are stored in INSERTION ORDER (ordered TArrays),
  * which the oracle observes (node indices, segment counts, A* path order). A*
  * uses an ordered open-set with a strict-less tie-break (first-inserted wins),
- * mirroring the the reference Dictionary iteration order exactly.
+ * mirroring the Godot Dictionary iteration order exactly.
  *
  * PURE-CORE boundary: this is the pure graph (nodes/edges/adjacency) plus the
  * A* node search and the segment/nearest-point geometry, computed from
@@ -45,14 +45,14 @@
 class GTC_UE5_API FRoadNetwork
 {
 public:
-    /** Mirrors the the reference point_on_segment / nearest_point dictionary results. */
+    /** Mirrors the Godot point_on_segment / nearest_point dictionary results. */
     struct FSegmentPoint
     {
         FVector Pos = FVector::ZeroVector;
         FVector Heading = FVector::ZeroVector;
     };
 
-    /** Nearest-point-on-graph result; bValid == false is the the reference empty `{}`. */
+    /** Nearest-point-on-graph result; bValid == false is the Godot empty `{}`. */
     struct FNearestPoint
     {
         bool bValid = false;
@@ -89,7 +89,7 @@ public:
 
     /**
      * Nearest point ON the road graph to a world position (planar XZ). bValid ==
-     * false (the the reference empty `{}`) when the graph has no segments. Offset is
+     * false (the Godot empty `{}`) when the graph has no segments. Offset is
      * metres along the segment from its start node. Builds the index on first use.
      */
     FNearestPoint NearestPoint(const FVector& Pos);
@@ -121,6 +121,6 @@ private:
     void AddSegment(int32 A, int32 B);
     FNearestPoint ProjectToSegment(int32 Seg, const FVector& Pos) const;
 
-    /** Round-half-away-from-zero, matching the reference roundi for the snap grid key. */
+    /** Round-half-away-from-zero, matching Godot roundi for the snap grid key. */
     static int32 RoundHalfAway(double V);
 };

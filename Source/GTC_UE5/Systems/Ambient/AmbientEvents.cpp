@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AmbientEvents.h"
 
@@ -6,7 +6,7 @@
 
 namespace
 {
-	// the reference -INF sentinel for "never fired". Negative infinity so any finite Now - LastFired
+	// Godot's -INF sentinel for "never fired". Negative infinity so any finite Now - LastFired
 	// comparison passes the cooldown/global-gap check after a Reset() or on a fresh roster.
 	constexpr double NegInf = -std::numeric_limits<double>::infinity();
 }
@@ -71,7 +71,7 @@ bool FAmbientEvents::CanFire(const FString& Id, double Now, const FAmbientContex
 	{
 		return false;
 	}
-	// the reference int(context.get("stars", 0)) truncates toward zero; (int32) cast does the same.
+	// Godot int(context.get("stars", 0)) truncates toward zero; (int32) cast does the same.
 	const int32 Stars = static_cast<int32>(Context.Stars);
 	if (Stars < E->MinStars || Stars > E->MaxStars)
 	{

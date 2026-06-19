@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -16,22 +16,22 @@
  *   - A small stateful in-progress report (an instance): a witness has started dialling;
  *     Tick() runs the timer down, Silence() cancels it.
  *
- * All XZ-plane math is ported faithfully. the reference is Y-up and uses the X/Z plane for the
+ * All XZ-plane math is ported faithfully. Godot is Y-up and uses the X/Z plane for the
  * ground; per the Wave-2 "no Z-up remap" rule we keep the SAME axes the oracle uses —
- * the FVector components map 1:1 to the reference Vector3 (X->X, Y->Y, Z->Z) and "ground"
+ * the FVector components map 1:1 to Godot's Vector3 (X->X, Y->Y, Z->Z) and "ground"
  * means dropping Y, exactly as Godot _ground() drops y. double precision for float parity.
  *
- * Observer payloads: the reference passes Dictionaries {pos, facing, is_police, node}. Here an
+ * Observer payloads: Godot passes Dictionaries {pos, facing, is_police, node}. Here an
  * observer is the FCrimeObserver struct; CountWitnesses/CollectWitnesses iterate an
  * ordered TArray so witness order is preserved where the oracle observes it. The opaque
- * "node" scene payload (the reference Node3D ride-along for pending-report bookkeeping) is a
+ * "node" scene payload (Godot's Node3D ride-along for pending-report bookkeeping) is a
  * Wave-3 concern and is represented as an opaque void* carried through untouched — the
  * subsystem behavior tests never dereference it.
  */
 
 /**
- * One observer for the LOS pass. Mirrors the the reference observer Dictionary. A "malformed"
- * the reference entry (non-dict, or missing pos/facing keys) decoded to a zero facing that can
+ * One observer for the LOS pass. Mirrors the Godot observer Dictionary. A "malformed"
+ * Godot entry (non-dict, or missing pos/facing keys) decoded to a zero facing that can
  * never witness anything; the equivalent here is a default FCrimeObserver (zero facing).
  */
 struct GTC_UE5_API FCrimeObserver
@@ -97,6 +97,21 @@ public:
      * returns via a saturating curve that approaches but never exceeds base_heat.
      */
     static double HeatForCrime(double BaseHeat, int32 WitnessCount);
+
+    /** Floor on a scaled report delay — even a close crowd needs this long to dial, so
+     *  the player always gets a beat to silence the witnesses. */
+    static constexpr double MinReportDelay = 0.5;
+
+    /**
+     * GTC-original (NOT in the Godot oracle): how `BaseDelay` shortens when a crime is
+     * seen by more people, and by people standing closer. A lone witness at the edge of
+     * sight takes the full BaseDelay; a numerous, point-blank crowd phones it in much
+     * faster (down to MinReportDelay). Feed the result into the FCrimeWitness(ReportDelay)
+     * constructor so the in-progress report ticks at a crowd-aware pace. WitnessCount is
+     * clamped to >= 1 (callers only scale once CollectWitnesses found someone); a
+     * non-positive SightRange or BaseDelay returns BaseDelay unscaled.
+     */
+    static double ReportDelayFor(double BaseDelay, int32 WitnessCount, double NearestDistance, double SightRange);
 
     // --- Stateful in-progress report ---------------------------------------
 

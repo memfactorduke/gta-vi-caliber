@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #if WITH_AUTOMATION_TESTS
 
@@ -9,7 +9,7 @@
 using GtcTest::Eps;
 
 // Parity oracle: game/tests/unit/test_police_combat.gd. Each It(...) maps 1:1 to
-// one the reference test_* function, asserting the SAME conditions on the pure
+// one Godot test_* function, asserting the SAME conditions on the pure
 // PoliceCombat + CombatAi + PoliceResponse composition.
 BEGIN_DEFINE_SPEC(FPoliceCombatSpec, "GTC.AI.Combat.PoliceCombat",
     EAutomationTestFlags::ProductFilter | EAutomationTestFlags_ApplicationContextMask)

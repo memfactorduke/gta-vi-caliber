@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -16,7 +16,7 @@
 using GtcTest::Eps;
 
 // ============================================================================
-// PARITY tests — each maps 1:1 to a func in the the reference oracle
+// PARITY tests — each maps 1:1 to a func in the Godot oracle
 // game/tests/unit/test_player_stats.gd (9 funcs). Identical literals/tolerances.
 // ============================================================================
 
@@ -166,7 +166,7 @@ bool FPlayerStatsRestoreClampsGarbageTest::RunTest(const FString& Parameters)
 // These layer thin checks on top of the 9 parity funcs (not part of the count).
 // ============================================================================
 
-// Pure-data mutator parity that the oracle leaves untested (the reference mutators need a
+// Pure-data mutator parity that the oracle leaves untested (Godot mutators need a
 // SceneTree). Drives FPlayerStats directly — no engine context.
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FPlayerStatsMutatorSemanticsTest,

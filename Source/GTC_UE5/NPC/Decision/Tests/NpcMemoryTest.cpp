@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FNpcMemory, mapped 1:1 from the the reference oracle
+ * Parity tests for FNpcMemory, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_npc_memory.gd. Decay tolerance mirrors the oracle's
  * absf(...) < 0.001; the category and recognise gates assert exactly.
  */

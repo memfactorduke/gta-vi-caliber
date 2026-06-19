@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -10,14 +10,14 @@
  * cold" evasion loop real — without it police steer to the player's exact live
  * position every tick.
  *
- * Direct port of the the reference `PursuitMemory` (RefCounted) at
+ * Direct port of the Godot `PursuitMemory` (RefCounted) at
  * `game/scripts/ai/pursuit_memory.gd`. All static, FVector-in,
- * FVector/enum/bool-out, no UObject — unit-tested headless via the reference behavior
+ * FVector/enum/bool-out, no UObject — unit-tested headless via the parity oracle
  * (Tests/PursuitMemoryTest.cpp, prefix GTC.AI.Pursuit.PursuitMemory).
  *
- * Double precision throughout, to match the the reference implementation float math. "Planar" is the
- * XZ plane (the reference Y-up). No Godot->UE Z-up axis remap — the model stays in the
- * the reference XZ frame so tests match the oracle bit-for-bit; the axis convention is a
+ * Double precision throughout, to match the GDScript float math. "Planar" is the
+ * XZ plane (Godot Y-up). No Godot->UE Z-up axis remap — the model stays in the
+ * Godot XZ frame so tests match the oracle bit-for-bit; the axis convention is a
  * DEFERRED Wave-3 concern.
  *
  * PURE-CORE boundary: the pure decision/memory math only — caller supplies
@@ -26,7 +26,7 @@
  * the deferred Wave-3 adapter, NOT implemented here and NOT covered by tests.
  */
 
-/** Chase classification. Mirrors the the reference `State` enum 1:1 (same order). */
+/** Chase classification. Mirrors the Godot `State` enum 1:1 (same order). */
 enum class EPursuitMemoryState : uint8
 {
     Pursue,

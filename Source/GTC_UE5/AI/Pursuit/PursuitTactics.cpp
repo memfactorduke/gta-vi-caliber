@@ -1,10 +1,10 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PursuitTactics.h"
 
 #include "Math/UnrealMathUtility.h"
 
-// PI * 30 / 180 — the the reference RAM_ARC_HALF constant. UE_DOUBLE_PI used directly per
+// PI * 30 / 180 — the Godot RAM_ARC_HALF constant. UE_DOUBLE_PI used directly per
 // unity-build hygiene (no file-scope common-named const aliasing).
 const double FPursuitTactics::RamArcHalf = UE_DOUBLE_PI * 30.0 / 180.0;
 

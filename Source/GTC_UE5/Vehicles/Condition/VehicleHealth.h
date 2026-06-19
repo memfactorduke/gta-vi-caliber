@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -20,8 +20,8 @@
  *   WRECKED    health == 0, or the fuse has elapsed (irreversible until reset)
  *
  * Parity notes:
- * - double throughout; identical literals/tolerances to the the reference oracle.
- * - the reference INF (time_to_explosion before fire) maps to std::numeric_limits<double>::infinity().
+ * - double throughout; identical literals/tolerances to the Godot oracle.
+ * - Godot's INF (time_to_explosion before fire) maps to std::numeric_limits<double>::infinity().
  *
  * Deferred Wave-3 adapters (NOT implemented/tested here): the vehicle-state component that
  * owns this model, the Chaos/cosmetic smoke+fire VFX, and the explosion damage application.

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -11,7 +11,7 @@
 
 using GtcTest::Eps;
 
-// Subsystem BEHAVIOR tests (Wave 2 rule). ArrestController has NO the reference reference behavior, so
+// Subsystem BEHAVIOR tests (Wave 2 rule). ArrestController has NO Godot parity oracle, so
 // these are NOT parity tests: they assert the UE port's ownership / lifecycle and that
 // driving the bust state machine through Tick() composes the (parity-tested) FArrestModel
 // math correctly. The scene-graph wiring (player/police Node3D resolution, respawn) is
@@ -118,7 +118,7 @@ bool FArrestSubsystemGrappleProgressTest::RunTest(const FString& Parameters)
     Arrest->Tick(2, 1.0, 0.75); // 0.75 / 1.5
     TestEqual(TEXT("progress == 0.5"), Arrest->GrappleProgress(), 0.5, Eps);
 
-    // A zero grapple_time must not divide-by-zero (the reference guards this too).
+    // A zero grapple_time must not divide-by-zero (Godot guards this too).
     Arrest->GrappleTime = 0.0;
     TestEqual(TEXT("zero grapple_time -> progress 0"), Arrest->GrappleProgress(), 0.0, Eps);
     return true;

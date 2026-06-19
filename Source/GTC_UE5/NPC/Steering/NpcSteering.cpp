@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "NpcSteering.h"
 
@@ -64,7 +64,7 @@ FVector FNpcSteering::Separation(
         return FVector::ZeroVector;
     }
     // Preserve the inverse-falloff magnitude accumulated above; only clamp when a
-    // dense crowd's combined push would exceed MaxSpeed (the reference limit_length).
+    // dense crowd's combined push would exceed MaxSpeed (Godot limit_length).
     return Push.GetClampedToMaxSize(MaxSpeed);
 }
 

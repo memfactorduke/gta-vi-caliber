@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -11,12 +11,12 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FNpcSchedule, mapped 1:1 from the the reference oracle
+ * Parity tests for FNpcSchedule, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_npc_schedule.gd. Tolerance mirrors the oracle's absf(...)
  * < 0.001 checks (Eps = 1e-4 is tighter); wrap/cover/fallback assert exactly.
  *
  * Insertion order is observable (first covering block wins) and preserved by the
- * ordered TArray of blocks, matching the the reference Array routine.
+ * ordered TArray of blocks, matching the Godot Array routine.
  */
 
 namespace

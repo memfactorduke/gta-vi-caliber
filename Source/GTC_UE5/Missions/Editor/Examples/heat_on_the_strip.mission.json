@@ -1,0 +1,61 @@
+{
+    "format": "gtc_mission",
+    "version": 1,
+    "mission": {
+        "mission_id": "11111111-2222-3333-4444-555555555555",
+        "id": "mission_heat_strip",
+        "title": "Heat on the Strip",
+        "description": "Meet the fixer at the marina, then clear the dealers off the boardwalk before the cops roll in.",
+        "content_type": "SideQuest",
+        "giver": "tommy",
+        "district": "ocean_beach",
+        "time_limit": 300,
+        "repeatable": false,
+        "objectives": [
+            {
+                "id": "reach_marina",
+                "text": "Reach the marina",
+                "kind": "Reach",
+                "waypoint": [12400.0, -6850.0, 90.0],
+                "has_waypoint": true,
+                "radius": 750.0,
+                "target_count": 1,
+                "duration": 3.0,
+                "threshold": 0.0,
+                "driver_kind": "reach",
+                "optional": false
+            },
+            {
+                "id": "clear_boardwalk",
+                "text": "Clear the dealers off the boardwalk",
+                "kind": "Eliminate",
+                "waypoint": [13050.0, -6420.0, 90.0],
+                "has_waypoint": true,
+                "radius": 1200.0,
+                "target_count": 4,
+                "driver_kind": "hold",
+                "optional": false
+            }
+        ],
+        "triggers": [
+            {
+                "objective_id": "reach_marina",
+                "type": "EnterRadius",
+                "location": [12400.0, -6850.0, 90.0],
+                "radius": 750.0,
+                "count": 1,
+                "time": 0.0
+            }
+        ],
+        "reward": {
+            "money": 5000,
+            "objective_reward": 300,
+            "mission_bonus": 2500,
+            "xp": 120,
+            "respect": 15,
+            "unlocks": ["safehouse_marina"]
+        },
+        "activity_kind": "None",
+        "prerequisites": []
+    }
+}

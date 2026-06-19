@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "CrimeReactionDirector.h"
 
@@ -23,7 +23,7 @@ void UCrimeReactionDirector::EnsureModels() const
     }
     if (!_Districts.IsValid())
     {
-        // Default roster (the reference DistrictEconomy.new() with no args).
+        // Default roster (Godot DistrictEconomy.new() with no args).
         _Districts = MakeUnique<DistrictEconomy>();
     }
 }

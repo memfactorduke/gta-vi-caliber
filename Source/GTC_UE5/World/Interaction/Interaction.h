@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -10,12 +10,12 @@
  * of the one to act on. Scene-free, so it unit-tests headless against the parity
  * oracle (World/Interaction/Tests/InteractionTest.cpp).
  *
- * Ported 1:1 from the the reference RefCounted `Interaction`
+ * Ported 1:1 from the Godot RefCounted `Interaction`
  * (game/scripts/world/interaction.gd). Plain value type, no UObject — pure static
  * helper.
  *
  * PURE-CORE-ONLY-IS-TESTED / Wave-3 boundary: the tested unit is JUST the
- * pick-the-nearest-in-reach scoring below. In the reference the player gathers the
+ * pick-the-nearest-in-reach scoring below. In Godot the player gathers the
  * candidate interactables (Node3D members of group "interactables"), and on a key
  * press calls interact()/interact_prompt() on the winner. Gathering the
  * candidates (a UE line trace / overlap query / AI Perception sweep), reading
@@ -25,12 +25,12 @@
  *
  * Axis convention (Godot, Y-up): positions live on the XZ ground plane (Y up).
  * No UE Z-up remap is baked in — `Nearest` uses a full 3D Euclidean distance
- * (FVector::Dist) exactly as the the reference `Vector3.distance_to`, so the ported unit
+ * (FVector::Dist) exactly as the Godot `Vector3.distance_to`, so the ported unit
  * tests match the oracle bit-for-bit. Remapping to UE's Z-up space is the same
  * deferred Wave-3 concern that the adapter owns.
  *
  * Double precision throughout (LWC): FVector is double-backed, matching the
- * the reference float math.
+ * Godot float math.
  */
 class GTC_UE5_API FInteraction
 {

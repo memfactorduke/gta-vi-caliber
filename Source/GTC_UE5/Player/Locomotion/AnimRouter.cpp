@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AnimRouter.h"
 
@@ -14,7 +14,7 @@ const FName FAnimRouter::StateLand(TEXT("Land"));
 namespace
 {
     /**
-     * Inline port of the reference `is_equal_approx(a, b)`: relative tolerance of
+     * Inline port of Godot's `is_equal_approx(a, b)`: relative tolerance of
      * CMP_EPSILON (1e-5 for 64-bit) scaled by the larger magnitude, with a
      * minimum absolute tolerance so values near zero still compare equal. Used to
      * reproduce the dominant-clip tie-break exactly (float32 blend points make the
@@ -22,7 +22,7 @@ namespace
      */
     bool IsEqualApprox(double A, double B)
     {
-        // CMP_EPSILON for the reference 64-bit build.
+        // CMP_EPSILON for Godot's 64-bit build.
         constexpr double Epsilon = 0.00001;
         if (A == B)
         {
@@ -37,7 +37,7 @@ namespace
     }
 
     /**
-     * Inline port of the reference `wrapf(value, min, max)` for the (-PI, PI] shortest-arc
+     * Inline port of Godot's `wrapf(value, min, max)` for the (-PI, PI] shortest-arc
      * use here: wraps `value` into the half-open range [min, max).
      */
     double Wrapf(double Value, double Min, double Max)

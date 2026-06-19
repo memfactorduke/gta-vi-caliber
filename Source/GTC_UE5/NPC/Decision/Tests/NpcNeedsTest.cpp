@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -11,12 +11,12 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FNpcNeeds, mapped 1:1 from the the reference oracle
+ * Parity tests for FNpcNeeds, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_npc_needs.gd. Tolerance mirrors the oracle's absf(...)
  * < 0.001 checks (Eps = 1e-4 is tighter); exact-0/1 clamps assert exactly.
  *
  * Canonical drive order (FNpcNeeds::Needs) is the insertion-order backing store;
- * most-urgent ties resolve toward the earlier need, matching the the reference scan.
+ * most-urgent ties resolve toward the earlier need, matching the Godot scan.
  */
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -10,7 +10,7 @@
 
 using GtcTest::Eps;
 
-// Each test below maps 1:1 to a func in the the reference reference behavior
+// Each test below maps 1:1 to a func in the Godot parity oracle
 // game/tests/unit/test_news_bulletin.gd (13 funcs), with identical literals. Headline
 // text is exact; counts are exact. Compound `a and b` oracle returns are split into
 // separate assertions. test_count_from_stat_tracker is a real composition assertion
@@ -94,7 +94,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FNewsPlaceDefaultsTest::RunTest(const FString& Parameters)
 {
     FNewsBulletin N;
-    // Default place "the city" (the reference context.get("place", "the city")).
+    // Default place "the city" (Godot context.get("place", "the city")).
     TestEqual(TEXT("default place"), N.Report(TEXT("crime"), 1), FString(TEXT("Petty crime reported in the city.")));
     return true;
 }

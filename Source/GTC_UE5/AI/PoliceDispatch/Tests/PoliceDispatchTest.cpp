@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FPoliceDispatch, mapped 1:1 from the the reference oracle
+ * Parity tests for FPoliceDispatch, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_police_dispatch.gd. Tolerance mirrors the oracle's
  * is_equal_approx (Eps = 1e-4); integer counts and the despawn predicate assert
  * exactly. Grouped into the oracle's 5 sections (prefix

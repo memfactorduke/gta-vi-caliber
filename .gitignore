@@ -87,3 +87,39 @@ DerivedDataCache/*
 # untracks an already-staged entry, and this pattern does not match the bare
 # path "Content/GTCaliberAssets"). See docs/ASSET_HANDLING.md.
 /Content/GTCaliberAssets/**
+
+assets/*
+
+# ── Local-only: vendored / legacy / stranded / tooling / per-user ───────────
+# These stay on disk so the editor builds, but are intentionally NOT tracked in
+# this (eventually public) repo. Added 2026-06-19 to stop ~580k lines of
+# untracked content showing as pending changes. See docs/ASSET_HANDLING.md.
+
+# Vendored UE plugins (MCP bridges, Cesium, VibeUE) — not hand-edited, not shipped here
+/Plugins/
+
+# Fab "City Sample Vehicles" pack — binary .uasset car models (vendored)
+/Content/CitySampleVehicles/
+
+# Cesium runtime settings + on-disk request cache
+/Content/CesiumSettings/
+cesium-request-cache.sqlite*
+
+# Content stranded by the 5.8 -> 5.7 engine downgrade, kept for reference only
+/_UE58_stranded_assets/
+
+# Reference copy of the previous project + build trash
+/Legacy_GTC/
+/.build_trash_58/
+
+# Loose vendored asset drops
+/Assets/
+
+# AI / editor tooling dirs (local agent + IDE config, not project source)
+/.codex/
+/.cursor/
+/.gemini/
+/.vscode/
+
+# Per-user editor settings (machine-specific)
+/Config/DefaultEditorPerProjectUserSettings.ini

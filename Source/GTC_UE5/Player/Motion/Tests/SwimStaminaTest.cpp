@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 #include "Math/UnrealMathUtility.h"
 
 /**
- * Parity tests for FSwimStamina, mapped 1:1 from the the reference oracle
+ * Parity tests for FSwimStamina, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_swim_stamina.gd. The oracle uses is_equal_approx
  * throughout (Eps=1e-4 here); ordering/threshold checks (>, <=) are exact.
  */

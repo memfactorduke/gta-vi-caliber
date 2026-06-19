@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "SaveData.h"
 
@@ -102,7 +102,7 @@ FVector ArrayToVec3(const FGtcJsonValuePtr& Value, const FVector& Fallback)
 
 TSharedRef<FGtcJsonObject> TransformToDict(const FTransform& T)
 {
-    // the reference stored origin + the three rotation basis columns. UE's rotation matrix axes are
+    // Godot stored origin + the three rotation basis columns. UE's rotation matrix axes are
     // the equivalent orthonormal columns; X/Y/Z scaled-axis vectors are those columns.
     const FMatrix M = T.ToMatrixNoScale();
     const TSharedRef<FGtcJsonObject> Obj = MakeShared<FGtcJsonObject>();

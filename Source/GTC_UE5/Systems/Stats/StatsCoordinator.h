@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -8,19 +8,19 @@
 #include "StatsCoordinator.generated.h"
 
 /**
- * Live bridge for FStatTracker — the UE 5.7 port of the reference self-wiring StatsCoordinator
+ * Live bridge for FStatTracker — the UE 5.7 port of Godot's self-wiring StatsCoordinator
  * Node. Owns the pure FStatTracker model and records lifetime gameplay stats so
  * 100%-completion tracking accrues during play: missions passed off the mission system,
  * and "busts_evaded" when a wanted level rises then clears (a death-cleared wanted level
  * is NOT counted as an evasion). Exposes Stat()/CompletionPercent() for the HUD / pause
  * menu and Serialize/Restore for the save system.
  *
- * Lifecycle: a UGameInstanceSubsystem (stats are player-global, like the the reference group
+ * Lifecycle: a UGameInstanceSubsystem (stats are player-global, like the Godot group
  * "stats"). It owns a single FStatTracker for its whole lifetime.
  *
  * DEFERRED-OWNERSHIP (option-1 own-state): StatsCoordinator OWNS the model and takes
  * gameplay events as INPUT via explicit driver methods (OnMissionPassed / OnPlayerDied /
- * UpdateWanted). The the reference scene-graph wiring — resolving the "mission" / "player_health"
+ * UpdateWanted). The Godot scene-graph wiring — resolving the "mission" / "player_health"
  * / "wanted" groups and binding mission_completed / died signals and polling is_wanted()
  * — is Wave 3 engine wiring. The death/evasion state machine (a wanted level that rises
  * then clears counts as one evasion, unless a death cleared it) is preserved here as the
@@ -37,7 +37,7 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-    // --- Event drivers (ported from the the reference Node's signal handlers / _process) ---
+    // --- Event drivers (ported from the Godot Node's signal handlers / _process) ---
 
     /** A mission was passed: increments "missions_passed". Mirrors _on_mission_passed. */
     void OnMissionPassed();

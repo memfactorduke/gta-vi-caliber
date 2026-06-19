@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -7,7 +7,7 @@
 /**
  * Pure mission state: one objective with a progress count and an optional timer.
  *
- * the reference parity: game/scripts/missions/mission.gd (RefCounted). No scene access —
+ * Godot parity: game/scripts/missions/mission.gd (RefCounted). No scene access —
  * a MissionDirector owns one and feeds it kills and time, so the objective/fail
  * logic is unit-tested headless. Deliberately small (single counted objective);
  * multi-step missions chain several of these via MissionChain.

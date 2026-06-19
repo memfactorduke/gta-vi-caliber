@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -8,7 +8,7 @@
  * Pure weapon-attachment / loadout model — one attachment per slot (optic, muzzle,
  * magazine, grip) that tunes a weapon's stats: a scope tightens spread and extends
  * range, a suppressor quiets the shot and trims range, an extended mag adds rounds,
- * a foregrip tames recoil. Direct port of the the reference `WeaponLoadout` (RefCounted) at
+ * a foregrip tames recoil. Direct port of the Godot `WeaponLoadout` (RefCounted) at
  * `game/scripts/weapons/weapon_loadout.gd`.
  *
  * No nodes, no scene access: a weapon controller owns one, asks for the combined
@@ -21,7 +21,7 @@
  * entries (missing id/slot, unknown slot, duplicate id) are dropped.
  *
  * Parity note: the catalogue preserves insertion order (the GarageStorage pattern),
- * matching an insertion-ordered map iteration; equipped multipliers/bonuses combine
+ * matching Godot's Dictionary iteration; equipped multipliers/bonuses combine
  * commutatively so equip iteration order is not observable.
  */
 class GTC_UE5_API WeaponLoadout

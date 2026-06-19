@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -6,7 +6,7 @@
 
 #include "../GangTerritory.h"
 
-// Each test below maps 1:1 to an assertion in the the reference reference behavior
+// Each test below maps 1:1 to an assertion in the Godot parity oracle
 // game/tests/unit/test_gang_territory.gd. Float comparisons use absolute tolerance 1e-4.
 
 namespace

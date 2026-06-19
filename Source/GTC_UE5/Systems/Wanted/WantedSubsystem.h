@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -10,13 +10,13 @@
 #include "WantedSubsystem.generated.h"
 
 /**
- * UWantedSubsystem — UE 5.7 port of the reference self-wiring `wanted_tracker.gd` (class
+ * UWantedSubsystem — UE 5.7 port of Godot's self-wiring `wanted_tracker.gd` (class
  * WantedTracker, a Node). Owns the three pure models (FWantedSystem, FCrimeWitness
  * report timers, FWantedEvasion) and coordinates them: crimes are perception-gated
  * through CrimeWitness math, heat lands in WantedSystem, evasion tracks the go-cold
  * countdown. Exposes Stars()/IsWanted() for police AI and HUDs.
  *
- * Why a GameInstanceSubsystem: the the reference WantedTracker is a persistent per-world Node
+ * Why a GameInstanceSubsystem: the Godot WantedTracker is a persistent per-world Node
  * joined to group "wanted"; the player's heat is a player-global, save-persisted value
  * that should outlive individual streamed sublevels. A GameInstanceSubsystem has that
  * lifetime. (If a future design needs per-world reset semantics this can move to a
@@ -36,7 +36,7 @@
  * The pure motion/perception math is preserved through explicit driver methods so the
  * ported behavior stays headless-testable; the scene adapter feeds it in Wave-3.
  *
- * stars_changed: the the reference signal fires when the quantised star count changes. Mirrored
+ * stars_changed: the Godot signal fires when the quantised star count changes. Mirrored
  * here as FOnStarsChanged (broadcast from RefreshStars when the cached star count moves).
  */
 
@@ -84,7 +84,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wanted")
     double CrimeActiveWindow = 0.6;
 
-    /** Fires when the quantised star count changes (the reference stars_changed). */
+    /** Fires when the quantised star count changes (Godot stars_changed). */
     UPROPERTY(BlueprintAssignable, Category = "Wanted")
     FOnStarsChanged OnStarsChanged;
 
@@ -108,7 +108,7 @@ public:
 
     /**
      * Direct, unconditional heat — the crime is taken as already reported (scripted
-     * events, probes). Mirrors the reference report_crime. Re-arms the active-committing window.
+     * events, probes). Mirrors Godot report_crime. Re-arms the active-committing window.
      */
     void ReportCrime(bool bKilled);
 
@@ -116,7 +116,7 @@ public:
      * A crime at a world position that someone must have SEEN for heat to land. Runs the
      * CrimeWitness LOS pass over the supplied observers (the Wave-3 scene adapter gathers
      * them). A cop witness radios it in instantly; civilian witnesses queue a delayed
-     * report. Mirrors the reference report_witnessed_crime. Re-arms the active-committing window.
+     * report. Mirrors Godot report_witnessed_crime. Re-arms the active-committing window.
      */
     void ReportWitnessedCrime(bool bKilled, const FVector& CrimePos, const TArray<FCrimeObserver>& Observers);
 
@@ -135,13 +135,13 @@ public:
 
     // --- State management --------------------------------------------------
 
-    /** Wipe all heat and drop in-flight reports (death/arrest). Mirrors the reference clear(). */
+    /** Wipe all heat and drop in-flight reports (death/arrest). Mirrors Godot clear(). */
     void Clear();
 
-    /** Snapshot heat for the save system (the reference serialize). */
+    /** Snapshot heat for the save system (Godot serialize). */
     double SerializeHeat() const { return _Wanted.Heat; }
 
-    /** Restore heat from a snapshot, floored at 0 (the reference restore). */
+    /** Restore heat from a snapshot, floored at 0 (Godot restore). */
     void RestoreHeat(double Heat);
 
 private:

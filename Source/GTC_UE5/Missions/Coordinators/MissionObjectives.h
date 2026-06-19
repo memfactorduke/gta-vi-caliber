@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -10,7 +10,7 @@
  * (inactive -> active -> complete/failed). Pure and scene-free so the gameplay
  * rules unit-test headless.
  *
- * the reference parity: game/scripts/missions/.. game/scripts/world/mission.gd (class
+ * Godot parity: game/scripts/missions/.. game/scripts/world/mission.gd (class
  * MissionObjectives, RefCounted). This pure model is NOT on main and was NOT part
  * of the merged Wave 1 Missions/Core (Core merged the SINGLE-counted-objective
  * `Mission` from missions/mission.gd, a different file). It is parity-tested 1:1
@@ -25,7 +25,7 @@
 class GTC_UE5_API FMissionObjectives
 {
 public:
-    /** Inactive -> Active -> Complete/Failed. Mirrors the reference MissionObjectives.State. */
+    /** Inactive -> Active -> Complete/Failed. Mirrors Godot MissionObjectives.State. */
     enum class EObjectiveSetState : uint8
     {
         Inactive,
@@ -51,23 +51,23 @@ public:
     /** Godot _init(title, objective_defs): build the {id,text,done=false} ordered set. */
     FMissionObjectives(const FString& MissionTitle, const TArray<FObjectiveDef>& ObjectiveDefs);
 
-    /** the reference start(): only inactive -> active. */
+    /** Godot start(): only inactive -> active. */
     void Start();
 
     /**
-     * the reference complete_objective(id): mark the first matching open objective done.
+     * Godot complete_objective(id): mark the first matching open objective done.
      * Returns true if this call changed it. Completing the last open objective
      * completes the mission. No-op (false) unless the set is active.
      */
     bool CompleteObjective(const FString& Id);
 
-    /** the reference fail(): only active -> failed. */
+    /** Godot fail(): only active -> failed. */
     void Fail();
 
     bool IsActive() const { return State == EObjectiveSetState::Active; }
     bool IsComplete() const { return State == EObjectiveSetState::Complete; }
 
-    /** the reference progress(): (done_count, total_count). */
+    /** Godot progress(): (done_count, total_count). */
     FIntPoint Progress() const;
 
 private:

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -8,7 +8,7 @@
 #include "../MissionController.h"
 #include "Engine/GameInstance.h"
 
-// BEHAVIOR tests (Wave 2 rule) — UMissionReward has NO the reference reference behavior; these
+// BEHAVIOR tests (Wave 2 rule) — UMissionReward has NO Godot parity oracle; these
 // assert ownership / lifecycle / wiring: it subscribes to a controller's objective
 // and mission delegates and credits rewards. DEFERRED-OWNERSHIP: the payout lands
 // on the subsystem's OWNED state (wallet snapshot + drainable pending-payout

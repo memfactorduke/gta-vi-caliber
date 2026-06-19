@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "NpcSchedule.h"
 
@@ -11,7 +11,7 @@ FNpcScheduleBlock FNpcSchedule::Idle()
 
 double FNpcSchedule::WrapHour(double Hour)
 {
-    // the reference fposmod(hour, 24.0): result has the sign of the divisor (always
+    // Godot fposmod(hour, 24.0): result has the sign of the divisor (always
     // non-negative here), in [0, 24).
     return FMath::Fmod(FMath::Fmod(Hour, 24.0) + 24.0, 24.0);
 }

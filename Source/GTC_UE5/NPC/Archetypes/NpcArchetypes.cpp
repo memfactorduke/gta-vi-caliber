@@ -1,9 +1,9 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "NpcArchetypes.h"
 
 // Shared daily-routine templates. Authored most-specific-first; midnight-wrapping
-// blocks allowed (see FNpcSchedule). These mirror the the reference const Arrays
+// blocks allowed (see FNpcSchedule). These mirror the Godot const Arrays
 // NINE_TO_FIVE / NIGHT_OWL / STREET_HUSTLE / SLOW_LIFE; block author order is
 // preserved by the ordered TArray (first covering block wins on scan).
 //
@@ -110,6 +110,27 @@ namespace
         Add(TEXT("weather_anchor_nobody_hired"), TEXT("Self-Appointed Weather Anchor"), StreetHustle, 0.4, TEXT("weather"),
             FLinearColor(0.25f, 0.45f, 0.60f), TEXT("delivers a live forecast to anyone within earshot"));
 
+        // Wave 2 — more faces so the crowd doesn't repeat every dozen people. New
+        // jobs reuse the four routine templates; each maps to a trade in
+        // FNpcOccupation (work actions) and degrades gracefully where work/hail
+        // banks aren't authored yet (silent physical work / generic pass-by).
+        Add(TEXT("tide_pool_lifeguard"), TEXT("Tide-Pool Lifeguard"), SlowLife, 0.6, TEXT("lifeguard"),
+            FLinearColor(0.95f, 0.78f, 0.30f), TEXT("guards a tide pool nobody's ever drowned in"));
+        Add(TEXT("neon_sign_electrician"), TEXT("Neon-Sign Electrician"), StreetHustle, 0.3, TEXT("electrician"),
+            FLinearColor(0.35f, 0.75f, 0.85f), TEXT("argues with a buzzing letter that won't stay lit"));
+        Add(TEXT("midnight_food_courier"), TEXT("Midnight Food Courier"), NightOwl, -0.5, TEXT("courier"),
+            FLinearColor(0.85f, 0.30f, 0.35f), TEXT("knows every shortcut and every slow elevator"));
+        Add(TEXT("boardwalk_caricaturist"), TEXT("Boardwalk Caricaturist"), StreetHustle, -0.2, TEXT("caricaturist"),
+            FLinearColor(0.60f, 0.45f, 0.80f), TEXT("draws your nose 40% bigger and dares you to object"));
+        Add(TEXT("art_deco_tour_guide"), TEXT("Art-Deco Tour Guide"), NineToFive, 0.5, TEXT("tour_guide"),
+            FLinearColor(0.30f, 0.70f, 0.62f), TEXT("has a fact about every pastel cornice on the strip"));
+        Add(TEXT("pelican_fishmonger"), TEXT("Pelican-Plagued Fishmonger"), StreetHustle, 0.1, TEXT("fishmonger"),
+            FLinearColor(0.50f, 0.62f, 0.70f), TEXT("is locked in an eternal turf war with one pelican"));
+        Add(TEXT("rollerblade_paramedic"), TEXT("Rollerblade Paramedic"), NineToFive, 0.7, TEXT("paramedic"),
+            FLinearColor(0.90f, 0.30f, 0.28f), TEXT("reaches the scene fast and stops slow, on wheels"));
+        Add(TEXT("karaoke_bartender"), TEXT("Karaoke Bartender"), NightOwl, 0.0, TEXT("bartender"),
+            FLinearColor(0.78f, 0.40f, 0.62f), TEXT("pours doubles and cues your song whether you asked or not"));
+
         return Citizens;
     }
 }
@@ -140,7 +161,7 @@ FNpcArchetype FNpcArchetypes::Pick(int32 SeedValue)
     {
         return FNpcArchetype();
     }
-    // the reference posmod(seed, n): always non-negative in [0, n).
+    // Godot posmod(seed, n): always non-negative in [0, n).
     const int32 Index = ((SeedValue % N) + N) % N;
     return Citizens[Index];
 }

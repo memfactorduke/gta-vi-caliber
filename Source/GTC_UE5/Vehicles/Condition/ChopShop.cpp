@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ChopShop.h"
 
@@ -100,7 +100,7 @@ void FChopShop::RotateRequests(FRandomStream& Rng, int32 Count)
 
 void FChopShop::RotateRequestsNoRng()
 {
-    // Mirrors the reference `if rng == null: return` — no rotation without an rng.
+    // Mirrors Godot's `if rng == null: return` — no rotation without an rng.
 }
 
 FChopShop::FDeliverResult FChopShop::Deliver(const FString& Id, double Condition, bool bHot)

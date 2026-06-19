@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -20,20 +20,20 @@
  * District means "any". Malformed entries (missing id, non-positive weight, duplicate id) are
  * dropped at construction.
  *
- * Parity notes (oracle: the reference test test_ambient_events.gd, 12 tests):
- * - the reference `float` is 64-bit; time and weight are stored as `double` to avoid 32-bit drift.
- * - an insertion-ordered map is insertion-ordered and Ids()/EligibleIds()/Reset() iterate it in that
+ * Parity notes (oracle: the upstream Godot test test_ambient_events.gd, 12 tests):
+ * - Godot's `float` is 64-bit; time and weight are stored as `double` to avoid 32-bit drift.
+ * - Godot's Dictionary is insertion-ordered and Ids()/EligibleIds()/Reset() iterate it in that
  *   order, so an explicit ordered backing store (TArray<FEntry> + TMap<FString,int32> index)
  *   mirrors that observable order. TMap alone does NOT preserve insertion order.
- * - the reference `-INF` (never fired) → -std::numeric_limits<double>::infinity().
- * - the reference `int(context.get("stars", 0))` truncates a float toward zero; FAmbientContext::Stars is
+ * - Godot `-INF` (never fired) → -std::numeric_limits<double>::infinity().
+ * - Godot `int(context.get("stars", 0))` truncates a float toward zero; FAmbientContext::Stars is
  *   carried as a double and truncated with a (int32) cast (C++ truncates toward zero — same rule).
- * - the reference `maxf(0.0, cooldown)` floor on registration → FMath::Max(0.0, Cooldown).
- * - RNG: the reference _weighted_pick does `rng.randf() * total`; UE uses FRandomStream::GetFraction().
+ * - Godot `maxf(0.0, cooldown)` floor on registration → FMath::Max(0.0, Cooldown).
+ * - RNG: Godot's _weighted_pick does `rng.randf() * total`; UE uses FRandomStream::GetFraction().
  *   The oracle only pins range/eligibility selection (a 0-star pick never returns a stars-gated or
  *   docks-only id) and determinism per seed — NOT a Godot-byte-identical sequence. So picks are
  *   deterministic-per-seed but NOT byte-identical to Godot. A null-rng early return is mirrored by
- *   the TriggerNextNoRng() no-op overload (the reference `rng == null` guard).
+ *   the TriggerNextNoRng() no-op overload (Godot's `rng == null` guard).
  *
  * DEFERRED-OWNERSHIP (lead-signed, option-1 own-state): the ambient-from-wanted-level coupling
  * (encounters modulated by wanted level) is owned here as OWN STATE — FAmbientEvents takes the
@@ -49,7 +49,7 @@ public:
 	/** Minimum seconds between ANY two ambient events. */
 	static constexpr double GlobalGap = 30.0;
 
-	/** One event definition consumed by the constructor. Mirrors a lookup table. */
+	/** One event definition consumed by the constructor. Mirrors a Godot table Dictionary. */
 	struct FEventDef
 	{
 		FString Id;
@@ -101,7 +101,7 @@ public:
 	 */
 	FString TriggerNext(FRandomStream& Rng, double Now, const FAmbientContext& Context);
 
-	/** Mirrors the reference `rng == null` early return: a null rng always yields "" and fires nothing. */
+	/** Mirrors Godot's `rng == null` early return: a null rng always yields "" and fires nothing. */
 	FString TriggerNextNoRng();
 
 	/** Force-mark an event as fired now (e.g. a scripted spawn), updating cooldowns. */
@@ -126,7 +126,7 @@ private:
 		double LastFired = 0.0;
 	};
 
-	/** Insertion-ordered storage (mirrors an insertion-ordered map). */
+	/** Insertion-ordered storage (mirrors Godot's insertion-ordered Dictionary). */
 	TArray<FEntry> Entries;
 	/** Id -> index into Entries. */
 	TMap<FString, int32> Index;

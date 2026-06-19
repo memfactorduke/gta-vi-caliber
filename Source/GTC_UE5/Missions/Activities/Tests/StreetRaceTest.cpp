@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -7,7 +7,7 @@
 #include "../StreetRace.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test below maps 1:1 to a test_* assertion in the the reference reference behavior
+// Each test below maps 1:1 to a test_* assertion in the Godot parity oracle
 // game/tests/unit/test_street_race.gd.
 
 using GtcTest::Eps;

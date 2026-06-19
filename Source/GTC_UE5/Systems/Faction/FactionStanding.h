@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -19,7 +19,7 @@
  * Each faction is defined by {Id, Rival}; Rival "" means no rivalry. Malformed entries
  * (missing/empty id) and duplicate ids are dropped.
  *
- * Parity note: an insertion-ordered map is insertion-ordered and Ids()/ToMap() rely on it.
+ * Parity note: Godot's Dictionary is insertion-ordered and Ids()/ToMap() rely on it.
  * TMap does NOT preserve order, so an explicit ordered backing store (TArray<FEntry> +
  * TMap<FString,int32> index) is used.
  */

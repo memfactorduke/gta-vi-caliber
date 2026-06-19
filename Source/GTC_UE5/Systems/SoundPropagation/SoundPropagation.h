@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -13,17 +13,17 @@
  * (Unheard / Noticed / Alarmed), so a world/AI controller can route alertness
  * without any scene access.
  *
- * Direct port of the the reference `SoundPropagation` (RefCounted) at
+ * Direct port of the Godot `SoundPropagation` (RefCounted) at
  * `game/scripts/systems/sound_propagation.gd`. All static, position/level-in,
- * scalar/struct-out, no UObject — unit-tested headless via the reference behavior
+ * scalar/struct-out, no UObject — unit-tested headless via the parity oracle
  * (Tests/SoundPropagationTest.cpp, prefix GTC.Systems.SoundPropagation).
  *
- * Double precision throughout, to match the the reference implementation float math. Spatial math is
- * on the XZ plane (the reference Y-up); height (Y) is ignored — two listeners at equal XZ
+ * Double precision throughout, to match the GDScript float math. Spatial math is
+ * on the XZ plane (Godot Y-up); height (Y) is ignored — two listeners at equal XZ
  * distance but different height read identically.
  *
  * NOTE: no Godot->UE Z-up axis remap is baked in here — the model stays in the
- * the reference XZ frame so the ported unit tests match the oracle literally. Porting the
+ * Godot XZ frame so the ported unit tests match the oracle literally. Porting the
  * axis convention to UE's Z-up space is a DEFERRED Wave-3 concern.
  *
  * PURE-CORE boundary: this is the pure auditory MATH only (per-kind loudness,
@@ -37,7 +37,7 @@
  * stack.
  */
 
-/** Categorical event kinds a spawner maps real actions onto. the reference ordinal order. */
+/** Categorical event kinds a spawner maps real actions onto. Godot ordinal order. */
 enum class ESoundKind : uint8
 {
     Gunshot,
@@ -51,7 +51,7 @@ enum class ESoundKind : uint8
     GlassBreak,
 };
 
-/** Discrete listener response tier. the reference ordinal order. */
+/** Discrete listener response tier. Godot ordinal order. */
 enum class ESoundReaction : uint8
 {
     Unheard,
@@ -122,7 +122,7 @@ struct GTC_UE5_API FSoundPropagation
 
     /**
      * The loudest event reaching a listener, from LoudestHeard(). bHeard == false
-     * (the empty `{}` in the reference) when nothing clears the audibility threshold.
+     * (the empty `{}` in Godot) when nothing clears the audibility threshold.
      */
     struct FHeardEvent
     {
@@ -138,7 +138,7 @@ struct GTC_UE5_API FSoundPropagation
 
     /**
      * Built-in loudness for a raw kind ordinal; an unknown/out-of-range ordinal
-     * returns 0.0 (mirrors the the reference `base_loudness(999) == 0.0`).
+     * returns 0.0 (mirrors the Godot `base_loudness(999) == 0.0`).
      */
     static double BaseLoudnessForInt(int32 KindRaw);
 

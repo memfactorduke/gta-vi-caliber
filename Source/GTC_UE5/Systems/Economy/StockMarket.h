@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -9,7 +9,7 @@
  * Pure equities-market model — a roster of tradeable companies whose share prices
  * react to in-world EVENTS, with a tracked portfolio. Plain C++ value type (no
  * UObject): trades never mutate the wallet; the caller applies the result.
- * Headless-testable (reference behavior test_stock_market.gd).
+ * Headless-testable (parity oracle test_stock_market.gd).
  *
  * Each company is {Id, Sector, BasePrice, Volatility}. Garbage entries (empty id,
  * non-positive price) are dropped at construction. Current price is BasePrice * a
@@ -120,7 +120,7 @@ public:
 
     /** Nudge every company's multiplier; deterministic for a given seed. */
     void Fluctuate(FRandomStream& Rng, double Intensity);
-    /** No-rng overload mirroring the reference `fluctuate(null, ...)`: a no-op. */
+    /** No-rng overload mirroring Godot's `fluctuate(null, ...)`: a no-op. */
     void FluctuateNoRng(double Intensity);
 
     /** Determinism helper: a fresh stream seeded with Seed. */

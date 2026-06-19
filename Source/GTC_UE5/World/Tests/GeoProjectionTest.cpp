@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #if WITH_AUTOMATION_TESTS
 
@@ -6,7 +6,7 @@
 #include "../GeoProjection.h"
 
 // Parity oracle: game/tests/unit/test_geo_projection.gd. Each It(...) maps 1:1 to
-// one the reference test function, using the SAME numeric tolerances as the oracle —
+// one Godot test function, using the SAME numeric tolerances as the oracle —
 // including its deliberate sub-metre equirectangular allowances and the 1e-6
 // degree inverse round-trip (the round-trip that mandates double precision).
 BEGIN_DEFINE_SPEC(FGeoProjectionSpec, "GTC.World.GeoProjection",

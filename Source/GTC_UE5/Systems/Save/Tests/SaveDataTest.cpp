@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -7,7 +7,7 @@
 #include "../SaveData.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test below maps 1:1 to a test_* function in the the reference reference behavior
+// Each test below maps 1:1 to a test_* function in the Godot parity oracle
 // game/tests/unit/test_save_data.gd (21 funcs). Float compares use GtcTest::Eps per the
 // round-trip-tolerance contract documented in SaveData.h: JSON number text is not
 // byte-identical across the Godot<->UE boundary, only value-within-tolerance.

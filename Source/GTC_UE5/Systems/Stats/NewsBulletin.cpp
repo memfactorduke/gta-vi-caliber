@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "NewsBulletin.h"
 
@@ -6,7 +6,7 @@ const FString FNewsBulletin::Filler = TEXT("And now the weather: another sunny d
 
 const TArray<TPair<FString, TArray<FString>>>& FNewsBulletin::HeadlineTable()
 {
-    // Mirrors the the reference HEADLINES Dictionary in declaration order; each kind's
+    // Mirrors the Godot HEADLINES Dictionary in declaration order; each kind's
     // templates ascend by severity (index = clamp(severity-1, 0, last)). Built via
     // Emplace because TPair has no aggregate brace constructor.
     static const TArray<TPair<FString, TArray<FString>>> Table = []()
@@ -80,9 +80,9 @@ FString FNewsBulletin::Report(const FString& Kind, int32 Severity, const FString
     {
         return FString();
     }
-    // the reference clampi(severity - 1, 0, templates.size() - 1).
+    // Godot clampi(severity - 1, 0, templates.size() - 1).
     const int32 Idx = FMath::Clamp(Severity - 1, 0, Templates->Num() - 1);
-    // the reference String.format({"place": ..., "count": ...}); templates carry only one of the
+    // Godot String.format({"place": ..., "count": ...}); templates carry only one of the
     // two placeholders, so replacing both unconditionally mirrors .format exactly.
     FString Text = (*Templates)[Idx];
     Text = Text.Replace(TEXT("{place}"), *Place);

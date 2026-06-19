@@ -1,11 +1,11 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 
 /**
- * FWardrobe — pure clothing-wardrobe model (UE 5.7 port of the reference `wardrobe.gd`, class
+ * FWardrobe — pure clothing-wardrobe model (UE 5.7 port of Godot `wardrobe.gd`, class
  * Wardrobe, RefCounted). Parity oracle game/tests/unit/test_wardrobe.gd (12 funcs).
  *
  * Buy outfits, own them, and wear one per clothing slot (outfit / hair / mask). What you're
@@ -14,7 +14,7 @@
  * + the currently-worn look per slot. Each item is {Id, Name, Slot, Price, Look, Owned};
  * malformed entries (missing/empty id, unknown slot, negative price, duplicate id) are dropped.
  *
- * Ordered backing store: the reference _catalogue / _owned / _worn are Dictionaries whose insertion
+ * Ordered backing store: Godot's _catalogue / _owned / _worn are Dictionaries whose insertion
  * order is observable through ids() / items_in_slot() and the starter-wear loop; we keep a
  * parallel ordered id list (and ordered owned list) so iteration order matches the oracle.
  * buy() never mutates a wallet — it returns the proposed new balance for the caller to apply.
@@ -53,7 +53,7 @@ public:
         int32 Price = 0;
         FString Look;
         bool bOwned = false;
-        /** Whether Name/Look were explicitly provided (the reference defaults them to Id when absent). */
+        /** Whether Name/Look were explicitly provided (Godot defaults them to Id when absent). */
         bool bHasName = false;
         bool bHasLook = false;
     };
@@ -111,7 +111,7 @@ private:
 
     /** id -> entry. */
     TMap<FString, FWardrobeItem> _Catalogue;
-    /** Catalogue ids in insertion order (the reference Dictionary key order). */
+    /** Catalogue ids in insertion order (Godot Dictionary key order). */
     TArray<FString> _CatalogueOrder;
     /** Owned ids in insertion order. */
     TSet<FString> _Owned;

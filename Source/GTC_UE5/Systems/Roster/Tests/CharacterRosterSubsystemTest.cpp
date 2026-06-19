@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -13,7 +13,7 @@ using GtcTest::Eps;
 
 // Subsystem BEHAVIOR tests (Wave 2 rule): these verify UCharacterRosterSubsystem OWNS its
 // FCharacterRoster and that its drivers (Initialize / RequestSwitch / money accessors)
-// wire it correctly. The the reference character_switcher.gd has NO reference behavior, so these are
+// wire it correctly. The Godot character_switcher.gd has NO parity oracle, so these are
 // behavior assertions for the port, NOT 1:1 parity (the roster math itself is covered 1:1
 // by the 14 CharacterRoster parity tests). The live PlayerStats/Wanted wallet sync is
 // Wave-3 and DEFERRED (see CharacterRosterSubsystem.h).
@@ -88,7 +88,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FRosterSubsystemSwitchBroadcastsTest::RunTest(const FString& Parameters)
 {
     UCharacterRosterSubsystem* Subsystem = MakeRosterSubsystemForTest();
-    // The the reference character_switched(id) signal is mirrored as OnCharacterSwitched (a dynamic
+    // The Godot character_switched(id) signal is mirrored as OnCharacterSwitched (a dynamic
     // multicast delegate); a UFUNCTION listener captures the broadcast.
     URosterTestSwitchListener* Listener = NewObject<URosterTestSwitchListener>(GetTransientPackage());
     Subsystem->OnCharacterSwitched.AddDynamic(Listener, &URosterTestSwitchListener::OnSwitched);

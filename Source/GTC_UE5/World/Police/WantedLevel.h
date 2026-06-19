@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -10,11 +10,11 @@
  * unit-test headless (World/Police/Tests/WantedLevelTest.cpp); a HUD/AI layer
  * reads Stars() and reacts.
  *
- * Ported 1:1 from the the reference RefCounted `WantedLevel`
+ * Ported 1:1 from the Godot RefCounted `WantedLevel`
  * (game/scripts/world/wanted_level.gd). Plain value type, no UObject.
  *
  * Double precision throughout (LWC): heat and the star thresholds are doubles to
- * match the the reference oracle's float arithmetic bit-for-bit.
+ * match the Godot oracle's float arithmetic bit-for-bit.
  */
 class GTC_UE5_API FWantedLevel
 {

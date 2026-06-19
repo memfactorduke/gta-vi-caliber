@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -7,21 +7,21 @@
 /**
  * Pure pedestrian AI: wander between points, flee from threats.
  *
- * Direct port of the the reference `NpcBrain` (RefCounted) at
+ * Direct port of the Godot `NpcBrain` (RefCounted) at
  * `game/scripts/npc/npc_brain.gd`. Static helpers only — no scene access, RNG
  * injected by the caller (the two [0,1) wander samples) — so behaviour is
  * deterministic and unit-tested (Tests/NpcBrainTest.cpp, prefix
  * GTC.NPC.Decision.NpcBrain). Spatial math is on the XZ plane (Y ignored),
- * matching the the reference source; NO Z-up remap.
+ * matching the Godot source; NO Z-up remap.
  *
  * PURE-CORE boundary: the moment-to-moment locomotion wiring (the Pedestrian
  * node owning the mutable target/timers, calling these each frame) is the
  * DEFERRED Wave-3 adapter and is NOT covered by the parity tests. Computed
- * precision is `double` to match the reference implementation.
+ * precision is `double` to match GDScript.
  */
 struct GTC_UE5_API FNpcBrain
 {
-    /** Behaviour states. the reference enum ordinal order preserved. */
+    /** Behaviour states. Godot enum ordinal order preserved. */
     enum class EState : uint8
     {
         Idle,

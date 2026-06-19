@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -10,14 +10,14 @@
  * target, box it in with roadblocks, ram and PIT when the heat is high enough,
  * and back off when the wanted level drops or the target slips away.
  *
- * Direct port of the the reference `PursuitTactics` (RefCounted) at
+ * Direct port of the Godot `PursuitTactics` (RefCounted) at
  * `game/scripts/ai/pursuit_tactics.gd`. All static, FVector-in,
  * scalar/enum/FVector-out, no UObject — unit-tested headless via the parity
  * oracle (Tests/PursuitTacticsTest.cpp, prefix GTC.AI.Pursuit.PursuitTactics).
  *
- * Double precision throughout, to match the the reference implementation float math. Work happens in
- * the XZ plane (the reference Y-up); `Ground(V)` flattens to `FVector(V.X, 0, V.Z)`. No
- * Godot->UE Z-up axis remap is baked in — the model stays in the the reference XZ frame
+ * Double precision throughout, to match the GDScript float math. Work happens in
+ * the XZ plane (Godot Y-up); `Ground(V)` flattens to `FVector(V.X, 0, V.Z)`. No
+ * Godot->UE Z-up axis remap is baked in — the model stays in the Godot XZ frame
  * so tests match the oracle bit-for-bit; the axis convention is a DEFERRED
  * Wave-3 concern. Defensive against zero-length inputs (no NaN, no div-by-zero).
  *
@@ -28,7 +28,7 @@
  */
 
 /**
- * A discrete pursuit maneuver. Mirrors the the reference `Tactic` enum 1:1 (same order /
+ * A discrete pursuit maneuver. Mirrors the Godot `Tactic` enum 1:1 (same order /
  * underlying int values).
  */
 enum class EPursuitTactic : uint8

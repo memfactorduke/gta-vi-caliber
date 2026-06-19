@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #if WITH_AUTOMATION_TESTS
 
@@ -6,7 +6,7 @@
 #include "../BuildingUse.h"
 
 // Parity oracle: game/tests/unit/test_building_use.gd. Each It(...) maps 1:1 to
-// one the reference test function, asserting the SAME conditions as the oracle (pure
+// one Godot test function, asserting the SAME conditions as the oracle (pure
 // exact string/int/bool comparisons, no added tolerances).
 BEGIN_DEFINE_SPEC(FBuildingUseSpec, "GTC.World.Buildings.BuildingUse",
     EAutomationTestFlags::ProductFilter | EAutomationTestFlags_ApplicationContextMask)
@@ -48,7 +48,7 @@ void FBuildingUseSpec::Define()
     {
         const TArray<FShopItem> Catalogue = FBuildingUse::CatalogueFor(TEXT("retail"));
         const FShopItem& First = Catalogue[0];
-        // the reference checks first.has("id") and first.has("price"); the typed FShopItem
+        // Godot checks first.has("id") and first.has("price"); the typed FShopItem
         // always carries both, so we assert the entry is well-formed: a non-empty
         // id and a valid (non-negative) price.
         TestTrue(TEXT("first entry has an id and a price"),

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -9,12 +9,12 @@
  * multiplier, then land it clean to bank the points" loop. Plain C++ value type
  * (no UObject): a vehicle/stunt controller calls AddTrick() as tricks are detected
  * and Bank()/Wipe() on land/crash, then applies the returned score to the wallet
- * (CashFor) and PlayerProgression (RespectFor). Headless-testable (reference behavior
+ * (CashFor) and PlayerProgression (RespectFor). Headless-testable (parity oracle
  * game/tests/unit/test_stunt_score.gd).
  *
  * Parity note: combo points are accumulated as double; banked/pending scores are
- * int32 via FMath::RoundToInt32 (the reference int(round())). TRICK_POINTS is iterated in
- * the reference insertion order via an ordered TArray for TrickKinds().
+ * int32 via FMath::RoundToInt32 (Godot int(round())). TRICK_POINTS is iterated in
+ * Godot insertion order via an ordered TArray for TrickKinds().
  */
 class GTC_UE5_API FStuntScore
 {
@@ -60,7 +60,7 @@ public:
     static int32 RespectFor(int32 Score);
 
 private:
-    /** Base points per unit for one trick kind, kept in the reference insertion order. */
+    /** Base points per unit for one trick kind, kept in Godot insertion order. */
     struct FTrickPoints
     {
         FString Kind;

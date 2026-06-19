@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -8,7 +8,7 @@
 /**
  * Pure model for assembling a heist crew (driver, hacker, gunman, ...). Plain C++
  * value type (no UObject): a mission controller owns one, feeds it members, then
- * queries odds and payouts. Headless-testable (reference behavior test_heist_crew.gd).
+ * queries odds and payouts. Headless-testable (parity oracle test_heist_crew.gd).
  *
  * Each member takes a cut of the take; the player keeps the remainder. A more skilled
  * crew raises the heist's success chance against a base difficulty.
@@ -63,7 +63,7 @@ public:
     /** Roll the heist against SuccessChance using Rng. */
     bool Attempt(double BaseDifficulty, FRandomStream& Rng) const;
 
-    /** No-rng overload mirroring the reference `attempt(..., null)`: never rolls a success. */
+    /** No-rng overload mirroring Godot's `attempt(..., null)`: never rolls a success. */
     bool AttemptNoRng(double BaseDifficulty) const;
 
     /** The player's whole-currency take on a heist outcome (0 on failure / <= 0 take). */

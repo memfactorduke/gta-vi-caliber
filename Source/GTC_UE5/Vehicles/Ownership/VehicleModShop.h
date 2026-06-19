@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -25,10 +25,10 @@
  * No RNG; fully deterministic.
  *
  * Parity notes:
- * - an insertion-ordered map is insertion-ordered and Categories()/TotalSpent() rely on it.
+ * - Godot's Dictionary is insertion-ordered and Categories()/TotalSpent() rely on it.
  *   TMap does NOT preserve order, so an explicit ordered backing store (TArray<FEntry>
  *   + TMap<FString,int32> index) is used, mirroring FactionStanding.
- * - the reference _clean_tiers also filters malformed non-int tier values; in typed C++ a
+ * - Godot's _clean_tiers also filters malformed non-int tier values; in typed C++ a
  *   tier is already an int32, so only the "strictly positive" rule survives (same
  *   LootTable-style note: the dynamic-type guard has no typed-C++ analogue).
  */

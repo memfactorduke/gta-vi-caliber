@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -8,7 +8,7 @@
 #include "ArrestSubsystem.generated.h"
 
 /**
- * Live bridge for FArrestModel — the UE 5.7 port of the reference self-wiring ArrestController
+ * Live bridge for FArrestModel — the UE 5.7 port of Godot's self-wiring ArrestController
  * Node. Drives the pure, tested busted state machine: while the player is wanted and an
  * officer corners them (within catch range), a grapple timer builds; once it holds for
  * GrappleTime the bust lands — the fee is taken, the heat is cleared, and the player is
@@ -18,7 +18,7 @@
  * group "arrest"). It owns a single grapple-timer / busted state for its whole lifetime.
  *
  * OWNERSHIP MODEL: ArrestSubsystem OWNS the pure FArrestModel math (static helpers) and
- * the per-frame grapple state (_TimeHeld). The the reference scene-graph wiring — resolving the
+ * the per-frame grapple state (_TimeHeld). The Godot scene-graph wiring — resolving the
  * player/police Node3D, nearest-cop planar distance, respawn to a spawn_points node — is
  * Wave 3 engine wiring. Here the pure tick math is preserved as explicit driver methods
  * (Tick) that a future scene adapter feeds (stars, nearest-cop distance) into, so behavior
@@ -60,7 +60,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arrest")
     double CashPenalty = FArrestModel::DefaultCashPenalty;
 
-    /** Fires when a bust lands, with the cash fee taken (the reference `busted(fee)` signal). */
+    /** Fires when a bust lands, with the cash fee taken (Godot `busted(fee)` signal). */
     UPROPERTY(BlueprintAssignable, Category = "Arrest")
     FOnArrestBusted OnBusted;
 

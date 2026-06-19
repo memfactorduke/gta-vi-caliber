@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -10,7 +10,7 @@
 
 using GtcTest::Eps;
 
-// Subsystem LOGIC-PARITY tests (Wave 2). A the reference oracle DOES exist —
+// Subsystem LOGIC-PARITY tests (Wave 2). A Godot oracle DOES exist —
 // game/tests/unit/test_stats_coordinator_fix.gd — and these align 1:1 with its
 // assertions using its own constants: death-while-wanted is NOT an evasion
 // (busts_evaded == 0.0), a genuine escape still counts (== 1.0), death-while-clean does

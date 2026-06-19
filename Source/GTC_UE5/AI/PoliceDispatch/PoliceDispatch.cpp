@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PoliceDispatch.h"
 #include "../../World/Police/PoliceResponse.h"

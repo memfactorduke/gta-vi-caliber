@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -9,7 +9,7 @@
 #include "Math/UnrealMathUtility.h"
 
 /**
- * Parity tests for FLocomotion, mapped 1:1 from the the reference oracle
+ * Parity tests for FLocomotion, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_locomotion.gd. Tolerances mirror the oracle's
  * is_equal_approx epsilon (the shared GtcTest::Eps, 1e-4 double); enum/state and
  * exact comparisons assert exactly. Each test below names the oracle method it

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -9,13 +9,13 @@
  * (reach a point, collect N items, eliminate targets, escort an NPC, survive a
  * timer, defend a structure) so missions are not all "drive to a zone".
  *
- * the reference parity: game/scripts/missions/mission_objective_types.gd (RefCounted,
+ * Godot parity: game/scripts/missions/mission_objective_types.gd (RefCounted,
  * all-static helpers plus a nested Counter class). This layer answers, per
  * objective, "is it satisfied / failed / how far along (0..1)". Static, scene-free,
  * RNG-free, defensively clamped — unit-tested headless. The nested Counter is the
  * only stateful piece, a small tally for COLLECT / wave objectives.
  *
- * Counter mirrors the reference MissionObjectiveTypes.Counter (a nested class) as a
+ * Counter mirrors Godot's MissionObjectiveTypes.Counter (a nested class) as a
  * nested C++ type.
  */
 class GTC_UE5_API MissionObjectiveTypes

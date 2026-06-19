@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -7,7 +7,7 @@
 #include "../WeaponInventory.h"
 #include "../../../Tests/GtcTestTolerances.h"
 
-// Each test maps 1:1 to an assertion in the the reference reference behavior
+// Each test maps 1:1 to an assertion in the Godot parity oracle
 // game/tests/unit/test_weapon_inventory.gd. Prefix GTC.Weapons.Core.WeaponInventory.
 // Integer state throughout — no float tolerance needed; Eps is included only for
 // the shared-tolerance convention.

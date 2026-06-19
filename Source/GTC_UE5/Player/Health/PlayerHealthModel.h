@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -7,18 +7,18 @@
 /**
  * FPlayerHealthModel — pure player health with regeneration.
  *
- * Ported 1:1 from the reference implementation `PlayerHealthModel` (a RefCounted, PURE) in
- * `game/scripts/systems/player_health_model.gd`, with its reference behavior
+ * Ported 1:1 from Godot `PlayerHealthModel` (a RefCounted, PURE) in
+ * `game/scripts/systems/player_health_model.gd`, with its parity oracle
  * `game/tests/unit/test_player_health_model.gd` (18 funcs). open-world-style: health
  * regenerates back to full a few seconds after the last hit; body armor soaks
  * incoming damage 1:1 before health.
  *
  * No scene / UObject access — headless-testable. The owning component
  * (UPlayerHealthComponent) holds one and feeds it damage and per-frame `Tick`
- * time, exactly as the the reference `PlayerHealth` Node fed the model.
+ * time, exactly as the Godot `PlayerHealth` Node fed the model.
  *
  * Parity notes vs Godot:
- *  - `double` throughout (the reference `float` == 64-bit). No Z-up remap (no vectors).
+ *  - `double` throughout (Godot `float` == 64-bit). No Z-up remap (no vectors).
  *  - `_init(maximum, regen, delay, armor_max)` defaults preserved: 100/10/5/100.
  *  - `max_health = maxf(maximum, 0.0001)` floor preserved so Fraction() never
  *    divides by zero.
@@ -32,7 +32,7 @@ struct GTC_UE5_API FPlayerHealthModel
 {
     // --- Tunables (Godot _init args) -------------------------------------------
 
-    /** Health ceiling, floored at 0.0001 (the reference maxf(maximum, 0.0001)). */
+    /** Health ceiling, floored at 0.0001 (Godot maxf(maximum, 0.0001)). */
     double MaxHealth = 100.0;
 
     /** HP regenerated per second once the regen delay has elapsed. */
@@ -41,7 +41,7 @@ struct GTC_UE5_API FPlayerHealthModel
     /** Seconds after the last hit before regeneration begins. */
     double RegenDelay = 5.0;
 
-    /** Body-armor ceiling, floored at 0 (the reference maxf(armor_max, 0.0)). */
+    /** Body-armor ceiling, floored at 0 (Godot maxf(armor_max, 0.0)). */
     double MaxArmor = 100.0;
 
     // --- Live state ------------------------------------------------------------
@@ -53,7 +53,7 @@ struct GTC_UE5_API FPlayerHealthModel
     double Armor = 0.0;
 
     /**
-     * Construct mirroring the reference `_init(maximum, regen, delay, armor_max)`:
+     * Construct mirroring Godot `_init(maximum, regen, delay, armor_max)`:
      * floors MaxHealth at 0.0001 and MaxArmor at 0, seeds Health to MaxHealth.
      */
     explicit FPlayerHealthModel(
@@ -98,6 +98,6 @@ struct GTC_UE5_API FPlayerHealthModel
     double GetSinceDamage() const { return SinceDamage; }
 
 private:
-    /** the reference `_since_damage`: time accumulated since the last Apply(). */
+    /** Godot `_since_damage`: time accumulated since the last Apply(). */
     double SinceDamage = 0.0;
 };

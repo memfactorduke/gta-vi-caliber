@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #if WITH_AUTOMATION_TESTS
 
@@ -6,7 +6,7 @@
 #include "../WantedLevel.h"
 
 // Parity oracle: game/tests/unit/test_wanted_level.gd. Each It(...) maps 1:1 to
-// one the reference test function, asserting the SAME conditions as the oracle with no
+// one Godot test function, asserting the SAME conditions as the oracle with no
 // added tolerances (the logic is pure integer/exact comparisons).
 BEGIN_DEFINE_SPEC(FWantedLevelSpec, "GTC.World.Police.WantedLevel",
     EAutomationTestFlags::ProductFilter | EAutomationTestFlags_ApplicationContextMask)

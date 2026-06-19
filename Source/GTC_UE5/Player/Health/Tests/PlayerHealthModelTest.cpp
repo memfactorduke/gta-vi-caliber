@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -17,7 +17,7 @@
 using GtcTest::Eps;
 
 // ============================================================================
-// PARITY tests — each maps 1:1 to a func in the the reference oracle
+// PARITY tests — each maps 1:1 to a func in the Godot oracle
 // game/tests/unit/test_player_health_model.gd (18 funcs). Identical literals
 // and tolerances; is_equal_approx(...) -> FMath::Abs(diff) < Eps. Compound
 // boolean returns are split into independent assertions.

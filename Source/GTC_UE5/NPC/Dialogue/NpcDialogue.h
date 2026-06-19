@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -8,7 +8,7 @@
  * The city's comic voice: procedural NPC barks. Given a citizen's voice (from
  * NpcArchetypes), what it's doing, and a seed, it returns a one-liner.
  *
- * Direct PURE-CORE port of the the reference `NpcDialogue` (RefCounted) at
+ * Direct PURE-CORE port of the Godot `NpcDialogue` (RefCounted) at
  * `game/scripts/npc/npc_dialogue.gd`. Pure + deterministic: the same
  * (voice, context, seed) always yields the same line, unit-tested headless
  * (Tests/NpcDialogueTest.cpp, prefix GTC.NPC.Dialogue).
@@ -16,7 +16,7 @@
  * Banks are keyed by voice then context; a missing voice/context falls back to a
  * generic bank, then to a last-resort murmur "...". Lines may contain {slots}
  * filled deterministically from absurd word banks. Selection is seed-driven via
- * the reference posmod (positive modulo) over ordered string arrays, so index order is
+ * Godot posmod (positive modulo) over ordered string arrays, so index order is
  * observable and preserved exactly (TArray, author order).
  *
  * DEFERRED — Wave 3 adapter (NOT here): bark_director.gd (Node, Label3D /

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -11,7 +11,7 @@
 using GtcTest::Eps;
 
 /**
- * Parity tests for FNpcReaction, mapped 1:1 from the the reference oracle
+ * Parity tests for FNpcReaction, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_npc_reaction.gd. Verb strings and panic booleans assert
  * exactly; threat scores use the oracle's threshold comparisons.
  */

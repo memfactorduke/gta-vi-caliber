@@ -1,4 +1,4 @@
-// Copyright (c) 2026 GTC contributors
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
 
@@ -161,7 +161,7 @@ bool FSaveSubsystemEmptyDoesNotWipeTest::RunTest(const FString& Parameters)
 }
 
 // A registered hook with no saved section gets an empty object ("no saved data for me"),
-// never a crash — mirrors the reference snapshot.get(key, {}).
+// never a crash — mirrors Godot snapshot.get(key, {}).
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FSaveSubsystemMissingSectionIsEmptyTest,
     "GTC.Systems.Save.SaveSubsystem.MissingSectionIsEmpty",
