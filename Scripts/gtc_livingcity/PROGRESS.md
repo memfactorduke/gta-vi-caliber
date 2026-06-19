@@ -53,9 +53,10 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
 - [ ] **Node path → centerline** (`FRoadRoute`): turn an `FRoadNetwork` A* node
       path into the ordered centerline polyline (+ per-segment headings) a car
       drives, so cars route the real graph instead of a grid. `GTC.World.RoadRoute`.
-- [ ] **Car-follow leader/gap** (`FTrafficLane`): given cars by arc-length
+- [x] **Car-follow leader/gap** (`FTrafficLane`): given cars by arc-length
       position on one lane, find each car's leader + bumper gap (feeds
       `FTrafficModel`), so a queue forms without overlap. `GTC.AI.Traffic.Lane`.
+      ✅ oracle 11/11.
 - [ ] **Intersection right-of-way / stop arbitration** (`FIntersection`):
       which approach proceeds, who yields/stops, deterministic tie-break, so
       cars don't pile through a junction. `GTC.AI.Traffic.Intersection`.
@@ -79,3 +80,6 @@ automation pass remains the outstanding **live-editor** check (stop-and-ask).
   `GTC.World.LanePath`). Lane offset geometry + arc-length pose/advance. Out-of-tree
   oracle 28/28 (`oracle/run.sh`). In-editor build + automation run still pending
   (live editor up).
+- `FTrafficLane` (`AI/Traffic/TrafficLane.{h,cpp}` + `Tests/TrafficLaneTest.cpp`,
+  `GTC.AI.Traffic.Lane`). Leader/gap selection that feeds FTrafficModel → spaced
+  queue, no overlap. Out-of-tree oracle 11/11. In-editor run pending.

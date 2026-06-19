@@ -27,6 +27,7 @@ build_run() {
 }
 
 build_run lane_path_oracle.cpp World/RoadNetwork/LanePath.cpp
+build_run traffic_lane_oracle.cpp AI/Traffic/TrafficLane.cpp Worldcore/TrafficModel.cpp
 
 echo
 [ $RC -eq 0 ] && echo "ALL ORACLES PASSED" || echo "SOME ORACLES FAILED"
