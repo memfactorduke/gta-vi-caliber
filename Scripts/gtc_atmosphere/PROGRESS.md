@@ -55,9 +55,14 @@ the editor-protect hook + one-editor rule forbid it; the user/CI runs that.
 - [x] **SurfaceWetness** — rain → accumulation/drying curve so wetness *lags*
   rain (puddles build, streets dry slowly). Feeds MPC `world_wetness`.
   `GTC.World.Wetness`.
-- [ ] **NightLights** — streetlight/lit-window activation vs time-of-day:
+- [x] **NightLights** — streetlight/lit-window activation vs time-of-day:
   hysteretic dusk-on/dawn-off threshold + per-light jitter so the city doesn't
   pop on in unison. Drives `world_night_amount`. `GTC.World.NightLights`.
+
+> **Pure-core checklist exhausted (2026-06-19).** All 7 cores landed with
+> `GTC.World.*` tests + headless verifiers, all green via `run_checks.sh`. The
+> only remaining M6 atmosphere work is the **visual hookup**, which needs the
+> live editor — see below. Stop-and-ask reached.
 
 ## Blocked on the live editor (stop-and-ask when reached)
 
