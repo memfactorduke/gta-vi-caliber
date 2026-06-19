@@ -44,7 +44,15 @@ You provide the engine; the repository provides the game.
    You do not need to do anything, except: CoreRedirects load at engine startup,
    so if you ever edit them, **restart the editor**. See `docs/ASSET_HANDLING.md`.
 
-6. **Build** the editor target with UnrealBuildTool (or right-click the
+6. **Install the required plugins.** The project enables **Cesium for Unreal**
+   (the 3D-tiles world). It is third-party and not redistributed here, so it is
+   not in the repo: install it from Fab (the Epic Games Launcher) into the engine
+   or the project's `Plugins/` folder before building. The engine plugins the
+   game uses (Chaos Vehicles, Mass Gameplay, Enhanced Input) ship with Unreal and
+   need no separate install. The MCP and editor-tooling plugins seen in some dev
+   configs are optional and are not needed to build or play the game.
+
+7. **Build** the editor target with UnrealBuildTool (or right-click the
    `.uproject` and "Generate project files", then build `GTC_UE5Editor`).
 
 ## How to work
