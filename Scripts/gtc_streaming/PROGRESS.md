@@ -19,9 +19,10 @@ So in this module the streaming core is greenfield. Build it fresh under
 
 ## Pure-core pieces (headless; build these in the loop)
 
-- [ ] **Tile grid addressing** — `FStreamingGrid`: world⇄tile, tile
+- [x] **Tile grid addressing** — `FStreamingGrid`: world⇄tile, tile
   center/bounds, Chebyshev tile distance, square residency-window enumeration.
   The coordinate substrate every other piece sits on.
+  `World/Streaming/StreamingGrid.{h,cpp}`, tests `GTC.World.Streaming.Grid.*`.
 - [ ] **Load/unload priority from camera position + velocity vector** —
   `FTileStreamPriority`: score each candidate tile so tiles *ahead* of the
   camera's motion load first; behind-and-far unload first.
