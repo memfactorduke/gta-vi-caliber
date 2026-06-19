@@ -40,9 +40,15 @@ So in this module the streaming core is greenfield. Build it fresh under
 - [x] **Residency / VRAM accounting** — track resident-set bytes against a
   budget; pick eviction victims (lowest priority / farthest) when over budget.
   `World/Streaming/ResidencyBudget.{h,cpp}`, tests `GTC.World.Streaming.Residency.*`.
-- [ ] **Residency planner** — ties grid + priority + hysteresis + budget into a
+- [x] **Residency planner** — ties grid + priority + hysteresis + budget into a
   deterministic per-frame *(load list, unload list)* decision, fed by a priority
   queue ordering. The headless brain the runtime adapter will drive.
+  `World/Streaming/ResidencyPlanner.{h,cpp}`, tests `GTC.World.Streaming.Planner.*`.
+
+> **Pure-core checklist COMPLETE (2026-06-19).** All seven editor-free pieces are
+> implemented, compiled green together (`Build.sh GTC_UE5Editor` → Result:
+> Succeeded), and covered by `GTC.World.Streaming.*` automation tests. The
+> remaining work below all needs the LIVE editor — stop and ask before attempting.
 
 ## Needs the LIVE editor (STOP and ask — do not attempt headless)
 
