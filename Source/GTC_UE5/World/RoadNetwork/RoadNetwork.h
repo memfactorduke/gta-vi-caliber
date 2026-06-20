@@ -82,6 +82,19 @@ public:
     FSegmentPoint PointOnSegment(int32 Seg, double Offset) const;
 
     /**
+     * Read-only segment topology, so an agent can walk the graph segment->segment:
+     * a car riding `Seg` reaches `SegmentEndNode(Seg)`, then continues onto one of
+     * `SegmentsFrom(that node)`. Out-of-range indices return -1 / 0 / ZeroVector
+     * rather than asserting, so a caller holding a stale index degrades gracefully.
+     */
+    int32 SegmentStartNode(int32 Seg) const { return SegA.IsValidIndex(Seg) ? SegA[Seg] : -1; }
+    int32 SegmentEndNode(int32 Seg) const { return SegB.IsValidIndex(Seg) ? SegB[Seg] : -1; }
+    double SegmentLength(int32 Seg) const { return SegLen.IsValidIndex(Seg) ? SegLen[Seg] : 0.0; }
+
+    /** Position of a node (ZeroVector for an out-of-range index). */
+    FVector NodePosition(int32 Node) const { return Nodes.IsValidIndex(Node) ? Nodes[Node] : FVector::ZeroVector; }
+
+    /**
      * Bucket every segment into the XZ grid so NearestPoint() scans only nearby
      * ones. Idempotent; NearestPoint builds it lazily on first use.
      */

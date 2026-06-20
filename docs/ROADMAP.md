@@ -74,7 +74,12 @@ Goal: one city district that feels inhabited.
 - [ ] Road network graph + traffic system (**native-module candidate after profiling**)
   - landed: `Source/GTC/AI/NavGrid` A* grid (tested) + `Source/GTC/AI/Traffic*` streaming kinematic
     cars that route on a world-baked navmesh and car-follow (queue, don't overlap).
-    Still TODO: a true OSM road-graph (cars currently route a baked walkability grid).
+  - landed (UE): ambient traffic now drives a TRUE routable road graph — `FRoadNetwork`
+    (A*) + `FRoadRoute`/`FLanePath` + `FTurnChoice` + `FTrafficModel` composed by
+    `FTrafficAgent` (cars route to a destination, turn at junctions, queue per lane).
+    `UGTCTrafficSubsystem` streams them on an `FCityGrid` graph and feeds the pedestrian
+    look-before-you-cross reflex. Still TODO: replace the `FCityGrid` block source with
+    real OSM/citygen polylines into the same `FRoadNetwork` seam; junction traffic lights.
 - [ ] Pedestrian crowds: navmesh flows, reactions (flee/gawk), spawn/despawn invisible to player
   - landed: `Source/GTC/NPC/CrowdDirector` streams palette/stature/gait-varied premium
     humans using imported rigged man/woman visuals with shared runtime animation

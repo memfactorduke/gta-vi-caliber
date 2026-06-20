@@ -6,27 +6,34 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "Tickable.h"
 #include "../NPC/Steering/PedestrianTraffic.h"
+#include "../World/RoadNetwork/RoadNetwork.h"
+#include "../World/RoadNetwork/CityGrid.h"
+#include "../AI/Traffic/TrafficAgent.h"
 #include "GTCTrafficSubsystem.generated.h"
 
 class AGTCTrafficVehicle;
 
 /**
- * UGTCTrafficSubsystem — the cars. It streams a grid of moving traffic around the
- * player and drives each car with the project's existing, parity-tested
- * Intelligent Driver Model (FTrafficModel): cars cruise toward a desired speed on
- * open road and brake for the car ahead, so they queue and flow instead of
- * clipping through each other. Lanes are an axis-aligned street grid (a city
- * block layout), which reads as traffic and, more importantly, gives pedestrians
- * real vehicles to watch for.
+ * UGTCTrafficSubsystem — the cars. It streams moving traffic around the player on
+ * a REAL, routable road graph (FRoadNetwork built from FCityGrid) and drives each
+ * car with FTrafficAgent: the car follows an A* route toward a destination,
+ * TURNS at junctions (FTurnChoice), queues behind the car ahead on its lane
+ * (FTrafficModel IDM), and picks a fresh destination when it arrives. This
+ * replaces the previous version, which slid cars along an invisible axis-aligned
+ * grid that never turned a corner.
  *
- * It is the source the crowd's "look before you cross" reflex was waiting on:
- * UGTCCrowdSubsystem::GatherNearbyCars now forwards to QueryCars here, so the
- * pedestrian dodge/curb math (FPedestrianTraffic, already wired through
- * FNpcLocomotion) acts on actual traffic.
+ * It is still the source the crowd's "look before you cross" reflex reads:
+ * UGTCCrowdSubsystem::GatherNearbyCars forwards to QueryCars here, so the
+ * pedestrian dodge/curb math (FPedestrianTraffic, wired through FNpcLocomotion)
+ * acts on actual traffic. External vehicles (a future player car, scripted
+ * convoys) can register so pedestrians react to them too.
  *
- * Driving state lives in the subsystem (FTrafficAgent), not on the actors — the
- * AGTCTrafficVehicle is just placed each frame. External vehicles (a future
- * player car, scripted convoys) can also register so pedestrians react to them.
+ * Frames: the road graph runs in METRES on its own planar frame (the core's "XZ",
+ * mapped to UE's XY ground plane); the subsystem scales x100 to centimetres and
+ * lifts to the road height when it places the AGTCTrafficVehicle each frame and
+ * when it answers QueryCars in UE world space. The grid recenters (rebuild +
+ * re-snap cars) only when the player nears its edge, so it costs nothing most
+ * frames. Driving state lives in the subsystem; the actor is just the avatar.
  * Ticks via FTickableGameObject.
  */
 UCLASS()
@@ -46,19 +53,19 @@ public:
 
     /** Target live car count around the player. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Traffic")
-    int32 TargetVehicles = 24;
+    int32 TargetVehicles = 28;
 
-    /** Street grid spacing (cm) — distance between parallel streets. */
+    /** Street grid spacing (cm) — distance between parallel streets (one block). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Traffic")
-    double BlockSize = 8000.0;
+    double BlockSize = 6000.0;
 
-    /** Lane offset (cm) either side of a street centreline (right-hand traffic). */
+    /** Lane offset (cm) to the driver's right of a street centreline (right-hand traffic). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Traffic")
     double LaneOffset = 250.0;
 
     /** Cars are streamed within this radius (cm) of the player and recycled past it. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Traffic")
-    double StreamRadius = 9000.0;
+    double StreamRadius = 13000.0;
 
     /** Desired free-road speed range (cm/s). ~25–50 km/h city traffic. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Traffic")
@@ -67,7 +74,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Traffic")
     double DesiredSpeedMax = 1400.0;
 
-    /** Ground height (cm) cars drive at, plus the player's Z. */
+    /** Height (cm) above the player's Z that cars drive at. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Traffic")
     double RoadZOffset = 30.0;
 
@@ -85,7 +92,7 @@ public:
 
     // --- Queries ----------------------------------------------------------------
 
-    /** Cars within Radius of From, as planar pos+vel for the pedestrian reflex. */
+    /** Cars within Radius of From, as planar pos+vel (UE world cm) for the pedestrian reflex. */
     void QueryCars(const FVector& From, double Radius, TArray<FPedestrianTraffic::FCar>& OutCars) const;
 
     /** Register / forget an externally-driven vehicle (player car, convoy, ...). */
@@ -93,35 +100,52 @@ public:
     void UnregisterExternalVehicle(AActor* Vehicle);
 
     UFUNCTION(BlueprintCallable, Category = "GTC|Traffic")
-    int32 GetLiveVehicleCount() const { return Agents.Num(); }
+    int32 GetLiveVehicleCount() const { return Cars.Num(); }
 
 private:
-    /** One streamed car's driving state (the actor is just its avatar). */
-    struct FTrafficAgent
+    /** One streamed car: its network-driving brain plus its on-screen avatar. */
+    struct FCar
     {
+        FTrafficAgent Agent;
         TWeakObjectPtr<AGTCTrafficVehicle> Actor;
-        FVector Pos = FVector::ZeroVector;
-        double Speed = 0.0;        // cm/s, always >= 0 (direction is in Dir/Axis)
-        double DesiredSpeed = 1000.0;
-        double HalfLength = 230.0; // along travel, for bumper gap math
-        int32 Axis = 0;            // 0 = travels along X, 1 = along Y
-        int32 Dir = 1;             // +1 / -1
-        double LaneCoord = 0.0;    // fixed perpendicular coordinate (the lane)
+        double HalfLengthM = 2.3; // half body length (m), for bumper-gap math
     };
 
     APawn* GetPlayerPawn() const;
-    void StreamTraffic(const FVector& Around);
-    bool SpawnAgent(const FVector& Around, FTrafficAgent& OutAgent) const;
-    /** Bumper gap (cm) and speed of the nearest car ahead in the same lane.
-     *  OutGap is BIG and OutLeaderSpeed 0 when the road ahead is clear. */
-    void NearestLeader(int32 SelfIndex, double& OutGap, double& OutLeaderSpeed) const;
-    void PlaceActor(const FTrafficAgent& Agent) const;
 
-    TArray<FTrafficAgent> Agents;
+    /** cm world position -> the road graph's planar metres frame (UE XY -> core XZ). */
+    FVector ToNetwork(const FVector& WorldCm) const;
+    /** A network pose (planar metres) -> UE world cm at the given road height. */
+    FVector ToWorld(const FVector& NetworkM, double WorldZCm) const;
+
+    /** (Re)build the road graph centred on the player and re-snap live cars onto it. */
+    void RebuildNetwork(const FVector& PlayerCm);
+    /** True when the player has wandered close enough to the grid edge to recenter. */
+    bool NeedsRecenter(const FVector& PlayerCm) const;
+
+    void StreamTraffic(const FVector& PlayerCm);
+    /** Spawn one car on a random lane within the stream window; false if none found. */
+    bool SpawnCar(const FVector& PlayerCm, FCar& OutCar);
+    /** A* a fresh route from the car's next junction to a random far node. */
+    void AssignRandomRoute(FCar& Car);
+    /** Bumper gap (m) and speed (m/s) of the nearest car ahead on the same lane. */
+    void NearestLeader(int32 SelfIndex, double& OutGapM, double& OutLeaderSpeedM) const;
+    void PlaceActor(const FCar& Car, double RoadZCm) const;
+    /** A random node index whose position is within Radius (cm) of the player, or -1. */
+    int32 RandomNodeNear(const FVector& PlayerCm, double RadiusCm) const;
+
+    /** The live road graph (metres) and the grid spec that built it. */
+    FRoadNetwork RoadNet;
+    FCityGrid::FSpec GridSpec;
+    FVector GridOriginM = FVector::ZeroVector;
+    bool bNetworkBuilt = false;
+
+    TArray<FCar> Cars;
     TArray<TWeakObjectPtr<AActor>> ExternalVehicles;
 
     double StreamAccum = 0.0;
 
     static constexpr double StreamIntervalSec = 0.5;
-    static constexpr double LaneMatchTol = 120.0; // cm; same-lane coordinate tolerance
+    static constexpr double MetresPerCm = 0.01;
+    static constexpr double CmPerMetre = 100.0;
 };
