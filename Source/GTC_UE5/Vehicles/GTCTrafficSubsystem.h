@@ -99,6 +99,24 @@ public:
     void RegisterExternalVehicle(AActor* Vehicle);
     void UnregisterExternalVehicle(AActor* Vehicle);
 
+    /**
+     * Spawn a car that drives a FIXED route from StartCm to DestCm and then leaves —
+     * the seam a citizen uses to "drive home". Snaps both ends onto the road graph,
+     * A*-routes between them, and drives it with the same FTrafficAgent machinery as
+     * ambient traffic. When it arrives (route exhausted) OR drives out of the stream
+     * window off-screen, OnArrived fires once and the car despawns — so the citizen
+     * who got in can surface at the destination (or despawn into the census as "home").
+     * Returns false if there's no road graph yet or either end won't snap to a road.
+     */
+    bool SpawnDirectedCar(const FVector& StartCm, const FVector& DestCm, TFunction<void()> OnArrived);
+
+    /**
+     * Snap a world point to the nearest point on the road graph (the curb a parked car
+     * would sit at), in UE world cm at the query's height. False if there's no graph
+     * yet or the point projects nowhere. Lets a citizen find where to walk to drive off.
+     */
+    bool NearestRoadPointCm(const FVector& FromCm, FVector& OutCm);
+
     UFUNCTION(BlueprintCallable, Category = "GTC|Traffic")
     int32 GetLiveVehicleCount() const { return Cars.Num(); }
 
@@ -109,6 +127,12 @@ private:
         FTrafficAgent Agent;
         TWeakObjectPtr<AGTCTrafficVehicle> Actor;
         double HalfLengthM = 2.3; // half body length (m), for bumper-gap math
+        /** A directed car drives one fixed route then leaves (a citizen driving home),
+         *  instead of touring the city forever like ambient traffic. */
+        bool bDirected = false;
+        /** Fired once when a directed car reaches its destination (or leaves the
+         *  window off-screen). Empty for ambient cars. */
+        TFunction<void()> OnArrived;
     };
 
     APawn* GetPlayerPawn() const;

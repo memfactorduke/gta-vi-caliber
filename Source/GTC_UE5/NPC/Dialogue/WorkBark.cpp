@@ -8,7 +8,7 @@ namespace
 	// actions appear; physical busywork (wipe_counter, frame_shot, scoop_after_dog,
 	// stretch, the mime's whole silent repertoire...) is intentionally absent so it
 	// reads as silent work. GTC-original, voice-agnostic, free to grow.
-	const TMap<FName, TArray<FString>>& Banks()
+	const TMap<FName, TArray<FString>>& WorkBarkBanks()
 	{
 		static const TMap<FName, TArray<FString>> B = {
 			// --- barista (Doomsday Barista) ---
@@ -126,13 +126,13 @@ namespace
 
 int32 FWorkBark::Count(FName Action)
 {
-	const TArray<FString>* Bank = Banks().Find(Action);
+	const TArray<FString>* Bank = WorkBarkBanks().Find(Action);
 	return Bank ? Bank->Num() : 0;
 }
 
 FString FWorkBark::Line(FName Action, int32 Index)
 {
-	const TArray<FString>* Bank = Banks().Find(Action);
+	const TArray<FString>* Bank = WorkBarkBanks().Find(Action);
 	if (!Bank || Bank->Num() == 0)
 	{
 		return FString();

@@ -116,10 +116,12 @@ cesium-request-cache.sqlite*
 /Assets/
 
 # AI / editor tooling dirs (local agent + IDE config, not project source)
+/.claude/
 /.codex/
 /.cursor/
 /.gemini/
 /.vscode/
+/.mcp.json
 
 # Per-user editor settings (machine-specific)
 /Config/DefaultEditorPerProjectUserSettings.ini

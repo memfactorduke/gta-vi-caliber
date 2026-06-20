@@ -11,7 +11,12 @@
 class ADirectionalLight;
 class ASkyLight;
 class AExponentialHeightFog;
+class APostProcessVolume;
+class ULightComponent;
 class UMaterialParameterCollection;
+class UMaterialInterface;
+class UMaterialInstanceDynamic;
+class UStaticMeshComponent;
 
 /** Editor-facing mirror of the pure-core EWeatherKind (kept UHT-free in the core). */
 UENUM(BlueprintType)
@@ -60,21 +65,117 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Sky", meta = (ClampMin = "0.0", ClampMax = "24.0"))
 	float StartTimeOfDay = 8.0f;
 
-	/** Real seconds for one full 24h cycle (default 20 min). 0 freezes the clock. */
+	/**
+	 * Real seconds for one full 24h cycle. Default 2880s = 48 real minutes, the
+	 * same day length GTA V/VI use, so the day no longer races by. 0 freezes the
+	 * clock. Tunable live with `gtc.Weather.DayLength <s>`.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Sky", meta = (ClampMin = "0.0"))
-	float DayLengthSeconds = 1200.0f;
+	float DayLengthSeconds = 2880.0f;
 
 	/** South-facing reference yaw the sun sweeps around through the day. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Sky")
 	float SunBaseYaw = -120.0f;
 
-	/** Peak midday sun brightness in lux. */
+	/** Peak midday sun brightness in lux. Tunable live with `gtc.Weather.SunLux <lux>`. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Sky", meta = (ClampMin = "0.0"))
-	float DaySunLux = 75000.0f;
+	float DaySunLux = 50000.0f;
 
 	/** Night sun floor in lux (kept tiny, not pure black). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Sky", meta = (ClampMin = "0.0"))
 	float NightSunLux = 0.0f;
+
+	//~ Exposure knobs ---------------------------------------------------------
+	// Without an exposure clamp the auto-exposure pushes midday to a blown-out
+	// white. These drive an unbound post-process volume the controller creates
+	// (GTC_GlobalPostProcess). The project runs extended luminance range, so the
+	// min/max are EV100 stops; bias is a uniform stop offset (negative = darker).
+
+	/**
+	 * Fixed exposure (EV100) for full daylight. One auto-exposure value can't serve
+	 * both blinding noon and dark night, so the controller pins exposure and ramps
+	 * it Night->Day by the daylight factor every tick instead. 11 = a correctly
+	 * exposed sunny midday, verified in-engine on Ocean Drive (lower blows out to
+	 * white, higher reads like dusk).
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Exposure")
+	float DayExposureEV = 11.0f;
+
+	/**
+	 * Fixed exposure (EV100) for full night — lower than day so the camera opens up
+	 * after dusk and the city's streetlights / neon read instead of the world going
+	 * pitch black. ~5 gives a moody lit street; raise toward day for a brighter night.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Exposure")
+	float NightExposureEV = 5.0f;
+
+	/** Overall brightness offset in stops (negative darkens). Tunable live with `gtc.Weather.ExposureBias <stops>`. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Exposure")
+	float ExposureBias = 0.0f;
+
+	//~ Night lighting ---------------------------------------------------------
+	/** Add a soft cool "moonlight" fill so the city isn't pitch black between lamps at night. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night")
+	bool bMoonlight = true;
+
+	/** Peak moonlight brightness (lux) at full night; eased to 0 through the day so it never tints daylight. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night", meta = (ClampMin = "0.0"))
+	float MoonIntensityLux = 3.0f;
+
+	/** Cool moonlight colour. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night")
+	FLinearColor MoonColor = FLinearColor(0.55f, 0.68f, 1.0f);
+
+	/** SkyLight ambient floor at night (0..1) so the city keeps a faint moonlit glow instead of going black. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float NightSkyLightFloor = 0.18f;
+
+	//~ Auto city lights -------------------------------------------------------
+	// Dynamic: the controller re-scans the world for every light and switches them
+	// on/off by darkness, so it works for any number of lights (including ones
+	// added or streamed in later) without hand-wiring or baking each fixture.
+
+	/** Master switch for the automatic darkness-driven city lights. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night")
+	bool bAutoCityLights = true;
+
+	/** Switch the city lights ON once it is at least this % dark (0..100). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float CityLightsOnDarknessPct = 65.0f;
+
+	/** Switch them OFF once darkness falls back below this % (kept under On for a stable hold band — no dusk flicker). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float CityLightsOffDarknessPct = 55.0f;
+
+	/** When lighting up, raise any fixture dimmer than this (cd) to it so placeholder lights still read. 0 = leave fixtures as authored. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night", meta = (ClampMin = "0.0"))
+	float CityLightMinIntensity = 2000.0f;
+
+	/** Re-scan the world for lights this often (s) so lights added or streamed in later are picked up too. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night", meta = (ClampMin = "0.25"))
+	float CityLightsRescanSeconds = 2.0f;
+
+	/**
+	 * Show a starfield after dusk. The controller spawns a camera-centred sky dome
+	 * with an additive star material whose opacity is driven by the same continuous
+	 * day-night clock (StarOpacity = 1 - daylight), so stars fade in at dusk and out
+	 * at dawn, and dim under cloud cover. Additive over the dark night sky and
+	 * occluded by city geometry, so it never washes out the day.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night")
+	bool bShowStarsAtNight = true;
+
+	/** Overall star brightness multiplier. Tunable live with `gtc.Weather.StarBrightness <x>`. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night", meta = (ClampMin = "0.0"))
+	float StarBrightness = 4.0f;
+
+	/** Radius (uu) of the camera-centred star dome; every piece of city geometry stays inside it and occludes the stars. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night", meta = (ClampMin = "10000.0"))
+	float StarDomeRadius = 800000.0f;
+
+	/** Additive unlit star material (reads scalar params StarOpacity / StarBrightness). Defaults to M_GTCStars. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Night")
+	TSoftObjectPtr<UMaterialInterface> StarMaterial;
 
 	//~ Weather knobs ----------------------------------------------------------
 	/** When true the director rolls new weather on its own; when false weather is held / set by console. */
@@ -143,8 +244,15 @@ protected:
 private:
 	void ResolveSkyActors();
 	void EnsureSkyRig();
+	void EnsurePostProcess();
+	void EnsureMoon();
+	void EnsureStarDome();
+	void ApplyExposure(double Ev);
 	void ApplySky(double Hours);
 	void ApplyWeather(const FWeatherParams& W, double Hours);
+	void UpdateStars(double Hours);
+	void RescanCityLights();
+	void UpdateCityLights(double Hours, float DeltaSeconds);
 	void RollNextDwell();
 
 	static EWeatherKind ToCore(EGTCWeatherKind Kind);
@@ -162,6 +270,24 @@ private:
 	TObjectPtr<ASkyLight> SkyLight;
 	UPROPERTY(Transient)
 	TObjectPtr<AExponentialHeightFog> HeightFog;
+	UPROPERTY(Transient)
+	TObjectPtr<APostProcessVolume> PostProcess;
+	UPROPERTY(Transient)
+	TObjectPtr<ADirectionalLight> Moon;
+
+	/** Camera-centred additive star dome (spawned by EnsureStarDome) and its dynamic material. */
+	UPROPERTY(Transient)
+	TObjectPtr<AActor> StarDome;
+	UPROPERTY(Transient)
+	TObjectPtr<UStaticMeshComponent> StarDomeMesh;
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> StarMID;
+
+	/** All managed city lights (weak — the level/streaming owns them; re-scanned periodically). */
+	TArray<TWeakObjectPtr<ULightComponent>> CityLights;
+	bool bCityLightsLit = false;
+	bool bCityLightsInit = false;
+	float TimeSinceLightRescan = 0.0f;
 
 	float BaseSkyLightIntensity = 1.0f;
 	bool bResolved = false;

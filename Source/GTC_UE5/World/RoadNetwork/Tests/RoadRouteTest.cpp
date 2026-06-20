@@ -19,7 +19,7 @@ using GtcTest::Eps;
 
 namespace
 {
-    bool VecNear(const FVector& A, const FVector& B, double Tol = 1e-4)
+    bool RouteVecNear(const FVector& A, const FVector& B, double Tol = 1e-4)
     {
         return FMath::Abs(A.X - B.X) <= Tol && FMath::Abs(A.Y - B.Y) <= Tol
             && FMath::Abs(A.Z - B.Z) <= Tol;
@@ -40,8 +40,8 @@ bool FRoadRouteTest::RunTest(const FString& Parameters)
     {
         const TArray<FVector> C = FRoadRoute::Centerline(Nodes, TArray<int32>({0, 1, 2, 3}));
         TestEqual(TEXT("centerline has 4 points"), C.Num(), 4);
-        TestTrue(TEXT("first point is node 0"), VecNear(C[0], Nodes[0]));
-        TestTrue(TEXT("last point is node 3"), VecNear(C[3], Nodes[3]));
+        TestTrue(TEXT("first point is node 0"), RouteVecNear(C[0], Nodes[0]));
+        TestTrue(TEXT("last point is node 3"), RouteVecNear(C[3], Nodes[3]));
     }
 
     // Malformed paths yield no road rather than a phantom line.
@@ -53,8 +53,8 @@ bool FRoadRouteTest::RunTest(const FString& Parameters)
         const TArray<FVector> C = FRoadRoute::CenterlineThrough(
             Nodes, TArray<int32>({0, 1, 2, 3}), FVector(-5, 0, 0), FVector(25, 0, 10));
         TestEqual(TEXT("threaded centerline has 6 points"), C.Num(), 6);
-        TestTrue(TEXT("threaded starts at spawn"), VecNear(C[0], FVector(-5, 0, 0)));
-        TestTrue(TEXT("threaded ends at destination"), VecNear(C[5], FVector(25, 0, 10)));
+        TestTrue(TEXT("threaded starts at spawn"), RouteVecNear(C[0], FVector(-5, 0, 0)));
+        TestTrue(TEXT("threaded ends at destination"), RouteVecNear(C[5], FVector(25, 0, 10)));
     }
 
     // A spawn/destination that coincides with the end node is not duplicated.

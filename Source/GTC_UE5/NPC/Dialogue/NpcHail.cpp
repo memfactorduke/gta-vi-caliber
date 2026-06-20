@@ -4,7 +4,7 @@
 
 namespace
 {
-	int32 PosMod(int32 Value, int32 Modulus)
+	int32 HailPosMod(int32 Value, int32 Modulus)
 	{
 		if (Modulus <= 0)
 		{
@@ -91,5 +91,5 @@ FString FNpcHail::Line(FName Role, int32 Index)
 	{
 		return FString();
 	}
-	return (*Bank)[PosMod(Index, Bank->Num())];
+	return (*Bank)[HailPosMod(Index, Bank->Num())];
 }

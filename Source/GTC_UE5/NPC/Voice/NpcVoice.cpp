@@ -81,14 +81,14 @@ namespace
 
 bool FNpcVoiceProfile::operator==(const FNpcVoiceProfile& Other) const
 {
-	const float Eps = 1e-4f;
+	const float VoiceEps = 1e-4f;
 	return bMute == Other.bMute
-		&& FMath::IsNearlyEqual(BasePitchHz, Other.BasePitchHz, Eps)
-		&& FMath::IsNearlyEqual(PitchJitterSemitones, Other.PitchJitterSemitones, Eps)
-		&& FMath::IsNearlyEqual(RateSyllablesPerSec, Other.RateSyllablesPerSec, Eps)
-		&& FMath::IsNearlyEqual(Breathiness, Other.Breathiness, Eps)
-		&& FMath::IsNearlyEqual(Roughness, Other.Roughness, Eps)
-		&& FMath::IsNearlyEqual(FormantScale, Other.FormantScale, Eps);
+		&& FMath::IsNearlyEqual(BasePitchHz, Other.BasePitchHz, VoiceEps)
+		&& FMath::IsNearlyEqual(PitchJitterSemitones, Other.PitchJitterSemitones, VoiceEps)
+		&& FMath::IsNearlyEqual(RateSyllablesPerSec, Other.RateSyllablesPerSec, VoiceEps)
+		&& FMath::IsNearlyEqual(Breathiness, Other.Breathiness, VoiceEps)
+		&& FMath::IsNearlyEqual(Roughness, Other.Roughness, VoiceEps)
+		&& FMath::IsNearlyEqual(FormantScale, Other.FormantScale, VoiceEps);
 }
 
 FNpcVoiceProfile FNpcVoice::ProfileFor(const FString& Voice, int32 IdentitySeed)

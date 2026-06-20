@@ -3,6 +3,10 @@
 #include "GTCCitizen.h"
 
 #include "GTCCrowdSubsystem.h"
+#include "../../Vehicles/GTCTrafficSubsystem.h"
+#include "../Routine/GTCRoutineSubsystem.h"
+#include "../../Systems/Wanted/WantedSubsystem.h"
+#include "Engine/GameInstance.h"
 #include "../Population/NpcPopulation.h"
 #include "../Appearance/GTCAppearanceSet.h"
 #include "../../World/Places/GTCPlaceRegistrySubsystem.h"
@@ -10,6 +14,7 @@
 #include "../Decision/NpcReaction.h"
 #include "../Decision/NpcMemory.h"
 #include "../Decision/NpcIdleAction.h"
+#include "../Decision/NpcCrudeAction.h"
 #include "../Decision/NpcOccupation.h"
 #include "../Decision/NpcWeatherReaction.h"
 #include "../Decision/NpcCrowding.h"
@@ -19,6 +24,7 @@
 #include "../Dialogue/NpcDialogue.h"
 #include "../Dialogue/BarkPool.h"
 #include "../Dialogue/ContactBark.h"
+#include "../Dialogue/InsultBark.h"
 #include "../Dialogue/IdleActionBark.h"
 #include "../Dialogue/WorkBark.h"
 #include "../Dialogue/NpcHail.h"
@@ -257,6 +263,9 @@ void AGTCCitizen::ApplyIdentity(const FNpcCitizenRecord& Record)
     Discipline = Record.Discipline;
     Bravery = Record.Bravery;
     Curiosity = Record.Curiosity;
+    // Fixed temper for the confrontational dialogue layer — most people easygoing,
+    // a seeded minority surly/hotheaded. Same person, same attitude, every spawn.
+    Temper = FNpcAttitude::TemperFor(Record.Seed, Archetype.Id);
     WalkSpeed = Record.WalkSpeed;
     RunSpeed = Record.RunSpeed;
     DecayRates = Record.DecayRates;
@@ -265,6 +274,11 @@ void AGTCCitizen::ApplyIdentity(const FNpcCitizenRecord& Record)
     // Toughness is the per-actor tunable, so a BP subclass (a cop) soaks more rounds.
     Vitals = FNpcVitals(CitizenMaxHealth);
     bDead = false;
+
+    // Start every (re)spawn as an ordinary pedestrian — never mid-drive.
+    DriveStage = ENpcDriveStage::None;
+    DriveStageTimer = 0.0;
+    bDriveArrived = false;
 
     // Give the person an actual voice: a fixed vocal signature (pitch/rate/timbre)
     // derived deterministically from the same seed + persona token that pick the
@@ -413,7 +427,17 @@ void AGTCCitizen::Replan(double Hour, UGTCPlaceRegistrySubsystem* Places)
     // whole city in lockstep — one's out the door at 6:42, another at 7:21. Only
     // the schedule decision is shifted; the world clock stays global.
     const double RoutineHour = FNpcScheduleJitter::Apply(Hour, CitizenSeed);
-    const FNpcIntent NewIntent = FNpcMind::Decide(Archetype.Schedule, RoutineHour, Needs, Discipline);
+    // Run this person's OWN day if the routine editor has one for them: an individual
+    // routine (assigned, or a stable seed-pick from the bank) overrides the flat
+    // archetype template, so two baristas live genuinely different days. No routine in
+    // the bank -> fall back to the archetype schedule (unchanged behaviour).
+    TArray<FNpcScheduleBlock> IndividualBlocks;
+    const UGTCRoutineSubsystem* RoutineSub =
+        GetWorld() ? GetWorld()->GetSubsystem<UGTCRoutineSubsystem>() : nullptr;
+    const TArray<FNpcScheduleBlock>& Routine =
+        (RoutineSub && RoutineSub->ResolveBlocksForSeed(CitizenSeed, IndividualBlocks) && IndividualBlocks.Num() > 0)
+            ? IndividualBlocks : Archetype.Schedule;
+    const FNpcIntent NewIntent = FNpcMind::Decide(Routine, RoutineHour, Needs, Discipline);
 
     // If the destination kind changed, drop the old occupancy claim and resolve the
     // new place. Re-using the same kind keeps the existing goal (no thrashing).
@@ -452,6 +476,7 @@ void AGTCCitizen::Replan(double Hour, UGTCPlaceRegistrySubsystem* Places)
                 // one point — the crowd-averse hang back further.
                 const ENpcBusyness Busy = FNpcCrowding::Classify(Q.Occupancy, Q.Capacity);
                 OnPlaceBusyness(NewKind, static_cast<uint8>(Busy));
+                LastBusyness = static_cast<uint8>(Busy); // for the crude-action gate
 
                 const float Standoff = FNpcCrowding::StandoffDistance(Busy, Curiosity);
                 if (Standoff > 0.0f)
@@ -468,6 +493,11 @@ void AGTCCitizen::Replan(double Hour, UGTCPlaceRegistrySubsystem* Places)
                         *Archetype.Name, *NewKind.ToString(), FNpcCrowding::Name(Busy), Standoff);
                 }
             }
+
+            // A car-owner with a long trip to a commute anchor (home/office) drives it:
+            // this may redirect CurrentGoal to a nearby parked car (the curb) so the
+            // walk that follows heads for the car, not all the way home on foot.
+            MaybeBeginDriveHome(CurrentGoal, NewIntent.Place);
 
             RecomputePath();
         }
@@ -828,6 +858,7 @@ void AGTCCitizen::SpeakLine(const FString& Line)
 bool AGTCCitizen::IsAvailableToChat() const
 {
     return bInitialized && bArrived && !bChatting && !bGawking
+        && DriveStage == ENpcDriveStage::None // a driver (hidden in a car) can't chat
         && BrainState != FNpcBrain::EState::Flee
         && ActivityLingers(CurrentIntent.Activity);
 }
@@ -943,11 +974,19 @@ float AGTCCitizen::TakeDamage(
         BulletTravel.Z = 0.0;
     }
 
-    ApplyGunshot(static_cast<double>(DamageAmount), BulletTravel);
+    // Only the PLAYER attacking a civilian raises wanted heat (a stray police round
+    // hitting a bystander is not the player's crime).
+    bool bByPlayer = false;
+    if (const UWorld* World = GetWorld())
+    {
+        bByPlayer = EventInstigator != nullptr && EventInstigator == World->GetFirstPlayerController();
+    }
+
+    ApplyGunshot(static_cast<double>(DamageAmount), BulletTravel, bByPlayer);
     return Applied;
 }
 
-void AGTCCitizen::ApplyGunshot(double Damage, const FVector& BulletTravel)
+void AGTCCitizen::ApplyGunshot(double Damage, const FVector& BulletTravel, bool bByPlayer)
 {
     // Planar push direction (away from the shooter). With no direction on the event,
     // derive it from the player's tracked position so stagger/flee point somewhere
@@ -994,8 +1033,15 @@ void AGTCCitizen::ApplyGunshot(double Damage, const FVector& BulletTravel)
 
     if (Result == ENpcHitResult::Killed)
     {
-        EnterDeath(Travel);
+        EnterDeath(Travel, bByPlayer);
         return;
+    }
+
+    // Wounding a civilian is a crime — raise heat so the law responds. (The kill
+    // path reports the heavier murder from EnterDeath.)
+    if (bByPlayer)
+    {
+        ReportCrimeToWanted(/*bKilled=*/false);
     }
 
     // Wounded but up: stagger now, bolt after. Route the recoil through the same
@@ -1028,13 +1074,19 @@ void AGTCCitizen::ApplyGunshot(double Damage, const FVector& BulletTravel)
     OnGunshotWound(static_cast<float>(Sev), -Travel);
 }
 
-void AGTCCitizen::EnterDeath(const FVector& BulletTravel)
+void AGTCCitizen::EnterDeath(const FVector& BulletTravel, bool bByPlayer)
 {
     if (bDead)
     {
         return;
     }
     bDead = true;
+
+    // Killing a civilian is a serious crime — report it before the body goes.
+    if (bByPlayer)
+    {
+        ReportCrimeToWanted(/*bKilled=*/true);
+    }
 
     // Drop everything a living pedestrian was doing.
     if (bChatting)
@@ -1088,6 +1140,19 @@ void AGTCCitizen::EnterDeath(const FVector& BulletTravel)
     // Anim/FX seam, then fade the corpse after it has lain there a while.
     OnKilled(-BulletTravel.GetSafeNormal());
     SetLifeSpan(static_cast<float>(CorpseLingerSeconds));
+}
+
+void AGTCCitizen::ReportCrimeToWanted(bool bKilled) const
+{
+    // The wanted system is a GameInstance subsystem (player-global heat). Reach it
+    // the same guarded way the notoriety director does; absent it, this is a no-op.
+    if (UGameInstance* GI = GetGameInstance())
+    {
+        if (UWantedSubsystem* Wanted = GI->GetSubsystem<UWantedSubsystem>())
+        {
+            Wanted->ReportCrime(bKilled);
+        }
+    }
 }
 
 void AGTCCitizen::UpdateContactReaction(float DeltaSeconds, UGTCCrowdSubsystem* Crowd)
@@ -1259,6 +1324,35 @@ void AGTCCitizen::ApplyContact(
 void AGTCCitizen::BarkForContact(ENpcContactReaction R)
 {
     const int32 Seed = CitizenSeed + (BarkCounter++ * 7919);
+
+    // A rude citizen who's annoyed or squaring up (not fleeing or floored) tells you
+    // off IN CHARACTER — a muttered insult, an R-rated curse, or fighting words from
+    // the attitude layer instead of the generic retort. The verbal heat is what their
+    // temper + nerve produce for a barge; an empty result falls through to the polite bank.
+    const bool bConfrontational =
+        (R == ENpcContactReaction::Annoyed || R == ENpcContactReaction::Confront);
+    if (bConfrontational && FNpcAttitude::IsRude(Temper))
+    {
+        const ENpcVerbalHeat Heat =
+            FNpcAttitude::ProvocationResponse(Temper, ENpcProvocation::Bumped, Bravery, Seed);
+        const FString Hot = FInsultBark::Line(Archetype.Voice, Heat, Seed);
+        if (!Hot.IsEmpty())
+        {
+            SpeakLine(Hot);
+            TimeSinceBark = 0.0;
+            // A curse or fighting words come with a rude gesture (the finger) at the
+            // offender — the words and the hand land together.
+            if (Heat >= ENpcVerbalHeat::Curse)
+            {
+                FVector ToThreat = ContactThreatPos - GetActorLocation();
+                ToThreat.Z = 0.0;
+                OnRudeGesture(ToThreat.IsNearlyZero() ? GetActorForwardVector() : ToThreat.GetSafeNormal());
+            }
+            UE_LOG(LogTemp, Verbose, TEXT("[%s>insult] %s"), *Archetype.Name, *Hot);
+            return;
+        }
+    }
+
     // Dedicated contact lines specific to being brushed / bumped / shoved / floored
     // — so a shove no longer borrows the generic gunshot-panic bank.
     const FString Line = FContactBark::Line(Archetype.Voice, R, Seed);
@@ -1311,14 +1405,39 @@ void AGTCCitizen::MaybeNoticePlayer(float DeltaSeconds, UGTCCrowdSubsystem* Crow
     // The nosier/chattier sort actually say something; most just look. Curiosity
     // gates it so a street isn't a chorus of greetings. The roll is drawn from a
     // dedicated stream so a passing player never perturbs the wander RNG.
+    // Rude sorts speak up more readily than the merely curious when crowded.
+    const double SpeakChance = FNpcAttitude::IsRude(Temper)
+        ? FMath::Max(Curiosity * 0.5, 0.35) : Curiosity * 0.5;
     const FRandomStream GreetRoll(CitizenSeed + 104729 + PassByCounter++ * 7919);
-    if (GreetRoll.FRand() < Curiosity * 0.5)
+    if (GreetRoll.FRand() < SpeakChance)
     {
+        const int32 LineSeed = CitizenSeed + (BarkCounter++ * 7919);
+
+        // A rude citizen being crowded/eyeballed grumbles at the player rather than
+        // greeting them — a low-simmer "stared at" heat (a mutter or a pointed jab,
+        // not a full curse for mere proximity). Empty result falls through to a greeting.
+        if (FNpcAttitude::IsRude(Temper))
+        {
+            const ENpcVerbalHeat Heat =
+                FNpcAttitude::ProvocationResponse(Temper, ENpcProvocation::Stared, Bravery, LineSeed);
+            const FString Hot = FInsultBark::Line(Archetype.Voice, Heat, LineSeed);
+            if (!Hot.IsEmpty())
+            {
+                SpeakLine(Hot);
+                TimeSinceBark = 0.0;
+                if (Heat >= ENpcVerbalHeat::Curse)
+                {
+                    OnRudeGesture(Dir); // flip off the player who won't stop crowding them
+                }
+                UE_LOG(LogTemp, Verbose, TEXT("[%s>grumble] %s"), *Archetype.Name, *Hot);
+                return;
+            }
+        }
+
         // On the clock with a trade, the job reaches out — the vendor sells, the
         // crossing guard scolds, the life coach pitches — so the player feels the
         // city's occupations. Off the clock (or a role that doesn't hail, e.g. the
         // mime), fall back to the generic pass-by acknowledgement.
-        const int32 LineSeed = CitizenSeed + (BarkCounter++ * 7919);
         const FName Role = (CurrentIntent.Activity == TEXT("work"))
             ? FNpcOccupation::RoleFor(Archetype.Id) : NAME_None;
         const bool bHail = !Role.IsNone() && FNpcHail::Count(Role) > 0;
@@ -1417,10 +1536,16 @@ void AGTCCitizen::MaybeGlance(float DeltaSeconds)
         Dir.Z = 0.0;
         OnCuriousGlance(Dir.IsNearlyZero() ? FVector::ZeroVector : Dir.GetSafeNormal());
 
-        // Mostly silent; the occasional "ooh, what's that" murmur, cadence-gated.
+        // Mostly silent; the occasional murmur, cadence-gated. A rude sort mutters
+        // talk-shit at whoever they just clocked (a peer snipe) instead of an idle
+        // "ooh, what's that" — that's PeerPassing in the attitude layer.
         if (Roll.FRand() < 0.25f && FBarkPool::ShouldBark(TimeSinceBark, BarkCooldownSec))
         {
-            const FString Line = FBarkPool::Line(EBarkSituation::IDLE, GlanceSeed);
+            const bool bSnipe = FNpcAttitude::IsRude(Temper)
+                && FNpcAttitude::ProvocationResponse(Temper, ENpcProvocation::PeerPassing, Bravery, GlanceSeed) != ENpcVerbalHeat::None;
+            const FString Line = bSnipe
+                ? FInsultBark::PeerSnipe(GlanceSeed)
+                : FBarkPool::Line(EBarkSituation::IDLE, GlanceSeed);
             if (!Line.IsEmpty())
             {
                 SpeakLine(Line);
@@ -1489,6 +1614,154 @@ void AGTCCitizen::ReleaseClaim()
     ClaimedPlaceKind = NAME_None;
 }
 
+// --- Drive-home FSM ---------------------------------------------------------
+
+void AGTCCitizen::MaybeBeginDriveHome(const FVector& HomeDest, const FString& DestPlace)
+{
+    if (DriveStage != ENpcDriveStage::None || !FNpcCommute::HasCar(CitizenSeed))
+    {
+        return; // already driving, or doesn't own a car
+    }
+    const double Trip = FNpcLocomotion::GroundDistance(GetActorLocation(), HomeDest);
+    if (!FNpcCommute::ShouldDrive(/*bHasCar=*/true, DestPlace, Trip))
+    {
+        return; // short hop / not a commute anchor — just walk it
+    }
+
+    UWorld* World = GetWorld();
+    UGTCTrafficSubsystem* Traffic = World ? World->GetSubsystem<UGTCTrafficSubsystem>() : nullptr;
+    FVector Curb;
+    if (!Traffic || !Traffic->NearestRoadPointCm(GetActorLocation(), Curb))
+    {
+        return; // no road graph to drive on — fall back to walking the whole way
+    }
+    Curb.Z = GetActorLocation().Z;
+
+    DriveDestination = HomeDest;
+    DriveCarPoint = Curb;
+    bDriveArrived = false;
+    DriveStage = ENpcDriveStage::WalkingToCar;
+
+    // Redirect the walk to the parked car; the registry walk would have gone home.
+    CurrentGoal = Curb;
+    GoalAnchor = Curb;
+    bHasGoal = true;
+    bArrived = false;
+
+    UE_LOG(LogTemp, Verbose, TEXT("[%s>drive] walking to a car to drive to %s"),
+        *Archetype.Name, *DestPlace);
+}
+
+bool AGTCCitizen::TickDrive(float DeltaSeconds)
+{
+    switch (DriveStage)
+    {
+    case ENpcDriveStage::WalkingToCar:
+    {
+        // At the curb? Get in. Otherwise let the normal pipeline keep walking there.
+        const double D = FNpcLocomotion::GroundDistance(GetActorLocation(), DriveCarPoint);
+        if (D <= ArriveToleranceCm)
+        {
+            EnterVehicleAndHide();
+            return true;
+        }
+        return false;
+    }
+    case ENpcDriveStage::Entering:
+        DriveStageTimer += DeltaSeconds;
+        if (FNpcCommute::StageDwellElapsed(ENpcDriveStage::Entering, DriveStageTimer))
+        {
+            HandOffDriveToTraffic();
+        }
+        return true;
+    case ENpcDriveStage::Driving:
+        // The traffic layer drives the car; we wait (hidden) for the arrival callback.
+        if (bDriveArrived)
+        {
+            ArriveHomeFromDrive();
+        }
+        return true;
+    case ENpcDriveStage::Exiting:
+        DriveStageTimer += DeltaSeconds;
+        if (FNpcCommute::StageDwellElapsed(ENpcDriveStage::Exiting, DriveStageTimer))
+        {
+            DriveStage = ENpcDriveStage::None;
+            bArrived = true; // resume normal life here, replanning from the destination
+        }
+        return true;
+    default:
+        return false;
+    }
+}
+
+void AGTCCitizen::EnterVehicleAndHide()
+{
+    OnEnterVehicle();
+    DriveStage = ENpcDriveStage::Entering;
+    DriveStageTimer = 0.0;
+
+    // Vanish into the car: hide the body, drop collision, stop moving. (Wave 3b will
+    // seat a visible driver instead; hiding is the headless milestone.)
+    SetActorHiddenInGame(true);
+    SetActorEnableCollision(false);
+    if (UCharacterMovementComponent* Move = GetCharacterMovement())
+    {
+        Move->StopMovementImmediately();
+        Move->DisableMovement();
+    }
+    // A hidden driver is no longer a chat target or holding a spot.
+    EndChat();
+    ReleaseClaim();
+    bUsePath = false;
+}
+
+void AGTCCitizen::HandOffDriveToTraffic()
+{
+    UWorld* World = GetWorld();
+    UGTCTrafficSubsystem* Traffic = World ? World->GetSubsystem<UGTCTrafficSubsystem>() : nullptr;
+    if (Traffic)
+    {
+        TWeakObjectPtr<AGTCCitizen> WeakThis(this);
+        const bool bSpawned = Traffic->SpawnDirectedCar(
+            DriveCarPoint, DriveDestination,
+            [WeakThis]()
+            {
+                if (AGTCCitizen* C = WeakThis.Get())
+                {
+                    C->bDriveArrived = true; // consumed next TickDrive (Driving)
+                }
+            });
+        if (bSpawned)
+        {
+            DriveStage = ENpcDriveStage::Driving;
+            return;
+        }
+    }
+    // No traffic layer / no route — skip the drive and surface at the destination.
+    ArriveHomeFromDrive();
+}
+
+void AGTCCitizen::ArriveHomeFromDrive()
+{
+    // The car has delivered us — surface at the destination. Off-screen, the crowd
+    // despawns us shortly; on-screen, we step out here.
+    FVector Dest = DriveDestination;
+    Dest.Z = GetActorLocation().Z;
+    SetActorLocationAndRotation(Dest, GetActorRotation(), /*bSweep*/ false);
+
+    SetActorHiddenInGame(false);
+    SetActorEnableCollision(true);
+    if (UCharacterMovementComponent* Move = GetCharacterMovement())
+    {
+        Move->SetMovementMode(MOVE_Walking);
+    }
+
+    OnExitVehicle();
+    DriveStage = ENpcDriveStage::Exiting;
+    DriveStageTimer = 0.0;
+    bDriveArrived = false;
+}
+
 void AGTCCitizen::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
@@ -1517,9 +1790,22 @@ void AGTCCitizen::Tick(float DeltaSeconds)
         Needs.Decay(ElapsedHours, DecayRates);
     }
 
-    // 2) Re-decide intent periodically, on first run, or the moment we arrive.
+    // 1b) Drive-home FSM. Once a citizen commits to driving, this owns them: while
+    // getting in / driving / getting out it suspends the pedestrian pipeline entirely;
+    // while walking to the car it lets normal locomotion carry them to the curb.
+    if (DriveStage != ENpcDriveStage::None)
+    {
+        if (TickDrive(DeltaSeconds))
+        {
+            return; // entering / driving / exiting — nothing else to do this frame
+        }
+    }
+
+    // 2) Re-decide intent periodically, on first run, or the moment we arrive. Not
+    // while a drive is underway — the drive owns the goal (the curb, then home).
     ReplanAccum += DeltaSeconds;
-    if (!bHasGoal || bArrived || ReplanAccum >= ReplanIntervalSec)
+    if (DriveStage == ENpcDriveStage::None
+        && (!bHasGoal || bArrived || ReplanAccum >= ReplanIntervalSec))
     {
         ReplanAccum = 0.0;
         Replan(Hour, Places);
@@ -1610,17 +1896,37 @@ void AGTCCitizen::Tick(float DeltaSeconds)
                             // generic fidget; otherwise fall back to contextual idle
                             // business. Same scrambled stream either way, so the choice
                             // stays deterministic and never perturbs the wander Rng.
-                            const bool bWorking = (CurrentIntent.Activity == TEXT("work"));
-                            const FName Role = bWorking ? FNpcOccupation::RoleFor(Archetype.Id) : NAME_None;
-                            const bool bDoJob = bWorking && !Role.IsNone();
-                            const int32 N = bDoJob
-                                ? FNpcOccupation::WorkActionCount(Role)
-                                : FNpcIdleAction::Count(CurrentIntent.Activity);
-                            const FName Action = (N <= 0)
-                                ? NAME_None
-                                : (bDoJob
-                                    ? FNpcOccupation::WorkAction(Role, ActionRoll.RandHelper(N))
-                                    : FNpcIdleAction::Pick(CurrentIntent.Activity, ActionRoll.RandHelper(N)));
+                            // Rarely, and only when the moment genuinely allows it (a
+                            // quiet alley after dark, a drunk outside a late bar), do
+                            // something crude — pee, retch, spit — instead of a tasteful
+                            // fidget. Gated by a low roll AND the master toggle AND
+                            // FNpcCrudeAction's own context rules, so it's situational
+                            // colour, not a habit. Crude tokens speak through the idle
+                            // mutter bank (bDoJob stays false), same as any fidget.
+                            FName Action = NAME_None;
+                            bool bDoJob = false;
+                            if (bAllowCrudeActions && ActionRoll.FRand() < CrudeActionChance)
+                            {
+                                Action = FNpcCrudeAction::Pick(
+                                    Hour, ClaimedPlaceKind, LastBusyness, Temper, ActionSeed);
+                            }
+                            if (Action.IsNone())
+                            {
+                                // On the clock with a known trade, do the JOB (a barista
+                                // pulls shots, a crossing guard waves traffic); otherwise
+                                // a contextual idle fidget.
+                                const bool bWorking = (CurrentIntent.Activity == TEXT("work"));
+                                const FName Role = bWorking ? FNpcOccupation::RoleFor(Archetype.Id) : NAME_None;
+                                bDoJob = bWorking && !Role.IsNone();
+                                const int32 N = bDoJob
+                                    ? FNpcOccupation::WorkActionCount(Role)
+                                    : FNpcIdleAction::Count(CurrentIntent.Activity);
+                                Action = (N <= 0)
+                                    ? NAME_None
+                                    : (bDoJob
+                                        ? FNpcOccupation::WorkAction(Role, ActionRoll.RandHelper(N))
+                                        : FNpcIdleAction::Pick(CurrentIntent.Activity, ActionRoll.RandHelper(N)));
+                            }
                             if (!Action.IsNone())
                             {
                                 OnIdleAction(Action);
@@ -1741,15 +2047,27 @@ void AGTCCitizen::Tick(float DeltaSeconds)
                     // instead of opening cold.
                     const ENpcChatTopic Topic = FNpcTopic::Shared(CitizenSeed, Partner->GetSeed());
                     FString Line;
-                    if ((Turn % 2) == 0)
+                    // A surly/hotheaded sort trades barbs mid-chat — a jab at whoever
+                    // they're talking to instead of the topic line, now and then. Only
+                    // after the opener, and kept occasional, so the exchange still mostly
+                    // coheres on its topic rather than turning into a slanging match.
+                    const FRandomStream BanterRoll(LineSeed + 31);
+                    if (Turn > 0 && FNpcAttitude::IsRude(Temper) && BanterRoll.FRand() < 0.25f)
                     {
-                        Line = (bChatPartnerFamiliar && Turn == 0)
-                            ? FNpcConversation::Greeting(Archetype.Voice, LineSeed)
-                            : FNpcTopic::Line(Topic, /*bReply=*/false, LineSeed);
+                        Line = FInsultBark::Line(Archetype.Voice, ENpcVerbalHeat::Insult, LineSeed);
                     }
-                    else
+                    if (Line.IsEmpty())
                     {
-                        Line = FNpcTopic::Line(Topic, /*bReply=*/true, LineSeed);
+                        if ((Turn % 2) == 0)
+                        {
+                            Line = (bChatPartnerFamiliar && Turn == 0)
+                                ? FNpcConversation::Greeting(Archetype.Voice, LineSeed)
+                                : FNpcTopic::Line(Topic, /*bReply=*/false, LineSeed);
+                        }
+                        else
+                        {
+                            Line = FNpcTopic::Line(Topic, /*bReply=*/true, LineSeed);
+                        }
                     }
                     if (!Line.IsEmpty())
                     {

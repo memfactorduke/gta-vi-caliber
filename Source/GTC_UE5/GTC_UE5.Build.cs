@@ -7,7 +7,16 @@ public class GTC_UE5 : ModuleRules
 	public GTC_UE5(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
+
+		// Unity (jumbo) builds are disabled for this module. With many contributors
+		// adding files that each define copy-pasted file-scope test/helper symbols
+		// (Eps/Fwd/PosMod/Wrap/Hash01/Banks/...), unity concatenation kept colliding
+		// them as blob composition shifted — an unbounded source of redefinition /
+		// -Wshadow build breaks. A full non-unity build was verified clean (the module
+		// is include-clean, no IWYU regressions), so this is a safe, durable fix:
+		// every .cpp compiles as its own TU, immune to cross-file file-scope clashes.
+		bUseUnity = false;
+
 		// "UMG": the HUD C++ base (UI/Hud/GTCHudWidget) derives from UUserWidget and subscribes to the
 		// W2 player-component change delegates. Public because GTCHudWidget.h includes the UMG UserWidget
 		// header in its public API.
@@ -24,6 +33,12 @@ public class GTC_UE5 : ModuleRules
 		// the loading cover rides the MoviePlayer across the blocking world travel. Private — no
 		// Media/MoviePlayer type crosses this module's public boundary.
 		PrivateDependencyModuleNames.AddRange(new string[] { "Media", "MediaAssets", "MediaUtils", "MoviePlayer" });
+
+		// "DeveloperSettings": UGTCRadialMenuSettings (UI/Radial) derives from
+		// UDeveloperSettings so the radial-menu look/size is tunable live from the Unreal
+		// editor's Project Settings (no rebuild, no in-game console). Private — the
+		// settings type is read only inside this module (the radial Slate widget).
+		PrivateDependencyModuleNames.AddRange(new string[] { "DeveloperSettings" });
 
 		// "Json": engine JSON model used only inside Systems/Save/SaveJson.cpp (FJsonObject /
 		// FJsonSerializer / TJsonReader / TJsonWriter). Private — no engine Json type crosses the

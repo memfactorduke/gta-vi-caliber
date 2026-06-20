@@ -13,6 +13,7 @@ class UStaticMesh;
 class USkeletalMeshComponent;
 class UCameraComponent;
 struct FWeaponFireController;
+struct FWeaponStats;
 
 /**
  * Broadcast each time a shot leaves the barrel, so Blueprints can drive the
@@ -25,6 +26,21 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 
 /** Broadcast when the equipped weapon changes (HUD weapon-name / ammo refresh). */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGTCWeaponChangedSignature, const FString&, WeaponName);
+
+/**
+ * One row of weapon-wheel data: the display name, a one-line blurb for the wheel
+ * hub ("Semi-auto · 12-round mag · 18 dmg"), live ammo, and whether the weapon is
+ * automatic (so the UI can class-colour the slice). UI-agnostic — the player
+ * controller maps this to the radial widget's FGTCRadialItem.
+ */
+struct FGTCWeaponWheelEntry
+{
+    FString Name;
+    FString Blurb;
+    int32 AmmoInMag = 0;
+    int32 Reserve = 0;
+    bool bAutomatic = false;
+};
 
 /**
  * UGTCWeaponComponent — the Wave-3 Unreal adapter that lets the player pawn HOLD
@@ -90,6 +106,24 @@ public:
     UFUNCTION(BlueprintCallable, Category = "GTC|Weapon")
     void GiveDefaultArsenal();
 
+    /** Replace the arsenal with a single named weapon (for an AI loadout). */
+    void SetSingleWeapon(const FWeaponStats& Stats);
+
+    // --- AI aim (camera-less owners: NPCs/police) -----------------------------
+
+    /**
+     * Aim along an explicit WORLD direction instead of an owner camera. Set by an
+     * AI each tick to point its shots at a target; consumed by the firing path
+     * ONLY when the owner has no follow camera (the player's camera always wins,
+     * so this never perturbs player aim). The vector is normalised internally.
+     */
+    UFUNCTION(BlueprintCallable, Category = "GTC|Weapon")
+    void SetAimOverride(const FVector& WorldAimDir);
+
+    /** Drop any AI aim override (fall back to the pawn's eyes view direction). */
+    UFUNCTION(BlueprintCallable, Category = "GTC|Weapon")
+    void ClearAimOverride();
+
     // --- HUD queries ----------------------------------------------------------
 
     UFUNCTION(BlueprintPure, Category = "GTC|Weapon")
@@ -103,6 +137,12 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "GTC|Weapon")
     int32 WeaponCount() const;
+
+    /** Snapshot of every owned weapon for the weapon wheel, in wheel order. */
+    TArray<FGTCWeaponWheelEntry> WeaponWheelEntries() const;
+
+    /** Index of the equipped weapon within WeaponWheelEntries(), or INDEX_NONE. */
+    int32 EquippedWheelIndex() const { return EquippedIndex; }
 
     // --- Cosmetic / HUD events ------------------------------------------------
 
@@ -147,6 +187,11 @@ private:
 
     /** Deterministic-per-instance spread RNG. */
     FRandomStream SpreadRng;
+
+    /** AI aim override: when set on a camera-less owner, shots fly along this world
+     *  direction instead of the pawn's eyes view rotation. */
+    bool bHasAimOverride = false;
+    FVector AimOverrideDir = FVector::ForwardVector;
 
     FWeaponFireController* Equipped() const;
 

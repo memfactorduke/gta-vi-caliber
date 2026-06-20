@@ -25,6 +25,7 @@
 #include "../Health/PlayerHealthModel.h"
 #include "../../World/Interaction/InteractionComponent.h"
 #include "../../Weapons/Component/GTCWeaponComponent.h"
+#include "../../Weapons/Throwables/GTCThrowable.h"
 #include "../../NPC/Appearance/GTCAppearanceSet.h"
 #include "../../Core/GTCGameInstance.h"
 #include "../Stats/PlayerStats.h"
@@ -592,6 +593,19 @@ void AGTCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
             {
                 Imc->MapKey(Fire, EKeys::LeftMouseButton);
             }
+            if (UInputAction* ReloadInput = ReloadAction.LoadSynchronous())
+            {
+                Imc->MapKey(ReloadInput, EKeys::R);
+                Imc->MapKey(ReloadInput, EKeys::Gamepad_FaceButton_Top);
+            }
+            if (UInputAction* Switch = SwitchWeaponAction.LoadSynchronous())
+            {
+                // EquipNext cycle. Mouse wheel + Q on KB&M, DPad-right on gamepad.
+                // (Tab/LB is the radial weapon wheel; kept distinct from quick-cycle.)
+                Imc->MapKey(Switch, EKeys::Q);
+                Imc->MapKey(Switch, EKeys::MouseScrollUp);
+                Imc->MapKey(Switch, EKeys::Gamepad_DPad_Right);
+            }
             if (RuntimeCrouchAction)
             {
                 Imc->MapKey(RuntimeCrouchAction, EKeys::C);
@@ -751,14 +765,30 @@ void AGTCPlayerCharacter::HandleSprintCompleted(const FInputActionValue& /*Value
     bIsSprinting = false;
 }
 
+TArray<AGTCPlayerCharacter::FGTCEmoteInfo> AGTCPlayerCharacter::GetEmoteInfos()
+{
+    // Order MUST match PlayEmote()'s indices and is the order the emote wheel shows.
+    // Glyphs are left empty so the slice renders the name in the stock font (the
+    // shipped Roboto has no colour-emoji table); drop in an emoji-capable font and
+    // fill Glyph to light them up. Descriptions are the hub "brief description".
+    return {
+        { NSLOCTEXT("GTCEmotes", "Wave", "Wave"),
+          NSLOCTEXT("GTCEmotes", "WaveDesc", "A friendly hello"), FString() },
+        { NSLOCTEXT("GTCEmotes", "MiddleFinger", "Middle Finger"),
+          NSLOCTEXT("GTCEmotes", "MiddleFingerDesc", "Flip 'em off"), FString() },
+        { NSLOCTEXT("GTCEmotes", "Piss", "Piss"),
+          NSLOCTEXT("GTCEmotes", "PissDesc", "When you gotta go"), FString() },
+    };
+}
+
 TArray<FText> AGTCPlayerCharacter::GetEmoteNames()
 {
-    // Order MUST match PlayEmote()'s indices and is the order the emote panel shows.
-    return {
-        NSLOCTEXT("GTCEmotes", "Wave", "Wave"),
-        NSLOCTEXT("GTCEmotes", "MiddleFinger", "Middle Finger"),
-        NSLOCTEXT("GTCEmotes", "Piss", "Piss"),
-    };
+    TArray<FText> Names;
+    for (const FGTCEmoteInfo& Info : GetEmoteInfos())
+    {
+        Names.Add(Info.Name);
+    }
+    return Names;
 }
 
 void AGTCPlayerCharacter::PlayEmote(int32 Index)
@@ -883,6 +913,35 @@ void AGTCPlayerCharacter::GTC_MiddleFinger()
 void AGTCPlayerCharacter::GTC_Piss()
 {
     PlayCombatAnim(PissAnim, FName(TEXT("DefaultSlot")));
+}
+
+void AGTCPlayerCharacter::GTC_ThrowGrenade()
+{
+    UWorld* World = GetWorld();
+    if (World == nullptr || FollowCamera == nullptr)
+    {
+        return;
+    }
+    const FVector AimDir = FollowCamera->GetForwardVector();
+    // Spawn just ahead of the camera so it clears the pawn, then lob it.
+    const FVector Origin = FollowCamera->GetComponentLocation() + AimDir * 80.0;
+    AGTCThrowable::SpawnAndThrow(
+        World, Origin, AimDir, this, /*ThrowSpeed cm/s*/ 1500.0,
+        /*FuseSeconds*/ 3.5, /*CookSeconds*/ 0.0, AGTCThrowable::StaticClass());
+}
+
+void AGTCPlayerCharacter::GTC_ThrowMolotov()
+{
+    UWorld* World = GetWorld();
+    if (World == nullptr || FollowCamera == nullptr)
+    {
+        return;
+    }
+    const FVector AimDir = FollowCamera->GetForwardVector();
+    const FVector Origin = FollowCamera->GetComponentLocation() + AimDir * 80.0;
+    AGTCThrowable::SpawnAndThrow(
+        World, Origin, AimDir, this, /*ThrowSpeed cm/s*/ 1300.0,
+        /*FuseSeconds*/ 1.5, /*CookSeconds*/ 0.0, AGTCThrowable::StaticClass(), /*bIncendiary*/ true);
 }
 
 float AGTCPlayerCharacter::TakeDamageRouted(float Amount)

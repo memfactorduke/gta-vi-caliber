@@ -6,7 +6,7 @@ namespace
 {
 	// Deterministic hash -> [0,1). FNV-1a-ish with an avalanche finalizer, matching
 	// the NPC layer's other hashed-but-stable choices (no RNG).
-	double Hash01(int32 Seed)
+	double JitterHash01(int32 Seed)
 	{
 		uint32 H = 2166136261u;
 		const uint32 S = static_cast<uint32>(Seed);
@@ -29,7 +29,7 @@ double FNpcScheduleJitter::HourOffset(int32 Seed, double MaxHours)
 		return 0.0;
 	}
 	// Map [0,1) -> [-MaxHours, +MaxHours).
-	return (Hash01(Seed) * 2.0 - 1.0) * MaxHours;
+	return (JitterHash01(Seed) * 2.0 - 1.0) * MaxHours;
 }
 
 double FNpcScheduleJitter::Apply(double Hour, int32 Seed, double MaxHours)

@@ -181,47 +181,62 @@ void UGTCPlaceRegistrySubsystem::EnsureSeeded(const FVector& Center)
     }
     bSeeded = true; // Mark first so a failed projection can't loop us back in.
 
-    // A believable little district laid out around the town anchor: a couple of
-    // each amenity kind so FindAvailable can spread the crowd, plus several homes
-    // and street hubs (the most-visited kinds). Offsets are in cm; r ~ a few city
-    // blocks. Each is projected onto the NavMesh when one exists so citizens walk
-    // to walkable ground rather than into the surf or a wall.
-    struct FSeed { const TCHAR* Kind; double Angle; double Radius; int32 Capacity; };
-    static const FSeed Seeds[] = {
-        {TEXT("home"),     0.20, 9000.0,  0},
-        {TEXT("home"),     2.40, 11000.0, 0},
-        {TEXT("home"),     4.10, 8000.0,  0},
-        {TEXT("home"),     5.50, 12000.0, 0},
-        {TEXT("office"),   0.90, 6000.0,  0},
-        {TEXT("office"),   3.30, 7000.0,  0},
-        {TEXT("diner"),    1.20, 4500.0,  8},
-        {TEXT("diner"),    4.70, 5200.0,  8},
-        {TEXT("bar"),      2.10, 5000.0,  12},
-        {TEXT("bar"),      5.90, 6300.0,  12},
-        {TEXT("park"),     1.80, 7500.0,  0},
-        {TEXT("gym"),      3.80, 4800.0,  10},
-        {TEXT("restroom"), 0.50, 3500.0,  2},
-        {TEXT("restroom"), 3.10, 4000.0,  2},
-        {TEXT("street"),   1.00, 3000.0,  0},
-        {TEXT("street"),   2.80, 3600.0,  0},
-        {TEXT("street"),   4.40, 3200.0,  0},
-        {TEXT("street"),   6.00, 3800.0,  0},
+    // A whole district's worth of amenities scattered across the WALKABLE MAP, not a
+    // tight ring around the anchor. The spread is the point: when destinations sit a
+    // few hundred metres apart, citizens stream in near the player and then head off
+    // to genuinely distant places — so the city reads as people living their own
+    // lives, not a crowd orbiting whoever's watching. Several of each kind let
+    // FindAvailable fan the crowd out instead of piling everyone onto one spot.
+    struct FKindSeed { const TCHAR* Kind; int32 Count; int32 Capacity; };
+    static const FKindSeed Kinds[] = {
+        {TEXT("home"),     14, 0},
+        {TEXT("office"),    6, 0},
+        {TEXT("diner"),     5, 8},
+        {TEXT("bar"),       4, 12},
+        {TEXT("park"),      3, 0},
+        {TEXT("gym"),       3, 10},
+        {TEXT("restroom"),  5, 2},
+        {TEXT("street"),   24, 0},
     };
 
     UNavigationSystemV1* Nav = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+    // ~350 m: scatter POIs across the whole walkable district, not a bubble around
+    // the anchor, so citizens head off to genuinely distant places. A local constant
+    // (not a UPROPERTY) keeps this a pure-.cpp change Live Coding can hot-patch.
+    const double Spread = 35000.0;
 
-    for (const FSeed& S : Seeds)
+    for (const FKindSeed& K : Kinds)
     {
-        FVector Point = Center + FVector(FMath::Cos(S.Angle) * S.Radius, FMath::Sin(S.Angle) * S.Radius, 0.0);
-        if (Nav)
+        for (int32 i = 0; i < K.Count; ++i)
         {
-            FNavLocation Projected;
-            if (Nav->ProjectPointToNavigation(Point, Projected, FVector(800.0, 800.0, 2000.0)))
+            FVector Point;
+            bool bGotPoint = false;
+
+            // Prefer a real, reachable navmesh point somewhere across the district, so
+            // the POI sits on walkable ground the crowd can actually path to.
+            if (Nav)
             {
-                Point = Projected.Location;
+                FNavLocation Rand;
+                if (Nav->GetRandomReachablePointInRadius(Center, (float)Spread, Rand))
+                {
+                    Point = Rand.Location;
+                    bGotPoint = true;
+                }
             }
+
+            // Fallback (no navmesh): a deterministic scatter keyed off kind+index, so a
+            // navmesh-less map still gets spread-out destinations rather than a stack
+            // on the anchor. Stable across runs (no RNG state touched).
+            if (!bGotPoint)
+            {
+                const uint32 H = HashCombine(GetTypeHash(FName(K.Kind)), GetTypeHash(i * 2654435761u));
+                const double Angle = (static_cast<double>(H % 3600u) / 3600.0) * UE_DOUBLE_TWO_PI;
+                const double Radius = Spread * (0.15 + 0.85 * (static_cast<double>((H / 7u) % 1000u) / 1000.0));
+                Point = Center + FVector(FMath::Cos(Angle) * Radius, FMath::Sin(Angle) * Radius, 0.0);
+            }
+
+            RegisterPlace(FName(K.Kind), Point, K.Capacity);
         }
-        RegisterPlace(FName(S.Kind), Point, S.Capacity);
     }
 }
 

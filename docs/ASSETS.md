@@ -65,6 +65,7 @@ original project work, CC BY 4.0.
 | `Content/Input/IA_Jump.uasset` | Enhanced Input Action: jump (bool) | project contributors | original | CC BY 4.0 |
 | `Content/Input/IA_Interact.uasset` | Enhanced Input Action: interact (bool) | project contributors | original | CC BY 4.0 |
 | `Content/Input/IA_Fire.uasset` | Enhanced Input Action: fire (bool) | project contributors | original | CC BY 4.0 |
+| `Content/Environment/Sky/M_GTCStars.uasset` | Additive unlit night-sky star material; procedural (grid-hashed view direction, no texture), driven by `AGTCWeatherController` scalar params StarOpacity/StarBrightness | project contributors | original | CC BY 4.0 |
 
 *(Append one row per project-authored asset. Path relative to repo root. "Source"
 is `original` or a URL. License must be CC0, CC-BY-4.0, or CC-BY-4.0-compatible.

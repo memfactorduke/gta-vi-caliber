@@ -15,9 +15,9 @@ namespace
 {
     using GtcTest::Eps;
 
-    const FVector Fwd(0, 0, -1);
-    const FVector Right(1, 0, 0);
-    const FVector Up(0, 1, 0);
+    const FVector BallFwd(0, 0, -1);
+    const FVector BallRight(1, 0, 0);
+    const FVector BallUp(0, 1, 0);
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -26,8 +26,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FBallisticsZeroSpreadTest::RunTest(const FString& Parameters)
 {
-    const FVector Dir = FBallistics::SpreadDirection(Fwd, Right, Up, FVector2D(1, 1), 0.0);
-    TestTrue(TEXT("zero spread returns forward"), Dir.Equals(Fwd, Eps));
+    const FVector Dir = FBallistics::SpreadDirection(BallFwd, BallRight, BallUp, FVector2D(1, 1), 0.0);
+    TestTrue(TEXT("zero spread returns forward"), Dir.Equals(BallFwd, Eps));
     return true;
 }
 
@@ -37,8 +37,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FBallisticsZeroSampleTest::RunTest(const FString& Parameters)
 {
-    const FVector Dir = FBallistics::SpreadDirection(Fwd, Right, Up, FVector2D::ZeroVector, 0.1);
-    TestTrue(TEXT("zero sample returns forward"), Dir.Equals(Fwd, Eps));
+    const FVector Dir = FBallistics::SpreadDirection(BallFwd, BallRight, BallUp, FVector2D::ZeroVector, 0.1);
+    TestTrue(TEXT("zero sample returns forward"), Dir.Equals(BallFwd, Eps));
     return true;
 }
 
@@ -48,7 +48,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FBallisticsNormalizedTest::RunTest(const FString& Parameters)
 {
-    const FVector Dir = FBallistics::SpreadDirection(Fwd, Right, Up, FVector2D(0.7, -0.3), 0.15);
+    const FVector Dir = FBallistics::SpreadDirection(BallFwd, BallRight, BallUp, FVector2D(0.7, -0.3), 0.15);
     TestEqual(TEXT("result is unit length"), Dir.Length(), 1.0, Eps);
     return true;
 }
@@ -60,7 +60,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FBallisticsPushesTowardAxisTest::RunTest(const FString& Parameters)
 {
     // A positive x sample should tilt the shot to +x.
-    const FVector Dir = FBallistics::SpreadDirection(Fwd, Right, Up, FVector2D(1, 0), 0.1);
+    const FVector Dir = FBallistics::SpreadDirection(BallFwd, BallRight, BallUp, FVector2D(1, 0), 0.1);
     TestTrue(TEXT("dir.x > 0"), Dir.X > 0.0);
     return true;
 }
@@ -71,8 +71,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FBallisticsWiderTiltsFurtherTest::RunTest(const FString& Parameters)
 {
-    const FVector Narrow = FBallistics::SpreadDirection(Fwd, Right, Up, FVector2D(1, 0), 0.05);
-    const FVector Wide = FBallistics::SpreadDirection(Fwd, Right, Up, FVector2D(1, 0), 0.15);
+    const FVector Narrow = FBallistics::SpreadDirection(BallFwd, BallRight, BallUp, FVector2D(1, 0), 0.05);
+    const FVector Wide = FBallistics::SpreadDirection(BallFwd, BallRight, BallUp, FVector2D(1, 0), 0.15);
     TestTrue(TEXT("wide.x > narrow.x"), Wide.X > Narrow.X);
     return true;
 }

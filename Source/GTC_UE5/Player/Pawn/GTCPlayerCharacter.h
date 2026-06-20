@@ -191,13 +191,38 @@ public:
     UFUNCTION(Exec)
     void GTC_Piss();
 
+    /** Lob a fragmentation grenade from the camera: a short-fused throwable that
+     *  arcs, bounces, and detonates (AGTCThrowable over FThrowable/FExplosionModel). */
+    UFUNCTION(Exec)
+    void GTC_ThrowGrenade();
+
+    /** Lob a molotov from the camera: a throwable that detonates and leaves a
+     *  spreading fire (AGTCThrowable incendiary + AGTCFire). */
+    UFUNCTION(Exec)
+    void GTC_ThrowMolotov();
+
     /** Play an emote by its index in GetEmoteNames() (the order the emote panel shows).
      *  The single entry point the emote panel calls; out-of-range is a safe no-op. */
     UFUNCTION(BlueprintCallable, Category = "GTC|Player|Anim")
     void PlayEmote(int32 Index);
 
-    /** Display names of the player's emotes, in panel order. Drives the one-key emote
-     *  panel (SGTCEmoteWheel) so the picker and PlayEmote stay in sync from one list. */
+    /** One emote's wheel data: display name, a one-line description for the wheel hub
+     *  (the "center description"), and a short glyph drawn on the slice (optional;
+     *  empty renders the name alone, font-safe). Index order matches PlayEmote(). */
+    struct FGTCEmoteInfo
+    {
+        FText Name;
+        FText Description;
+        FString Glyph;
+    };
+
+    /** Every emote for the wheel, in PlayEmote() index order. Single source of truth:
+     *  GetEmoteNames() is derived from it so the picker, hub text, and PlayEmote can
+     *  never drift apart. Adding an emote here (plus its clip) lights up the wheel. */
+    static TArray<FGTCEmoteInfo> GetEmoteInfos();
+
+    /** Display names of the player's emotes, in panel order. Derived from
+     *  GetEmoteInfos() so the picker and PlayEmote stay in sync from one list. */
     static TArray<FText> GetEmoteNames();
 
 protected:
