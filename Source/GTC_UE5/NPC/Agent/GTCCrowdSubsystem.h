@@ -225,8 +225,9 @@ public:
         const FVector& From, double Radius, const AGTCCitizen* Exclude, TArray<FVector>& OutLocations) const;
 
     /** Cars within Radius that the pedestrian-traffic reflex should consider.
-     *  No vehicle registry exists yet — returns empty; the traffic/vehicle layer
-     *  will feed this (the hook is wired so citizens already dodge once it does). */
+     *  Forwards to UGTCTrafficSubsystem::QueryCars — the ambient traffic that now
+     *  drives the real road graph — so citizens dodge actual cars (empty only when
+     *  no traffic subsystem is present). */
     void GatherNearbyCars(const FVector& From, double Radius, TArray<FPedestrianTraffic::FCar>& OutCars) const;
 
     /** Nearest panicking (fleeing) citizen within Radius of From, for contagion. */
