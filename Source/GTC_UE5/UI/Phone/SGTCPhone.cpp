@@ -881,10 +881,10 @@ TSharedRef<SWidget> SGTCPhone::BodyBrowser()
 {
 	struct FPage { FString Url; FString Title; TArray<FString> Lines; };
 	static const TArray<FPage> Pages = {
-		{ TEXT("eyefind.io"), TEXT("Eyefind"), { TEXT("The web, the way you like it."), TEXT("• Caliber Isles news"), TEXT("• Caliber Isles weather"), TEXT("• Maps & traffic") } },
-		{ TEXT("weazel.news"), TEXT("Weazel News"), { TEXT("BREAKING: Marina heist suspects at large."), TEXT("City council debates new boardwalk."), TEXT("Heatwave grips the Isles this weekend.") } },
-		{ TEXT("calibermotors.com"), TEXT("Caliber Motors"), { TEXT("The all-new Comet GT."), TEXT("0-60 in 3.1s. Lease from $899/mo."), TEXT("Book a test drive today.") } },
-		{ TEXT("bleeter.com"), TEXT("Bleeter"), { TEXT("@vicelife: sunset at the pier 🌅"), TEXT("@calibrpd: drive safe out there."), TEXT("@lena_m: who's at the marina tonight?") } },
+		{ TEXT("findwave.io"), TEXT("Findwave"), { TEXT("The web, the way you like it."), TEXT("• Caliber Isles news"), TEXT("• Caliber Isles weather"), TEXT("• Maps & traffic") } },
+		{ TEXT("bayline.news"), TEXT("Bayline News"), { TEXT("BREAKING: Marina heist suspects at large."), TEXT("City council debates new boardwalk."), TEXT("Heatwave grips the Isles this weekend.") } },
+		{ TEXT("calibermotors.com"), TEXT("Caliber Motors"), { TEXT("The all-new Caliber GT."), TEXT("0-60 in 3.1s. Lease from $899/mo."), TEXT("Book a test drive today.") } },
+		{ TEXT("squawk.com"), TEXT("Squawk"), { TEXT("@baylife: sunset at the pier 🌅"), TEXT("@calibrpd: drive safe out there."), TEXT("@lena_m: who's at the marina tonight?") } },
 	};
 	BrowserPage = FMath::Clamp(BrowserPage, 0, Pages.Num()-1);
 	const FPage& P = Pages[BrowserPage];
