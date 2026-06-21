@@ -39,5 +39,5 @@ bool FTileStreamPriority::IsMoreUrgent(
 	double LookAheadSeconds)
 {
 	return EffectiveDistance(CameraPos, Velocity, TileCenterA, LookAheadSeconds)
-		<= EffectiveDistance(CameraPos, Velocity, TileCenterB, LookAheadSeconds);
+		< EffectiveDistance(CameraPos, Velocity, TileCenterB, LookAheadSeconds);
 }

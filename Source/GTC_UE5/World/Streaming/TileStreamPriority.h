@@ -55,9 +55,10 @@ struct GTC_UE5_API FTileStreamPriority
 	static double AlongTrack(const FVector2D& CameraPos, const FVector2D& Velocity, const FVector2D& TileCenter);
 
 	/**
-	 * True if tile A is at least as urgent to stream as tile B (A's effective
-	 * distance <= B's). A strict-weak-ordering comparator the priority queue can
-	 * sort with so the most urgent tiles come first.
+	 * True if tile A is strictly more urgent to stream than tile B (A's effective
+	 * distance < B's). A strict-weak-ordering comparator the priority queue can
+	 * sort with so the most urgent tiles come first — the strict `<` keeps it
+	 * irreflexive (a tile is never more urgent than itself), as a sort requires.
 	 */
 	static bool IsMoreUrgent(
 		const FVector2D& CameraPos,
