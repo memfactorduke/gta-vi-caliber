@@ -132,6 +132,17 @@ bool FTileStreamPriorityIsMoreUrgentTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("nearer over farther"),
 		FTileStreamPriority::IsMoreUrgent(Cam, Vel, FVector2D(12.0, 0.0), FVector2D(20.0, 0.0), Look));
 
+	// Strict-weak-ordering: the comparator must be irreflexive so a sort can use it.
+	// A tile is never strictly more urgent than itself (equal effective distance).
+	const FVector2D Tile(12.0, 0.0);
+	TestFalse(TEXT("equal-distance tile is not more urgent than itself"),
+		FTileStreamPriority::IsMoreUrgent(Cam, Vel, Tile, Tile, Look));
+	// And two distinct tiles at the same effective distance tie both ways to false.
+	TestFalse(TEXT("mirror tiles at equal distance do not outrank each other (A,B)"),
+		FTileStreamPriority::IsMoreUrgent(Cam, Vel, FVector2D(10.0, 5.0), FVector2D(10.0, -5.0), Look));
+	TestFalse(TEXT("mirror tiles at equal distance do not outrank each other (B,A)"),
+		FTileStreamPriority::IsMoreUrgent(Cam, Vel, FVector2D(10.0, -5.0), FVector2D(10.0, 5.0), Look));
+
 	return true;
 }
 
