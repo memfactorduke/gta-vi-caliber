@@ -9,9 +9,11 @@
 #          UE="/path/to/UE_5.7" tools/check.sh
 #
 # Notes:
-#  - Runs a clean default (unity) build, the same configuration CI/packaging use,
-#    so unity-build ODR collisions are caught (they do not show in incremental
-#    adaptive-unity dev builds).
+#  - Runs a clean, full build. By default UnrealBuildTool uses a "unity" (a.k.a.
+#    jumbo/unified) compile that concatenates many .cpp files into one translation
+#    unit to build faster. This is a UBT term, NOT the Unity engine. A clean full
+#    build is the configuration CI/packaging use, so unity-merge ODR collisions are
+#    caught here (they do not show in incremental adaptive-unity dev builds).
 #  - The editor runs head-less with -nullrhi (no GPU), so no shaders compile.
 #  - Requires the project's plugins to be installed (e.g. CesiumForUnreal from
 #    the .uproject MarketplaceURL); a missing required plugin fails the build.
