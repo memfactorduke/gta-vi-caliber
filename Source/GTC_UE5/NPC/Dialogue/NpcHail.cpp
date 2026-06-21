@@ -1,17 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "NpcHail.h"
+#include "../NpcSeqMath.h"
 
 namespace
 {
-	int32 PosMod(int32 Value, int32 Modulus)
-	{
-		if (Modulus <= 0)
-		{
-			return 0;
-		}
-		return ((Value % Modulus) + Modulus) % Modulus;
-	}
+	using GtcSeq::PosMod;
 
 	// Role -> player-directed hail lines. Keyed by FNpcOccupation::RoleFor tokens.
 	// The mime has no bank (stays silent); a non-job citizen never reaches here.
@@ -72,6 +66,47 @@ namespace
 				TEXT("Forecast for you: bright, chance of greatness."),
 				TEXT("Humid out — stay hydrated. Back to you."),
 				TEXT("Live from this corner: you're looking good!"),
+			}},
+			// Wave 2 trades.
+			{ TEXT("lifeguard"), {
+				TEXT("Stay where I can see you, swimmer."),
+				TEXT("Tide's turning, keep it knee-deep, yeah?"),
+				TEXT("Reapply that sunscreen. I'm watching."),
+			}},
+			{ TEXT("electrician"), {
+				TEXT("Mind the wire, this sign bites back."),
+				TEXT("Give it a sec, the 'O' always flickers."),
+				TEXT("Don't touch that. Trust me, don't."),
+			}},
+			{ TEXT("courier"), {
+				TEXT("Order up? No? Then mind the scooter."),
+				TEXT("Heads up, coming through, food's getting cold."),
+				TEXT("Know a faster way to Fourth? Asking for a meal."),
+			}},
+			{ TEXT("caricaturist"), {
+				TEXT("Hold still, I'll make your nose famous."),
+				TEXT("Ten bucks, two minutes, one unforgettable chin."),
+				TEXT("That face? That's a portrait waiting to happen."),
+			}},
+			{ TEXT("tour_guide"), {
+				TEXT("See that cornice? Pure 1937 pastel glory."),
+				TEXT("Step this way, history's on the next block."),
+				TEXT("Fun fact: everything here is older than it looks."),
+			}},
+			{ TEXT("fishmonger"), {
+				TEXT("Fresh catch, half price, ignore the pelican."),
+				TEXT("You want it on ice? Course you do."),
+				TEXT("Best fish on the strip, and that bird agrees."),
+			}},
+			{ TEXT("paramedic"), {
+				TEXT("Easy on the curb, I'd hate to circle back."),
+				TEXT("You good? Breathing? Great, carry on."),
+				TEXT("On wheels here, give me a lane, friend."),
+			}},
+			{ TEXT("bartender"), {
+				TEXT("First one's strong, second one's a duet."),
+				TEXT("Grab a stool, your song's already cued."),
+				TEXT("Water's free, regrets are extra."),
 			}},
 		};
 		return B;

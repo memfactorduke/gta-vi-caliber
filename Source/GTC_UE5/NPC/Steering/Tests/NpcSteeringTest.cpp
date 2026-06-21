@@ -27,7 +27,7 @@ using GtcTest::Eps;
 namespace
 {
     // The oracle asserts speed magnitudes with `absf(len - x) < 0.001`.
-    constexpr double SpeedEps = 1e-3;
+    using GtcTest::SpeedEps;
 }
 
 // --- seek -------------------------------------------------------------------

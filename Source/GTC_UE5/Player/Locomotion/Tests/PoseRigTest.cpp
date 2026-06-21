@@ -20,7 +20,6 @@ namespace
 {
     constexpr double PoseRigHalfPi = UE_DOUBLE_HALF_PI;
     constexpr double PoseRigPi = UE_DOUBLE_PI;
-    constexpr double PoseRigLn2 = 0.69314718055994530942;
 }
 
 // --- ApproachWeight ---------------------------------------------------------

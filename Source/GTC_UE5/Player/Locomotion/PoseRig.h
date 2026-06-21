@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 
+// ln(2), shared by FPoseRig impl + its test (inline => ODR-safe across unity blobs).
+inline constexpr double PoseRigLn2 = 0.69314718055994530942;
+
 /**
  * Pure full-body rig / IK math layered on top of FLocomotion.
  *

@@ -1,19 +1,13 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "NpcOccupation.h"
+#include "../NpcSeqMath.h"
 
 namespace
 {
 	// Positive modulo so a negative or large seed still indexes a real action
 	// (mirrors Godot posmod, as used across FBarkPool / FNpcIdleAction).
-	int32 PosMod(int32 Value, int32 Modulus)
-	{
-		if (Modulus <= 0)
-		{
-			return 0;
-		}
-		return ((Value % Modulus) + Modulus) % Modulus;
-	}
+	using GtcSeq::PosMod;
 
 	// Generic "on the clock" business for a citizen whose job has no specific bank.
 	const TArray<FName>& GenericWorkBank()

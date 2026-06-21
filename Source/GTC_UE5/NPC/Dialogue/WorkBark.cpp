@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "WorkBark.h"
+#include "../NpcSeqMath.h"
 
 namespace
 {
@@ -114,14 +115,7 @@ namespace
 		return B;
 	}
 
-	int32 PosMod(int32 Value, int32 Modulus)
-	{
-		if (Modulus <= 0)
-		{
-			return 0;
-		}
-		return ((Value % Modulus) + Modulus) % Modulus;
-	}
+	using GtcSeq::PosMod;
 }
 
 int32 FWorkBark::Count(FName Action)
