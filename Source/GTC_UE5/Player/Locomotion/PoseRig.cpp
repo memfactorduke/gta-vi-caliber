@@ -9,7 +9,6 @@ namespace
     // ln(2): the exact half-life constant shared by both smoothing primitives.
     // Written here rather than at file scope of the header so a shared unity build
     // can never collide on the symbol.
-    constexpr double PoseRigLn2 = 0.69314718055994530942;
 
     /** Wrap an angle into (-PI, PI] for shortest-arc differences (matches the
      *  half-open wrap FAnimRouter uses for facing). */

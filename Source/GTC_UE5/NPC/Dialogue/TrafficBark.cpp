@@ -1,17 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TrafficBark.h"
+#include "../NpcSeqMath.h"
 
 namespace
 {
-	int32 PosMod(int32 Value, int32 Modulus)
-	{
-		if (Modulus <= 0)
-		{
-			return 0;
-		}
-		return ((Value % Modulus) + Modulus) % Modulus;
-	}
+	using GtcSeq::PosMod;
 
 	const TArray<FString>& GenericBank()
 	{

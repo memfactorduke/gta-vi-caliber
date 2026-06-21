@@ -18,11 +18,7 @@ using GtcTest::Eps;
 
 namespace
 {
-    bool VecNear(const FVector& A, const FVector& B, double Tol = 1e-4)
-    {
-        return FMath::Abs(A.X - B.X) <= Tol && FMath::Abs(A.Y - B.Y) <= Tol
-            && FMath::Abs(A.Z - B.Z) <= Tol;
-    }
+    using GtcTest::VecNear;
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(

@@ -1,14 +1,12 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ChatBark.h"
+#include "../NpcSeqMath.h"
 
 namespace
 {
     // Godot posmod(index, n): always non-negative in [0, n).
-    int32 Wrap(int32 Index, int32 N)
-    {
-        return ((Index % N) + N) % N;
-    }
+    using GtcSeq::Wrap;
 
     // Generic small talk — what anyone might say. Used directly, and as the fallback
     // for any voice without its own bank.
