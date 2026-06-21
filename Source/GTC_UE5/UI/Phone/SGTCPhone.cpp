@@ -664,7 +664,7 @@ TSharedRef<SWidget> SGTCPhone::BodyClock()
 		+ SHorizontalBox::Slot().FillWidth(1.f).Padding(4.f,0.f,0.f,0.f)[ TimeBtn(LOCTEXT("night","Night"), 0.f) ]
 	];
 
-	const TCHAR* Cities[] = { TEXT("Vice City"), TEXT("Los Santos"), TEXT("Liberty City"), TEXT("London") };
+	const TCHAR* Cities[] = { TEXT("Caliber Isles"), TEXT("Bayshore"), TEXT("Northpoint"), TEXT("London") };
 	const int Off[] = { 0, -3, 0, 5 };
 	TSharedRef<SVerticalBox> World = SNew(SVerticalBox);
 	for (int i = 0; i < 4; ++i)
@@ -881,7 +881,7 @@ TSharedRef<SWidget> SGTCPhone::BodyBrowser()
 {
 	struct FPage { FString Url; FString Title; TArray<FString> Lines; };
 	static const TArray<FPage> Pages = {
-		{ TEXT("eyefind.io"), TEXT("Eyefind"), { TEXT("The web, the way you like it."), TEXT("• Caliber Isles news"), TEXT("• Vice City weather"), TEXT("• Maps & traffic") } },
+		{ TEXT("eyefind.io"), TEXT("Eyefind"), { TEXT("The web, the way you like it."), TEXT("• Caliber Isles news"), TEXT("• Caliber Isles weather"), TEXT("• Maps & traffic") } },
 		{ TEXT("weazel.news"), TEXT("Weazel News"), { TEXT("BREAKING: Marina heist suspects at large."), TEXT("City council debates new boardwalk."), TEXT("Heatwave grips the Isles this weekend.") } },
 		{ TEXT("calibermotors.com"), TEXT("Caliber Motors"), { TEXT("The all-new Comet GT."), TEXT("0-60 in 3.1s. Lease from $899/mo."), TEXT("Book a test drive today.") } },
 		{ TEXT("bleeter.com"), TEXT("Bleeter"), { TEXT("@vicelife: sunset at the pier 🌅"), TEXT("@calibrpd: drive safe out there."), TEXT("@lena_m: who's at the marina tonight?") } },
@@ -915,7 +915,7 @@ TSharedRef<SWidget> SGTCPhone::BodyBrowser()
 
 TSharedRef<SWidget> SGTCPhone::BodyMusic()
 {
-	const TCHAR* Stations[] = { TEXT("Flylo FM"), TEXT("Vice City 99"), TEXT("Channel X"), TEXT("Radio Mirror Park"), TEXT("Non-Stop-Pop") };
+	const TCHAR* Stations[] = { TEXT("Sunfire FM"), TEXT("Caliber 99"), TEXT("Riptide Radio"), TEXT("Boardwalk FM"), TEXT("Neon Pop") };
 	const TCHAR* NowPlaying[] = { TEXT("Neon Tides — The Calibers"), TEXT("Sunset Drive — Marisol"), TEXT("Static Bloom — VHS Kid"), TEXT("Palm Fever — Lena M."), TEXT("Hold The Line — Dusklight") };
 	MusicStation = FMath::Clamp(MusicStation, 0, 4);
 
