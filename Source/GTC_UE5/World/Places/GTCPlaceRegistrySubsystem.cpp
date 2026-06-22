@@ -200,6 +200,8 @@ void UGTCPlaceRegistrySubsystem::EnsureSeeded(const FVector& Center)
         {TEXT("bar"),      5.90, 6300.0,  12},
         {TEXT("park"),     1.80, 7500.0,  0},
         {TEXT("gym"),      3.80, 4800.0,  10},
+        {TEXT("shop"),     2.60, 5500.0,  0},
+        {TEXT("shop"),     5.10, 6100.0,  0},
         {TEXT("restroom"), 0.50, 3500.0,  2},
         {TEXT("restroom"), 3.10, 4000.0,  2},
         {TEXT("street"),   1.00, 3000.0,  0},
