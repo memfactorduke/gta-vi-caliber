@@ -26,50 +26,57 @@ namespace
         };
         return {
             Make(TEXT("early_bird_office"), TEXT("Early-Bird Office Worker"), {
-                {6.0, 9.0,  TEXT("goof_off"),  TEXT("gym")},
-                {9.0, 12.5, TEXT("work"),      TEXT("office")},
+                {6.0, 7.0,  TEXT("loiter"),    TEXT("home")},
+                {7.0, 8.0,  TEXT("goof_off"),  TEXT("gym")},
+                {8.0, 8.5,  TEXT("commute"),   TEXT("street")},
+                {8.5, 12.5, TEXT("work"),      TEXT("office")},
                 {12.5, 13.5, TEXT("eat"),      TEXT("diner")},
                 {13.5, 17.5, TEXT("work"),     TEXT("office")},
-                {17.5, 19.0, TEXT("socialize"), TEXT("bar")},
-                {19.0, 22.0, TEXT("loiter"),   TEXT("home")},
-                {22.0, 6.0, TEXT("sleep"),     TEXT("home")},
+                {17.5, 18.0, TEXT("commute"),  TEXT("street")},
+                {18.0, 19.5, TEXT("socialize"), TEXT("bar")},
+                {19.5, 22.5, TEXT("loiter"),   TEXT("home")},
+                {22.5, 6.0, TEXT("sleep"),     TEXT("home")},
             }),
             Make(TEXT("night_owl_bartender"), TEXT("Night-Owl Bartender"), {
-                {4.0, 13.0, TEXT("sleep"),     TEXT("home")},
-                {13.0, 16.0, TEXT("loiter"),   TEXT("home")},
-                {16.0, 18.0, TEXT("goof_off"), TEXT("gym")},
-                {18.0, 21.0, TEXT("eat"),      TEXT("diner")},
+                {4.0, 12.0, TEXT("sleep"),     TEXT("home")},
+                {12.0, 13.0, TEXT("eat"),      TEXT("diner")},
+                {13.0, 15.0, TEXT("loiter"),   TEXT("home")},
+                {15.0, 16.5, TEXT("goof_off"), TEXT("gym")},
+                {16.5, 20.5, TEXT("loiter"),   TEXT("home")},
+                {20.5, 21.0, TEXT("commute"),  TEXT("street")},
                 {21.0, 4.0, TEXT("work"),      TEXT("bar")},
             }),
             Make(TEXT("cafe_freelancer"), TEXT("Cafe Freelancer"), {
-                {8.0, 9.5,  TEXT("goof_off"),  TEXT("park")},
-                {9.5, 13.0, TEXT("work"),      TEXT("diner")},
+                {7.0, 8.5,  TEXT("goof_off"),  TEXT("park")},
+                {8.5, 13.0, TEXT("work"),      TEXT("diner")},
                 {13.0, 14.0, TEXT("eat"),      TEXT("diner")},
                 {14.0, 17.0, TEXT("work"),     TEXT("diner")},
                 {17.0, 19.0, TEXT("goof_off"), TEXT("gym")},
                 {19.0, 23.0, TEXT("socialize"), TEXT("bar")},
-                {23.0, 8.0, TEXT("sleep"),     TEXT("home")},
+                {23.0, 7.0, TEXT("sleep"),     TEXT("home")},
             }),
             Make(TEXT("park_retiree"), TEXT("Park-Bench Retiree"), {
-                {6.0, 9.0,  TEXT("loiter"),    TEXT("park")},
+                {6.5, 9.0,  TEXT("loiter"),    TEXT("park")},
                 {9.0, 12.0, TEXT("goof_off"),  TEXT("park")},
                 {12.0, 13.0, TEXT("eat"),      TEXT("diner")},
-                {13.0, 17.0, TEXT("loiter"),   TEXT("park")},
-                {17.0, 20.0, TEXT("socialize"), TEXT("bar")},
-                {20.0, 6.0, TEXT("sleep"),     TEXT("home")},
+                {13.0, 15.0, TEXT("loiter"),   TEXT("home")},
+                {15.0, 18.0, TEXT("loiter"),   TEXT("park")},
+                {18.0, 20.0, TEXT("socialize"), TEXT("bar")},
+                {20.0, 6.5, TEXT("sleep"),     TEXT("home")},
             }),
             Make(TEXT("campus_student"), TEXT("Campus Student"), {
-                {8.0, 9.0,  TEXT("commute"),   TEXT("street")},
-                {9.0, 12.0, TEXT("work"),      TEXT("office")},
+                {8.0, 8.5,  TEXT("commute"),   TEXT("street")},
+                {8.5, 12.0, TEXT("work"),      TEXT("office")},
                 {12.0, 13.0, TEXT("eat"),      TEXT("diner")},
                 {13.0, 16.0, TEXT("work"),     TEXT("office")},
                 {16.0, 18.0, TEXT("goof_off"), TEXT("gym")},
-                {18.0, 24.0, TEXT("socialize"), TEXT("bar")},
+                {18.0, 19.0, TEXT("eat"),      TEXT("diner")},
+                {19.0, 24.0, TEXT("socialize"), TEXT("bar")},
                 {0.0, 8.0,  TEXT("sleep"),     TEXT("home")},
             }),
             Make(TEXT("remote_homebody"), TEXT("Remote Homebody"), {
-                {7.0, 10.0, TEXT("loiter"),    TEXT("home")},
-                {10.0, 12.0, TEXT("work"),     TEXT("home")},
+                {7.0, 9.0,  TEXT("loiter"),    TEXT("home")},
+                {9.0, 12.0, TEXT("work"),      TEXT("home")},
                 {12.0, 13.0, TEXT("eat"),      TEXT("home")},
                 {13.0, 17.0, TEXT("work"),     TEXT("home")},
                 {17.0, 19.0, TEXT("goof_off"), TEXT("park")},
@@ -90,19 +97,23 @@ bool UGTCRoutineSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType
 void UGTCRoutineSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    // Pick up any hand/AI-authored bank sitting on disk so edits survive a restart.
-    LoadBank(FString());
-    // No bank on disk yet -> seed the built-in "real person" days so a fresh world
-    // already has individual routines (and SaveBank can write them out for editing).
-    if (Routines.Num() == 0)
+    // Resolution order, most-specific first:
+    //   1. the user's runtime bank (Saved/Routines) — survives + overrides edits,
+    //   2. the repo-tracked, hand/AI-editable bank (Config/Routines) shipped with the
+    //      project, else
+    //   3. the built-in "real person" days, so a fresh world is never empty.
+    if (LoadBank(NpcRoutineJson::DefaultBankPath()))
     {
-        Routines = GtcBuildDefaultRoutines();
-        UE_LOG(LogGtcRoutine, Log, TEXT("No routine bank on disk; seeded %d built-in routines."), Routines.Num());
+        UE_LOG(LogGtcRoutine, Log, TEXT("Loaded %d routine(s) from the user bank (Saved/Routines)."), Routines.Num());
+    }
+    else if (LoadBank(NpcRoutineJson::ConfigBankPath()))
+    {
+        UE_LOG(LogGtcRoutine, Log, TEXT("Loaded %d routine(s) from the shipped bank (Config/Routines)."), Routines.Num());
     }
     else
     {
-        UE_LOG(LogGtcRoutine, Log, TEXT("Routine store ready (%d routine%s loaded from disk)."),
-            Routines.Num(), Routines.Num() == 1 ? TEXT("") : TEXT("s"));
+        Routines = GtcBuildDefaultRoutines();
+        UE_LOG(LogGtcRoutine, Log, TEXT("No routine bank on disk; seeded %d built-in routines."), Routines.Num());
     }
 }
 
@@ -268,7 +279,9 @@ bool UGTCRoutineSubsystem::LoadBank(const FString& AbsolutePath)
 
 bool UGTCRoutineSubsystem::ReloadDefaultBank()
 {
-    return LoadBank(FString());
+    // Re-read the user bank first, then the shipped Config bank — same order as Initialize,
+    // so a hand/AI edit to either file is picked up live by GTC.Routine.Reload.
+    return LoadBank(NpcRoutineJson::DefaultBankPath()) || LoadBank(NpcRoutineJson::ConfigBankPath());
 }
 
 // --- Console surface: GTC.Routine.* ------------------------------------------
@@ -425,6 +438,19 @@ namespace
                 if (!Sub) { return; }
                 const bool bOk = Sub->SaveBank(Args.IsValidIndex(0) ? Args[0] : FString());
                 UE_LOG(LogGtcRoutine, Display, TEXT("SaveBank -> %s"), bOk ? TEXT("ok") : TEXT("FAILED"));
+            }));
+
+    FAutoConsoleCommandWithWorldAndArgs GRoutineDumpCmd(
+        TEXT("GTC.Routine.Dump"),
+        TEXT("GTC.Routine.Dump — print the whole bank as JSON (machine-readable read for AI/MCP via the output log)"),
+        FConsoleCommandWithWorldAndArgsDelegate::CreateLambda(
+            [](const TArray<FString>& Args, UWorld* World)
+            {
+                UGTCRoutineSubsystem* Sub = GtcResolveRoutineEditor(World);
+                if (!Sub) { return; }
+                // Single-line, fenced markers so an MCP log scrape can extract it cleanly.
+                UE_LOG(LogGtcRoutine, Display, TEXT("GTC_ROUTINE_BANK_BEGIN %s GTC_ROUTINE_BANK_END"),
+                    *NpcRoutineJson::BankToJson(Sub->GetRoutines()));
             }));
 
     FAutoConsoleCommandWithWorldAndArgs GRoutineReloadCmd(

@@ -34,8 +34,12 @@ namespace NpcRoutineJson
     /** The default on-disk location for a single routine: SavedDir/Routines/<id>.routine.json */
     GTC_UE5_API FString DefaultPathFor(const FString& RoutineId);
 
-    /** The default bank location: SavedDir/Routines/routines.bank.json */
+    /** The default (runtime, user-written) bank location: SavedDir/Routines/routines.bank.json */
     GTC_UE5_API FString DefaultBankPath();
+
+    /** The repo-tracked, hand/AI-editable bank that ships with the project and is
+     *  auto-loaded when no user bank exists: ConfigDir/Routines/routines.bank.json */
+    GTC_UE5_API FString ConfigBankPath();
 
     // --- single routine --------------------------------------------------------
     GTC_UE5_API FString RoutineToJson(const FNpcRoutine& Routine);

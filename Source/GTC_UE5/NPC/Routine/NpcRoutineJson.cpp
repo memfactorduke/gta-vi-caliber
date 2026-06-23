@@ -79,6 +79,11 @@ FString NpcRoutineJson::DefaultBankPath()
     return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Routines"), TEXT("routines.bank.json"));
 }
 
+FString NpcRoutineJson::ConfigBankPath()
+{
+    return FPaths::Combine(FPaths::ProjectConfigDir(), TEXT("Routines"), TEXT("routines.bank.json"));
+}
+
 FString NpcRoutineJson::RoutineToJson(const FNpcRoutine& Routine)
 {
     TSharedRef<FGtcJsonObject> Root = MakeShared<FGtcJsonObject>();

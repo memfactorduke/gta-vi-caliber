@@ -37,9 +37,16 @@ GTC.Routine.Reload                                re-read the bank file (hot-rel
 ```
 
 ### 2. On disk — JSON (human + AI)
-`GTC.Routine.SaveBank` writes to `<Project>/Saved/Routines/routines.bank.json`.
-Edit it (or a single `<id>.routine.json`) in any text editor or from an AI/MCP file
-write, then `GTC.Routine.Reload`. Format:
+Two banks are read on startup, most-specific first, then the built-in seeds:
+1. `<Project>/Saved/Routines/routines.bank.json` — the **user/runtime** bank
+   (`GTC.Routine.SaveBank` writes here; survives + overrides).
+2. `<Project>/Config/Routines/routines.bank.json` — the **repo-tracked, shipped**
+   bank, hand/AI-editable as plain text and committed with the project. This is the
+   file to edit when you want routines to ship in the build.
+3. built-in defaults (in code) if neither file exists.
+
+Edit either file (or a single `<id>.routine.json`) in any text editor or from an AI
+file write, then `GTC.Routine.Reload` to apply it live. Format:
 
 ```json
 { "format": "gtc_routine", "version": 1,
@@ -69,6 +76,22 @@ Save / Save Bank / Reload, or assign a routine to a citizen seed. The readout ec
 each result. It drives the exact same live bank as the console and JSON, so a human
 gets a point-and-click editor without losing the text/AI paths. (Needs a running
 game/PIE viewport to display.)
+
+### MCP loop (AI editing a running game, no filesystem needed)
+The Unreal MCP drives the editor with two of its tools — run a console command, and
+read the output log — which is enough for a full read-modify-write cycle:
+1. **Read** the live bank: exec `GTC.Routine.Dump`, then scrape the log line between
+   the `GTC_ROUTINE_BANK_BEGIN … GTC_ROUTINE_BANK_END` markers — it's the whole bank
+   as one-line JSON.
+2. **Modify** it: edit that JSON (change blocks, add a routine), then either write it
+   to `Config/Routines/routines.bank.json` (if the AI has file access) or push it field
+   by field via the console (`GTC.Routine.New`, `GTC.Routine.AddBlock`, …).
+3. **Apply**: exec `GTC.Routine.Reload` (re-reads the bank files) — or the per-command
+   edits apply immediately. Citizens pick up the change at their next `Replan` (~1.5s).
+
+This needs no custom MCP server: the existing `GTC.Routine.*` console surface + the
+output log + the JSON files ARE the machine interface. (A dedicated MCP tool would
+mean editing the vendored MCP plugin, which the project forbids.)
 
 ### 4. AI/MCP or Blueprint — the subsystem API
 `UGTCRoutineSubsystem` exposes the same operations as `BlueprintCallable` UFUNCTIONs
