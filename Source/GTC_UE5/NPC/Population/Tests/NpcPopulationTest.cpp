@@ -95,9 +95,11 @@ bool FNpcPopulationTest::RunTest(const FString& Parameters)
         // Snapshot hunger before.
         TArray<double> Before;
         for (int32 i = 0; i < Pop.Num(); ++i) { Before.Add(Pop.Find(i)->Needs.Values[TEXT("hunger")]); }
-        // Advance a few in-game hours in the dead of night (short enough that hunger
-        // never bottoms out and trips the schedule-override, so decay clearly shows).
-        for (int32 Step = 0; Step < 3; ++Step) { Pop.Advance(5.0, 1.0); }
+        // Advance one in-game hour in the dead of night. A single short step keeps every
+        // citizen's hunger below its personal override threshold, so the sleep activity tops up
+        // energy only and hunger purely decays (a longer window lets low-discipline citizens hit
+        // the schedule-override and eat, which would push hunger back up).
+        Pop.Advance(5.0, 1.0);
         bool bAllHungrier = true;
         for (int32 i = 0; i < Pop.Num(); ++i)
         {

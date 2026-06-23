@@ -7,11 +7,11 @@
 namespace
 {
     // Planar (XZ) coincidence test, matching the repo's Y-up convention.
-    bool PlanarCoincident(const FVector& A, const FVector& B, double Eps)
+    bool PlanarCoincident(const FVector& A, const FVector& B, double Tol)
     {
         const double Dx = A.X - B.X;
         const double Dz = A.Z - B.Z;
-        return (Dx * Dx + Dz * Dz) <= Eps * Eps;
+        return (Dx * Dx + Dz * Dz) <= Tol * Tol;
     }
 
     bool PathInRange(const TArray<FVector>& NodePositions, const TArray<int32>& NodePath)

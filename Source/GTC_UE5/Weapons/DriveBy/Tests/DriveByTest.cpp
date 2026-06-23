@@ -20,31 +20,31 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FDriveByTest::RunTest(const FString& Parameters)
 {
-    const FVector Fwd(1, 0, 0);
-    const FVector Right(0, 1, 0);
+    const FVector FwdDir(1, 0, 0);
+    const FVector RightDir(0, 1, 0);
 
     // --- AimAngleFromForward ---
     TestTrue(TEXT("aiming ahead -> ~0"),
-        FMath::IsNearlyEqual(FDriveBy::AimAngleFromForward(Fwd, FVector(1, 0, 0)), 0.0, GtcTest::Eps));
+        FMath::IsNearlyEqual(FDriveBy::AimAngleFromForward(FwdDir, FVector(1, 0, 0)), 0.0, GtcTest::Eps));
     TestTrue(TEXT("aiming to the side -> ~pi/2"),
-        FMath::IsNearlyEqual(FDriveBy::AimAngleFromForward(Fwd, FVector(0, 1, 0)), PI / 2.0, GtcTest::Eps));
+        FMath::IsNearlyEqual(FDriveBy::AimAngleFromForward(FwdDir, FVector(0, 1, 0)), PI / 2.0, GtcTest::Eps));
     TestTrue(TEXT("aiming back -> ~pi"),
-        FMath::IsNearlyEqual(FDriveBy::AimAngleFromForward(Fwd, FVector(-1, 0, 0)), PI, GtcTest::Eps));
+        FMath::IsNearlyEqual(FDriveBy::AimAngleFromForward(FwdDir, FVector(-1, 0, 0)), PI, GtcTest::Eps));
 
     // --- CanFire: forward blocked, sides/back allowed ---
     TestFalse(TEXT("can't fire forward through your own car"),
-        FDriveBy::CanFire(Fwd, FVector(1, 0, 0)));
-    TestTrue(TEXT("can fire to the side"), FDriveBy::CanFire(Fwd, FVector(0, 1, 0)));
-    TestTrue(TEXT("can fire to the rear"), FDriveBy::CanFire(Fwd, FVector(-1, 0, 0)));
-    TestFalse(TEXT("a degenerate aim can't fire"), FDriveBy::CanFire(Fwd, FVector::ZeroVector));
+        FDriveBy::CanFire(FwdDir, FVector(1, 0, 0)));
+    TestTrue(TEXT("can fire to the side"), FDriveBy::CanFire(FwdDir, FVector(0, 1, 0)));
+    TestTrue(TEXT("can fire to the rear"), FDriveBy::CanFire(FwdDir, FVector(-1, 0, 0)));
+    TestFalse(TEXT("a degenerate aim can't fire"), FDriveBy::CanFire(FwdDir, FVector::ZeroVector));
 
     // --- FiringSide ---
     TestTrue(TEXT("aim right -> +1"),
-        FMath::IsNearlyEqual(FDriveBy::FiringSide(Right, FVector(0, 1, 0)), 1.0, GtcTest::Eps));
+        FMath::IsNearlyEqual(FDriveBy::FiringSide(RightDir, FVector(0, 1, 0)), 1.0, GtcTest::Eps));
     TestTrue(TEXT("aim left -> -1"),
-        FMath::IsNearlyEqual(FDriveBy::FiringSide(Right, FVector(0, -1, 0)), -1.0, GtcTest::Eps));
+        FMath::IsNearlyEqual(FDriveBy::FiringSide(RightDir, FVector(0, -1, 0)), -1.0, GtcTest::Eps));
     TestTrue(TEXT("aim straight ahead -> 0"),
-        FMath::IsNearlyEqual(FDriveBy::FiringSide(Right, FVector(1, 0, 0)), 0.0, GtcTest::Eps));
+        FMath::IsNearlyEqual(FDriveBy::FiringSide(RightDir, FVector(1, 0, 0)), 0.0, GtcTest::Eps));
 
     // --- SpeedSpread / EffectiveSpread ---
     TestEqual(TEXT("no speed spread at a standstill"), FDriveBy::SpeedSpread(0.0), 0.0);

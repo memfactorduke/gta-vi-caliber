@@ -35,7 +35,7 @@ namespace
 
 	// A Mixamo export: namespace-prefixed, "Hips" as the root (no "root" bone),
 	// no facial or eye bones.
-	TArray<FString> MixamoBones()
+	TArray<FString> CharacterWiringMixamoBones()
 	{
 		return {
 			TEXT("mixamorig:Hips"),
@@ -78,7 +78,7 @@ bool FCharacterWiringTest::RunTest(const FString& Parameters)
 
 	// --- Probe: Mixamo (no root, no facial/eye) -------------------------------
 	{
-		const FSkeletonProbe P = FSkeletonProbe::FromBoneNames(MixamoBones());
+		const FSkeletonProbe P = FSkeletonProbe::FromBoneNames(CharacterWiringMixamoBones());
 		TestFalse(TEXT("mixamo: no standalone root bone"), P.bHasRoot);
 		TestTrue(TEXT("mixamo: Hips reads as pelvis"), P.bHasPelvis);
 		TestTrue(TEXT("mixamo: spine"), P.bHasSpine);
@@ -115,7 +115,7 @@ bool FCharacterWiringTest::RunTest(const FString& Parameters)
 
 	// --- Plan: Mixamo as Player → locomotion/combat yes, face/eye/finger no ---
 	{
-		const FSkeletonProbe P = FSkeletonProbe::FromBoneNames(MixamoBones());
+		const FSkeletonProbe P = FSkeletonProbe::FromBoneNames(CharacterWiringMixamoBones());
 		const FCharacterWiringPlan Plan = FCharacterWiring::Plan(P, ECharacterRole::Player);
 		TestTrue(TEXT("mixamo player: usable"), Plan.bUsable);
 		TestTrue(TEXT("mixamo player: locomotion wired despite no root"), Plan.IsWired(ECharacterAction::Locomotion));
@@ -271,7 +271,7 @@ bool FCharacterWiringTest::RunTest(const FString& Parameters)
 
 	// --- Summary string is informative ----------------------------------------
 	{
-		const FSkeletonProbe P = FSkeletonProbe::FromBoneNames(MixamoBones());
+		const FSkeletonProbe P = FSkeletonProbe::FromBoneNames(CharacterWiringMixamoBones());
 		const FString S = FCharacterWiring::Plan(P, ECharacterRole::Player).Summary();
 		TestTrue(TEXT("summary: names the role"), S.Contains(TEXT("Player")));
 		TestTrue(TEXT("summary: reports skipped actions"), S.Contains(TEXT("skipped")));

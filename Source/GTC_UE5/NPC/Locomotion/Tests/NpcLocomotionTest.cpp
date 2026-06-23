@@ -25,7 +25,7 @@ using GtcTest::Eps;
 
 namespace
 {
-    constexpr double SpeedEps = 1e-3;
+    using GtcTest::SpeedEps;
     constexpr double Walk = 150.0;
     constexpr double Run = 420.0;
 }

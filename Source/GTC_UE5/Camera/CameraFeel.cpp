@@ -10,7 +10,7 @@ namespace
      * Inline port of Godot's `move_toward(a, b, step)`: step `a` toward `b` by at
      * most `abs(step)`, never overshooting. Mirrors Godot semantics exactly.
      */
-    float MoveToward(float A, float B, float Step)
+    float FeelMoveToward(float A, float B, float Step)
     {
         const float Delta = B - A;
         if (FMath::Abs(Delta) <= Step)
@@ -86,5 +86,5 @@ FVector2D FCameraFeel::LookReturn(const FVector2D& Current, float Rate, float De
 {
     // UNTESTED FOR PARITY — no Godot oracle; verify behaviorally in Wave 3.
     const float Step = Rate * Delta;
-    return FVector2D(MoveToward(Current.X, 0.0f, Step), MoveToward(Current.Y, 0.0f, Step));
+    return FVector2D(FeelMoveToward(Current.X, 0.0f, Step), FeelMoveToward(Current.Y, 0.0f, Step));
 }

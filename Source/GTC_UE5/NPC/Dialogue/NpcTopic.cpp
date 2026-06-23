@@ -1,17 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "NpcTopic.h"
+#include "../NpcSeqMath.h"
 
 namespace
 {
-	int32 PosMod(int32 Value, int32 Modulus)
-	{
-		if (Modulus <= 0)
-		{
-			return 0;
-		}
-		return ((Value % Modulus) + Modulus) % Modulus;
-	}
+	using GtcSeq::PosMod;
 
 	// The topics Shared() rotates between (SmallTalk is fallback-only, excluded).
 	const ENpcChatTopic kRealTopics[] = {
