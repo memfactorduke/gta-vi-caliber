@@ -129,3 +129,7 @@ cesium-request-cache.sqlite*
 # Nested Epic "Game Animation Sample" reference project (its own .uproject + build
 # caches) — a local download, not part of this game's source or content.
 /GameAnimationSample/
+
+# Third-party FPS Weapon Bundle — licensed asset pack, must not be redistributed.
+# Kept locally for the game; scrubbed from history and never committed/pushed.
+/Content/FPS_Weapon_Bundle/
