@@ -33,6 +33,7 @@ public:
 
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     UFUNCTION(BlueprintCallable, Category = "GTC|Police")
     bool IsDead() const { return bDead; }
@@ -95,6 +96,9 @@ private:
     bool bDead = false;
     bool bDeployed = false;
     int32 CachedStars = 0;
+
+    /** Barricades this van dropped — destroyed in EndPlay so they don't outlive it. */
+    TArray<TWeakObjectPtr<AGTCBarricade>> DeployedBarricades;
 
     APawn* ResolveTarget() const;
     int32 ReadStars() const;

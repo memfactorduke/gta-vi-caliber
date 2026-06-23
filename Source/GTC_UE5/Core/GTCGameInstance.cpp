@@ -1,10 +1,12 @@
 #include "GTCGameInstance.h"
 #include "../FrontEnd/SGTCLoadingScreen.h"
+#include "../Systems/Save/SaveSubsystem.h"
 
 #include "Engine/Texture2D.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/Pawn.h"
 #include "ImageUtils.h"
 #include "Misc/Paths.h"
 #include "TimerManager.h"
@@ -45,11 +47,15 @@ void UGTCGameInstance::Init()
 	PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UGTCGameInstance::OnPostLoadMapWithWorld);
 	CaptureTickerHandle = FTSTicker::GetCoreTicker().AddTicker(
 		FTickerDelegate::CreateUObject(this, &UGTCGameInstance::CaptureTick), 0.0f);
+
+	// Subsystems exist after Super::Init(); register the "player" save section.
+	RegisterSaveHooks(GetSubsystem<USaveSubsystem>());
 }
 
 void UGTCGameInstance::Shutdown()
 {
 	UE_LOG(LogGTC, Log, TEXT("GTC GameInstance shutting down."));
+	UnregisterSaveHooks();
 	if (PreLoadMapHandle.IsValid())
 	{
 		FCoreUObjectDelegates::PreLoadMap.Remove(PreLoadMapHandle);
@@ -74,6 +80,103 @@ void UGTCGameInstance::Shutdown()
 		LoadingScreen.Reset();
 	}
 	Super::Shutdown();
+}
+
+bool UGTCGameInstance::RegisterSaveHooks(USaveSubsystem* Save)
+{
+	if (Save == nullptr)
+	{
+		return false;
+	}
+	FSaveHook OnSave;
+	OnSave.BindUObject(this, &UGTCGameInstance::OnSavePlayer);
+	FLoadHook OnLoad;
+	OnLoad.BindUObject(this, &UGTCGameInstance::OnLoadPlayer);
+	if (!Save->RegisterHook(TEXT("player"), OnSave, OnLoad))
+	{
+		return false;
+	}
+	RegisteredSave = Save;
+	return true;
+}
+
+void UGTCGameInstance::UnregisterSaveHooks()
+{
+	if (RegisteredSave)
+	{
+		RegisteredSave->UnregisterHook(TEXT("player"));
+	}
+	RegisteredSave = nullptr;
+}
+
+void UGTCGameInstance::OnSavePlayer(const TSharedRef<FGtcJsonObject>& SectionOut)
+{
+	// Persist the created look as plain numbers (bool stored as 0/1 — the JSON model's
+	// read side is number/string; SetBool has no symmetric GetBool).
+	SectionOut->SetNumber(TEXT("look_valid"), SavedLook.bValid ? 1.0 : 0.0);
+	SectionOut->SetNumber(TEXT("look_body"), SavedLook.Body);
+	SectionOut->SetNumber(TEXT("look_face"), SavedLook.Face);
+	SectionOut->SetNumber(TEXT("look_hair"), SavedLook.Hair);
+	SectionOut->SetNumber(TEXT("look_outfit"), SavedLook.Outfit);
+	SectionOut->SetNumber(TEXT("look_skin"), SavedLook.Skin);
+
+	// Throwable ammo (the pawn pushes it up on every change).
+	SectionOut->SetNumber(TEXT("ammo_valid"), bHasSavedAmmo ? 1.0 : 0.0);
+	SectionOut->SetNumber(TEXT("ammo_flashbang"), SavedFlashbang);
+	SectionOut->SetNumber(TEXT("ammo_grenade"), SavedGrenade);
+	SectionOut->SetNumber(TEXT("ammo_molotov"), SavedMolotov);
+
+	// Player transform: pull the live pawn's position/yaw at save time (continuous state,
+	// so it's pulled here rather than pushed). Generic APawn API — no pawn-type dependency.
+	if (APlayerController* PC = GetFirstLocalPlayerController())
+	{
+		if (APawn* P = PC->GetPawn())
+		{
+			SavedPlayerLocation = P->GetActorLocation();
+			SavedPlayerYaw = static_cast<float>(P->GetActorRotation().Yaw);
+			bHasSavedTransform = true;
+		}
+	}
+	SectionOut->SetNumber(TEXT("transform_valid"), bHasSavedTransform ? 1.0 : 0.0);
+	SectionOut->SetNumber(TEXT("pos_x"), SavedPlayerLocation.X);
+	SectionOut->SetNumber(TEXT("pos_y"), SavedPlayerLocation.Y);
+	SectionOut->SetNumber(TEXT("pos_z"), SavedPlayerLocation.Z);
+	SectionOut->SetNumber(TEXT("yaw"), SavedPlayerYaw);
+}
+
+void UGTCGameInstance::OnLoadPlayer(const TSharedRef<FGtcJsonObject>& SectionIn)
+{
+	// An absent/never-confirmed look leaves the current look untouched (no clobber).
+	if (SectionIn->GetNumber(TEXT("look_valid"), 0.0) <= 0.5)
+	{
+		return;
+	}
+	FGTCPlayerLook Look;
+	Look.Body = static_cast<int32>(SectionIn->GetNumber(TEXT("look_body"), 0.0));
+	Look.Face = static_cast<int32>(SectionIn->GetNumber(TEXT("look_face"), 0.0));
+	Look.Hair = static_cast<int32>(SectionIn->GetNumber(TEXT("look_hair"), 0.0));
+	Look.Outfit = static_cast<int32>(SectionIn->GetNumber(TEXT("look_outfit"), 0.0));
+	Look.Skin = static_cast<int32>(SectionIn->GetNumber(TEXT("look_skin"), 0.0));
+	SetSavedLook(Look); // marks bValid + stores; pawns restore it on spawn
+
+	// Throwable ammo (absent → leave the loadout's starting allotment).
+	if (SectionIn->GetNumber(TEXT("ammo_valid"), 0.0) > 0.5)
+	{
+		SetSavedThrowableAmmo(
+			static_cast<int32>(SectionIn->GetNumber(TEXT("ammo_flashbang"), 0.0)),
+			static_cast<int32>(SectionIn->GetNumber(TEXT("ammo_grenade"), 0.0)),
+			static_cast<int32>(SectionIn->GetNumber(TEXT("ammo_molotov"), 0.0)));
+	}
+
+	// Player transform (absent → spawn at the level's PlayerStart as normal).
+	if (SectionIn->GetNumber(TEXT("transform_valid"), 0.0) > 0.5)
+	{
+		const FVector Loc(
+			SectionIn->GetNumber(TEXT("pos_x"), 0.0),
+			SectionIn->GetNumber(TEXT("pos_y"), 0.0),
+			SectionIn->GetNumber(TEXT("pos_z"), 0.0));
+		SetSavedTransform(Loc, static_cast<float>(SectionIn->GetNumber(TEXT("yaw"), 0.0)));
+	}
 }
 
 void UGTCGameInstance::LoadLoadingArt()

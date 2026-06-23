@@ -170,6 +170,22 @@ public:
     UPROPERTY(EditAnywhere, Category = "GTC|Weapon")
     bool bDrawDebugShots = true;
 
+    /** Show a faint muzzle->impact tracer streak on a fraction of shots. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Weapon|Tracer")
+    bool bShowTracers = true;
+
+    /** One tracer every Nth shot (1 = every shot). Keeps it reading as tracer rounds, not a beam. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Weapon|Tracer", meta = (ClampMin = "1"))
+    int32 TracerEveryNthShot = 3;
+
+    /** Tracer line thickness in centimetres — keep it thin so it stays subtle. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Weapon|Tracer", meta = (ClampMin = "0.1"))
+    float TracerThicknessCm = 1.25f;
+
+    /** How long a tracer streak lingers, in seconds — a brief blip. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Weapon|Tracer", meta = (ClampMin = "0.0"))
+    float TracerLifeSeconds = 0.035f;
+
     /** Held weapon mesh; defaults to an engine basic shape so the gun is visible without content. */
     UPROPERTY(EditAnywhere, Category = "GTC|Weapon")
     TSoftObjectPtr<UStaticMesh> PlaceholderWeaponMesh;
@@ -187,6 +203,9 @@ private:
 
     /** Deterministic-per-instance spread RNG. */
     FRandomStream SpreadRng;
+
+    /** Rolling count of shots fired, for the tracer-every-Nth cadence. */
+    int32 TracerShotCounter = 0;
 
     /** AI aim override: when set on a camera-less owner, shots fly along this world
      *  direction instead of the pawn's eyes view rotation. */

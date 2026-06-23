@@ -10,6 +10,7 @@
 
 #include "../../Weapons/Component/GTCWeaponComponent.h"
 #include "../../Weapons/Core/WeaponStats.h"
+#include "../../World/Surfaces/SurfaceImpact.h"
 
 AGTCTurret::AGTCTurret()
 {
@@ -22,6 +23,8 @@ AGTCTurret::AGTCTurret()
     {
         Base->SetStaticMesh(Cube);
     }
+    // Metal emplacement: rounds throw sparks off the base and head.
+    Base->ComponentTags.Add(GTCSurfaceTags::SurfaceTag(EGTCSurface::Metal));
     SetRootComponent(Base);
 
     // Swivel head: holds the barrel, rotates to track the target.
@@ -33,6 +36,7 @@ AGTCTurret::AGTCTurret()
     {
         Head->SetStaticMesh(Cube);
     }
+    Head->ComponentTags.Add(GTCSurfaceTags::SurfaceTag(EGTCSurface::Metal));
 
     Weapon = CreateDefaultSubobject<UGTCWeaponComponent>(TEXT("Weapon"));
 }
@@ -79,6 +83,11 @@ bool AGTCTurret::HasLineOfSight(const FVector& From, const APawn* Target) const
     return !bBlocked || Hit.GetActor() == Target;
 }
 
+void AGTCTurret::Stun(float Seconds)
+{
+    StunTimer = FMath::Max(StunTimer, static_cast<double>(Seconds));
+}
+
 void AGTCTurret::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
@@ -88,6 +97,14 @@ void AGTCTurret::Tick(float DeltaSeconds)
     }
 
     FireTimer = FMath::Max(0.0, FireTimer - DeltaSeconds);
+
+    // Flashbanged: the turret's optics are blinded — hold fire until it recovers.
+    if (StunTimer > 0.0)
+    {
+        StunTimer -= static_cast<double>(DeltaSeconds);
+        if (Weapon != nullptr) { Weapon->StopFire(); }
+        return;
+    }
 
     APawn* Target = ResolveTarget();
     if (Target == nullptr)

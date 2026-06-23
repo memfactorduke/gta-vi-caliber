@@ -16,6 +16,8 @@
 #include "../Firing/WeaponFireController.h"
 #include "../Ballistics/WeaponBallistics.h"
 #include "../Core/WeaponStats.h"
+#include "../../World/Surfaces/SurfaceImpactFX.h"
+#include "GTCTracer.h"
 
 namespace
 {
@@ -368,7 +370,9 @@ void UGTCWeaponComponent::FireOneShot()
     }
 
     FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(GTCWeaponShot), /*bTraceComplex=*/true, OwnerActor);
-    TraceParams.bReturnPhysicalMaterial = false;
+    // Read back the physical material so untagged geometry still resolves to a surface burst
+    // (FGTCImpactFX falls back to the SurfaceTypeN index when nothing carries a Surface.* tag).
+    TraceParams.bReturnPhysicalMaterial = true;
 
     FVector PrimaryImpact = CamLoc + CamForward * RangeCm;
     bool bAnyHit = false;
@@ -387,6 +391,15 @@ void UGTCWeaponComponent::FireOneShot()
         {
             PrimaryImpact = Impact;
             bAnyHit = bHit;
+        }
+
+        // Surface-keyed impact burst: splinters off wood, sparks off metal, shards off glass,
+        // dust off concrete, blood off a creature. Fires on any hit — tagged actors, tagged
+        // world geometry, or untagged geometry via its physical material. See
+        // Source/GTC_UE5/World/Surfaces/SurfaceImpactFX.h.
+        if (bHit)
+        {
+            FGTCImpactFX::PlayImpact(World, Hit);
         }
 
         if (bHit && Hit.GetActor() != nullptr && Hit.GetActor() != OwnerActor)
@@ -423,6 +436,13 @@ void UGTCWeaponComponent::FireOneShot()
         {
             OwnerPawn->AddControllerPitchInput(-FMath::RadiansToDegrees(Stats.RecoilKick));
         }
+    }
+
+    // Faint tracer streak from the muzzle to where the primary pellet landed, on a fraction of
+    // shots so it reads as occasional tracer rounds rather than a beam on every bullet.
+    if (bShowTracers && TracerEveryNthShot > 0 && (++TracerShotCounter % TracerEveryNthShot == 0))
+    {
+        AGTCTracer::Spawn(World, MuzzleLoc, PrimaryImpact, TracerThicknessCm, TracerLifeSeconds);
     }
 
     OnWeaponFired.Broadcast(MuzzleLoc, PrimaryImpact, bAnyHit);

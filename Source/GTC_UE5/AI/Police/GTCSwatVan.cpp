@@ -12,6 +12,7 @@
 #include "GTCPoliceOfficer.h"
 #include "../../World/Cover/GTCBarricade.h"
 #include "../../Systems/Wanted/WantedSubsystem.h"
+#include "../../World/Surfaces/SurfaceImpact.h"
 #include "Engine/GameInstance.h"
 
 AGTCSwatVan::AGTCSwatVan()
@@ -25,6 +26,8 @@ AGTCSwatVan::AGTCSwatVan()
     {
         Body->SetStaticMesh(Cube);
     }
+    // Rounds into the van throw sparks (metal panel). See World/Surfaces/SurfaceImpact.h.
+    Body->ComponentTags.Add(GTCSurfaceTags::SurfaceTag(EGTCSurface::Metal));
     SetRootComponent(Body);
 }
 
@@ -182,8 +185,27 @@ void AGTCSwatVan::DeploySquad(const FVector& PlayerGround)
             }
         }
         BarPoint.Z += 60.0;
-        World->SpawnActor<AGTCBarricade>(BarCls, FTransform(FRotator(0.0f, BarYaw, 0.0f), BarPoint));
+        if (AGTCBarricade* Bar =
+                World->SpawnActor<AGTCBarricade>(BarCls, FTransform(FRotator(0.0f, BarYaw, 0.0f), BarPoint)))
+        {
+            DeployedBarricades.Add(Bar);
+        }
     }
+}
+
+void AGTCSwatVan::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    // Take the deployed barricades with the van (recall or wreck) — they're unowned
+    // and never self-despawn otherwise.
+    for (const TWeakObjectPtr<AGTCBarricade>& Weak : DeployedBarricades)
+    {
+        if (AGTCBarricade* Bar = Weak.Get())
+        {
+            Bar->Destroy();
+        }
+    }
+    DeployedBarricades.Reset();
+    Super::EndPlay(EndPlayReason);
 }
 
 float AGTCSwatVan::TakeDamage(

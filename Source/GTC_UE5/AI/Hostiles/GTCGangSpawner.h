@@ -87,7 +87,9 @@ private:
     /** The turf's mounted turret, when bDeployTurret is set. */
     TWeakObjectPtr<AGTCTurret> Turret;
 
-    /** Barricades are placed once, the first time the player comes near. */
+    /** Barricades placed once when the player nears; tracked so the turf can be torn
+     *  down (destroyed) when the player leaves. */
+    TArray<TWeakObjectPtr<AGTCBarricade>> Barricades;
     bool bSpawnedBarricades = false;
 
     FRandomStream Rng;

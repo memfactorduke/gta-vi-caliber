@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "../../NPC/Vitals/NpcVitals.h"
 #include "../../Weapons/Melee/MeleeCombat.h"
+#include "../Combat/GTCStunnable.h"
 #include "Math/RandomStream.h"
 #include "GTCHostile.generated.h"
 
@@ -27,7 +28,7 @@ class AGTCThrowable;
  * the officer.
  */
 UCLASS()
-class GTC_UE5_API AGTCHostile : public ACharacter
+class GTC_UE5_API AGTCHostile : public ACharacter, public IGTCStunnable
 {
     GENERATED_BODY()
 
@@ -44,6 +45,9 @@ public:
     /** Stamp toughness + strafe side before BeginPlay. `bMeleeVariant` makes an
      *  unarmed thug that charges and strikes instead of shooting. */
     void InitializeHostile(int32 Seed, bool bMeleeVariant = false);
+
+    /** IGTCStunnable: a flashbang freezes this thug's combat for `Seconds`. */
+    virtual void Stun(float Seconds) override;
 
     UFUNCTION(BlueprintCallable, Category = "GTC|Hostile")
     bool IsDead() const { return bDead; }
@@ -131,6 +135,9 @@ private:
      *  slower (FSuppression), same as the police. */
     double Suppression = 0.0;
 
+    /** Flashbang stun: while > 0 the thug holds position and holds fire. */
+    double StunTimer = 0.0;
+
     /** Melee-thug mode: unarmed, charges to contact and strikes (FMeleeCombat). */
     bool bMelee = false;
     double MeleeStrikeCooldown = 0.0;
@@ -152,8 +159,15 @@ private:
     TWeakObjectPtr<APawn> CurrentTarget;
     double RetargetTimer = 0.0;
 
+    /** Living gang-mates nearby (refreshed on the retarget throttle). When the gang is
+     *  decimated the thug's effective aggression drops and it routs (FCombatAi Retreat). */
+    int32 NearbyAllyCount = 100;
+
     /** Nearest threat: the player, or a closer police officer within search range. */
     APawn* PickTarget() const;
+
+    /** Count living gang-mates within `RangeCm` (for the rout/morale check). */
+    int32 CountNearbyAllies(double RangeCm) const;
     bool HasLineOfSight(const APawn* Target) const;
     void FaceTarget(const FVector& TargetPos, float DeltaSeconds);
 

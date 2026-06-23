@@ -8,6 +8,7 @@
 #include "GTCSpikeStrip.h"
 #include "GTCSwatVan.h"
 #include "GTCK9.h"
+#include "EngineUtils.h"
 
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
@@ -54,19 +55,31 @@ void AGTCPoliceDirector::Tick(float DeltaSeconds)
 
     UGameInstance* GI = GetGameInstance();
 
-    // Drive the wanted clock (heat decay + witness-report completion); nothing else
-    // owns it. Guarded so flipping bDriveWantedClock off cedes it cleanly.
+    // Refresh stars + nearest-LIVING-officer distance + the "seen" signal EVERY frame,
+    // first, so the wanted/evasion/arrest drivers below all read this frame's picture
+    // (never a stale snapshot or a corpse).
+    RefreshCombatSnapshot();
+
+    // Drive the wanted clock (heat decay + witness-report completion) and the evasion
+    // escape loop; nothing else owns either. Guarded so the flags cede them cleanly.
     if (bDriveWantedClock && GI != nullptr)
     {
         if (UWantedSubsystem* Wanted = GI->GetSubsystem<UWantedSubsystem>())
         {
             Wanted->TickFrame(DeltaSeconds);
+
+            // Escape loop: feed evasion from police line-of-sight; once the player has
+            // been out of sight for the search window they "go cold" and lose the stars.
+            if (bDriveEvasion && Wanted->Stars() > 0)
+            {
+                Wanted->UpdateEvasion(bPlayerSeenByPolice, DeltaSeconds);
+                if (Wanted->GetEvasion().IsCold())
+                {
+                    Wanted->Clear();
+                }
+            }
         }
     }
-
-    // Refresh stars + nearest-LIVING-officer distance EVERY frame so the per-frame
-    // arrest loop never reads a stale snapshot or measures against a corpse.
-    RefreshCombatSnapshot();
 
     // Stream police on a throttle (spawning/culling need not run every frame).
     StreamAccum += DeltaSeconds;
@@ -87,6 +100,18 @@ void AGTCPoliceDirector::Tick(float DeltaSeconds)
         if (UArrestSubsystem* Arrest = GI->GetSubsystem<UArrestSubsystem>())
         {
             Arrest->Tick(CachedStars, CachedNearestCopDistM, DeltaSeconds);
+
+            // Drain the bust's heat-clear intent — the deferred Wave-3 coupling the
+            // arrest subsystem exposes. A landed bust clears the wanted level (the
+            // third outcome, alongside escape and death); OnBusted is left for BP to
+            // bind the cuff/respawn FX.
+            if (Arrest->ConsumeClearHeatRequest())
+            {
+                if (UWantedSubsystem* Wanted = GI->GetSubsystem<UWantedSubsystem>())
+                {
+                    Wanted->Clear();
+                }
+            }
         }
     }
 }
@@ -103,27 +128,81 @@ void AGTCPoliceDirector::RefreshCombatSnapshot()
     }
 
     const APawn* Player = GetPlayerPawn();
-    if (Player == nullptr)
+    const UWorld* World = GetWorld();
+    if (Player == nullptr || World == nullptr)
     {
         CachedNearestCopDistM = 1.0e6;
+        bPlayerSeenByPolice = false;
         return;
     }
     const FVector PlayerPos = Player->GetActorLocation();
+    const FVector PlayerChest = PlayerPos + FVector(0.0, 0.0, 50.0);
 
-    // Nearest LIVING officer only — a lingering ragdoll must not corner the player.
-    double NearestSqCm = TNumericLimits<double>::Max();
-    int32 Alive = 0;
-    for (const TWeakObjectPtr<AGTCPoliceOfficer>& Weak : Officers)
+    auto HasLosTo = [&](const FVector& From, const AActor* Ignore) -> bool
     {
-        const AGTCPoliceOfficer* O = Weak.Get();
-        if (O == nullptr || O->IsDead())
+        FHitResult Hit;
+        FCollisionQueryParams Params(SCENE_QUERY_STAT(GTCSeenTrace), /*bTraceComplex*/ false, Ignore);
+        const bool bBlocked = World->LineTraceSingleByChannel(Hit, From, PlayerChest, ECC_Visibility, Params);
+        return !bBlocked || Hit.GetActor() == Player;
+    };
+
+    // Nearest LIVING, NON-STUNNED officer across ALL officers (TActorIterator) — not just
+    // the director's pool — so van/heli-dropped troopers also count toward the bust/seen
+    // checks, while a ragdoll or a flashbanged cop never corners the player.
+    double NearestSqCm = TNumericLimits<double>::Max();
+    const AGTCPoliceOfficer* Nearest = nullptr;
+    int32 Alive = 0;
+    for (TActorIterator<AGTCPoliceOfficer> It(World); It; ++It)
+    {
+        const AGTCPoliceOfficer* O = *It;
+        if (O == nullptr || O->IsDead() || O->IsStunned())
         {
             continue;
         }
         ++Alive;
-        NearestSqCm = FMath::Min(NearestSqCm, FVector::DistSquaredXY(O->GetActorLocation(), PlayerPos));
+        const double DSq = FVector::DistSquaredXY(O->GetActorLocation(), PlayerPos);
+        if (DSq < NearestSqCm)
+        {
+            NearestSqCm = DSq;
+            Nearest = O;
+        }
     }
     CachedNearestCopDistM = (Alive > 0) ? (FMath::Sqrt(NearestSqCm) / MetresToCm) : 1.0e6;
+
+    // "Seen" for the escape loop. The chopper needs an ACTUAL clear sightline (so you can
+    // break it by ducking under cover at 3+ stars — being airborne alone no longer pins
+    // you); on the ground, the nearest officer or a cruiser within vision range with LOS.
+    bPlayerSeenByPolice = false;
+    if (const AGTCPoliceHelicopter* Heli = Helicopter.Get())
+    {
+        if (!Heli->IsDead() && HasLosTo(Heli->GetActorLocation(), Heli))
+        {
+            bPlayerSeenByPolice = true;
+        }
+    }
+    if (!bPlayerSeenByPolice && Nearest != nullptr && CachedNearestCopDistM <= PoliceVisionRangeM)
+    {
+        bPlayerSeenByPolice = HasLosTo(Nearest->GetActorLocation() + FVector(0.0, 0.0, 60.0), Nearest);
+    }
+    if (!bPlayerSeenByPolice)
+    {
+        const double VisionCm = PoliceVisionRangeM * MetresToCm;
+        const double VisionSqCm = VisionCm * VisionCm;
+        for (const TWeakObjectPtr<AGTCPoliceCar>& Weak : Cars)
+        {
+            const AGTCPoliceCar* Car = Weak.Get();
+            if (Car == nullptr || Car->IsDead())
+            {
+                continue;
+            }
+            if (FVector::DistSquaredXY(Car->GetActorLocation(), PlayerPos) <= VisionSqCm
+                && HasLosTo(Car->GetActorLocation() + FVector(0.0, 0.0, 80.0), Car))
+            {
+                bPlayerSeenByPolice = true;
+                break;
+            }
+        }
+    }
 }
 
 APawn* AGTCPoliceDirector::GetPlayerPawn() const
@@ -219,13 +298,16 @@ void AGTCPoliceDirector::StreamRoadblock(const FVector& PlayerPos, int32 Stars)
         return;
     }
 
-    if (RoadblockCooldown > 0.0)
+    AGTCRoadblock* Active = Roadblock.Get();
+    const bool bActive = Active != nullptr && !Active->IsActorBeingDestroyed();
+
+    // Tick the anti-spam gap down ONLY while no block is standing, so the cooldown
+    // measures time since the last block was removed (not time since it was thrown).
+    if (!bActive && RoadblockCooldown > 0.0)
     {
         RoadblockCooldown -= StreamIntervalSec;
     }
 
-    AGTCRoadblock* Active = Roadblock.Get();
-    const bool bActive = Active != nullptr && !Active->IsActorBeingDestroyed();
     if (bActive || RoadblockCooldown > 0.0 || Stars <= 0)
     {
         return;

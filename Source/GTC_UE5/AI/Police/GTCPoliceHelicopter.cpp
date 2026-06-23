@@ -17,6 +17,7 @@
 #include "../../Weapons/Component/GTCWeaponComponent.h"
 #include "../../Weapons/Core/WeaponStats.h"
 #include "../../Systems/Wanted/WantedSubsystem.h"
+#include "../../World/Surfaces/SurfaceImpact.h"
 
 namespace
 {
@@ -38,6 +39,8 @@ AGTCPoliceHelicopter::AGTCPoliceHelicopter()
     {
         Body->SetStaticMesh(Cube);
     }
+    // Rounds into the hull throw sparks (metal). See World/Surfaces/SurfaceImpact.h.
+    Body->ComponentTags.Add(GTCSurfaceTags::SurfaceTag(EGTCSurface::Metal));
     SetRootComponent(Body);
 
     // Downward searchlight: sweeps the ground beneath the orbit.
@@ -125,16 +128,32 @@ void AGTCPoliceHelicopter::Tick(float DeltaSeconds)
     SetActorLocation(FMath::VInterpTo(
         GetActorLocation(), Desired, DeltaSeconds, static_cast<float>(MoveInterpSpeed)));
 
-    // --- Searchlight + "is the player lit" ---------------------------------------
+    // --- Searchlight: sweep the ground beneath the chopper (cosmetic). ------------
     const FVector PlayerGround = PlayerLoc; // player capsule base is close enough to ground
-    const bool bLit = AimAndLight(PlayerGround, DeltaSeconds);
+    AimAndLight(PlayerGround, DeltaSeconds);
 
-    // --- Door gunner: fire down at a lit suspect, paced by the fire timer ---------
+    // --- Door gunner: fire when it has a clear shot within range -------------------
+    // (NOT only when the player stands under the straight-down searchlight — the orbit
+    // keeps the player ~OrbitRadius outside that nadir footprint, so that never fires).
     if (Weapon != nullptr)
     {
-        const FVector ChestAim = (PlayerLoc + FVector(0, 0, 50.0) - GetActorLocation()).GetSafeNormal();
-        Weapon->SetAimOverride(ChestAim);
-        if (bLit && FireTimer <= 0.0)
+        const FVector HeliLoc = GetActorLocation();
+        const FVector PlayerChest = PlayerLoc + FVector(0.0, 0.0, 50.0);
+        Weapon->SetAimOverride((PlayerChest - HeliLoc).GetSafeNormal());
+
+        bool bCanFire = FVector::DistSquared(HeliLoc, PlayerChest) <= (FireRangeCm * FireRangeCm);
+        if (bCanFire)
+        {
+            if (const UWorld* World = GetWorld())
+            {
+                FHitResult Hit;
+                FCollisionQueryParams Params(SCENE_QUERY_STAT(GTCHeliLOS), /*bTraceComplex*/ false, this);
+                const bool bBlocked =
+                    World->LineTraceSingleByChannel(Hit, HeliLoc, PlayerChest, ECC_Visibility, Params);
+                bCanFire = !bBlocked || Hit.GetActor() == Target;
+            }
+        }
+        if (bCanFire && FireTimer <= 0.0)
         {
             Weapon->StartFire();
             Weapon->StopFire();
@@ -214,8 +233,12 @@ bool AGTCPoliceHelicopter::AimAndLight(const FVector& TargetGround, float DeltaS
     const double ConeHalf = FHelicopterPursuit::ConeHalfRadians(FHelicopterPursuit::DefaultConeDegrees);
     const double LitRadius = FHelicopterPursuit::SpotlightGroundRadius(Altitude, ConeHalf);
 
-    const FVector Nadir(BodyLoc.X, BodyLoc.Y, TargetGround.Z);
-    return FHelicopterPursuit::TargetLit(Nadir, TargetGround, LitRadius);
+    // "Lit" = the player stands within the nadir footprint. Test the horizontal
+    // separation directly in the Unreal XY ground plane — NOT via the core-frame
+    // TargetLit (whose ground plane is XZ): passing Unreal vectors there collapses the
+    // check to the X axis alone and the second component is always zero.
+    const FVector2D Separation(TargetGround.X - BodyLoc.X, TargetGround.Y - BodyLoc.Y);
+    return Separation.Size() <= FMath::Max(LitRadius, 0.0);
 }
 
 float AGTCPoliceHelicopter::TakeDamage(

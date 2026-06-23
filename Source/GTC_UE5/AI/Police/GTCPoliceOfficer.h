@@ -6,11 +6,13 @@
 #include "GameFramework/Character.h"
 #include "../../NPC/Vitals/NpcVitals.h"
 #include "../PoliceDispatch/PoliceEscalation.h"
+#include "../Combat/GTCStunnable.h"
 #include "GTCPoliceOfficer.generated.h"
 
 class UGTCWeaponComponent;
 class AGTCPickup;
 class AGTCThrowable;
+class AGTCHostile;
 
 /**
  * APoliceOfficer — the Wave-3 actor that EMBODIES the police gunfight the whole
@@ -40,7 +42,7 @@ class AGTCThrowable;
  * class is the embodied endpoint, not the spawner.
  */
 UCLASS()
-class GTC_UE5_API AGTCPoliceOfficer : public ACharacter
+class GTC_UE5_API AGTCPoliceOfficer : public ACharacter, public IGTCStunnable
 {
     GENERATED_BODY()
 
@@ -58,12 +60,19 @@ public:
      */
     void InitializeUnit(EPoliceUnitType InUnitType, int32 Seed);
 
+    /** IGTCStunnable: a flashbang freezes this officer's combat for `Seconds`. */
+    virtual void Stun(float Seconds) override;
+
     /** Unit type this officer embodies (beat cop / cruiser crew / SWAT / military). */
     EPoliceUnitType GetUnitType() const { return UnitType; }
 
     /** True once killed — the body is ragdolling and counting down to despawn. */
     UFUNCTION(BlueprintCallable, Category = "GTC|Police")
     bool IsDead() const { return bDead; }
+
+    /** True while flashbanged (holding fire + frozen) — excluded from bust/seen checks. */
+    UFUNCTION(BlueprintCallable, Category = "GTC|Police")
+    bool IsStunned() const { return StunTimer > 0.0; }
 
     /** Current health as a 0..1 fraction (1 = unhurt), for a HUD/debug overlay. */
     UFUNCTION(BlueprintCallable, Category = "GTC|Police")
@@ -99,7 +108,8 @@ protected:
 
     /** Base run speed (cm/s); the engagement action scales this down for strafing. */
     UPROPERTY(EditAnywhere, Category = "GTC|Police")
-    double RunSpeed = 460.0;
+    double RunSpeed = 540.0; // must exceed the player's ~450 cm/s flat sprint even after
+                             // the low-aggression chase multiplier, or cops never close.
 
     /** Seconds a killed body lingers, ragdolled, before it despawns. */
     UPROPERTY(EditAnywhere, Category = "GTC|Police")
@@ -121,6 +131,14 @@ protected:
     UPROPERTY(EditAnywhere, Category = "GTC|Police")
     double GrenadeIntervalSec = 8.0;
 
+    /** Chance [0..1] a SWAT unit carries a riot shield (decided at init). */
+    UPROPERTY(EditAnywhere, Category = "GTC|Police", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+    double ShieldChance = 0.34;
+
+    /** Fraction of a FRONTAL hit a riot shield absorbs — flank to bypass it. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Police", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+    double ShieldFrontReduction = 0.85;
+
     /** Wound severity (0..1) at/above which a non-lethal round visibly staggers the officer. */
     UPROPERTY(EditAnywhere, Category = "GTC|Police", meta = (ClampMin = "0.0", ClampMax = "1.0"))
     double StaggerWoundSeverity = 0.35;
@@ -141,6 +159,9 @@ private:
     bool bDead = false;
     bool bInitialized = false;
 
+    /** Riot-shield SWAT: soaks most frontal damage so the player must flank. */
+    bool bShielded = false;
+
     /** Per-officer trigger timer; a shot is allowed only once it elapses. */
     double FireTimer = 0.0;
     /** Stable circling side (+1/-1) for Reposition strafing, chosen from the seed. */
@@ -149,6 +170,13 @@ private:
 
     /** Cached wanted stars, refreshed each tick from the live subsystem. */
     int32 CachedStars = 0;
+
+    /** True while the player is actively committing crimes (recent ReportCrime) — the
+     *  apprehend gate's "armed/dangerous suspect" signal. */
+    bool bCachedPlayerDangerous = false;
+
+    /** Flashbang stun: while > 0 the officer holds position and holds fire. */
+    double StunTimer = 0.0;
 
     /** Chosen cover spot while TakeCover is active, and whether one is held. */
     FVector CoverPos = FVector::ZeroVector;
@@ -185,17 +213,25 @@ private:
     /** Clear line of fire from the officer's eyes to the target chest? */
     bool HasLineOfSight(const APawn* Target) const;
 
-    /** Find a nearby spot whose line to the target is blocked by geometry (real
-     *  cover), scored via FCombatCover. False if no covered spot is found. */
-    bool FindCover(const APawn* Target, FVector& OutCover) const;
+    /** Find a nearby spot whose line to `ThreatPos` is blocked by geometry (real
+     *  cover), scored via FCombatCover. `Target` is only the trace's ignore-actor; the
+     *  cover is scored against ThreatPos (the same point combat aims at — the live
+     *  player when seen, the last-known spot when not). False if none found. */
+    bool FindCover(const APawn* Target, const FVector& ThreatPos, FVector& OutCover) const;
 
     /** Turn smoothly to keep the target in front (so aim + firing arc line up). */
     void FaceTarget(const FVector& TargetPos, float DeltaSeconds);
 
     /** Run the tested combat decision and drive movement + firing for this tick.
-     *  `TargetPos` is the effective target (live when seen, last-known when not);
-     *  `bLos` is the precomputed sightline. */
-    void DriveCombat(float DeltaSeconds, APawn* Target, const FVector& TargetPos, bool bLos);
+     *  `TargetPos` is the combat target (live when seen, last-known when not, or a
+     *  gang member when we've lost the player and one is on top of us); `bLos` is the
+     *  sightline to it; `bFightingHostile` suppresses the (player-only) apprehend. */
+    void DriveCombat(
+        float DeltaSeconds, APawn* Target, const FVector& TargetPos, bool bLos, bool bFightingHostile);
+
+    /** Nearest living gang member within `RangeCm`, or null — a self-defense target
+     *  used only when the player is out of sight. */
+    AGTCHostile* FindNearbyHostile(double RangeCm) const;
 
     /** Route a resolved hit: draw down vitals, then flinch or die. `BulletTravel`
      *  is the planar world direction the round was travelling; bByPlayer raises heat. */

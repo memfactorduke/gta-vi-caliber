@@ -57,7 +57,7 @@ public:
     static AGTCThrowable* SpawnAndThrow(
         UWorld* World, const FVector& Origin, const FVector& AimDir, AActor* InInstigator,
         double ThrowSpeed, double FuseSeconds, double CookSeconds, TSubclassOf<AGTCThrowable> Class,
-        bool bIncendiary = false);
+        bool bIncendiary = false, bool bFlashbang = false);
 
     /** Fired once at detonation — the seam for blast VFX/SFX. The C++ has already
      *  applied damage + knockback. `Center` is the blast origin, `RadiusCm` its reach. */
@@ -84,6 +84,16 @@ protected:
     /** Incendiary (molotov): leave a spreading fire at the detonation point. */
     UPROPERTY(EditAnywhere, Category = "GTC|Throwable")
     bool bIncendiary = false;
+
+    /** Flashbang: no blast/fire — stun nearby combatants (IGTCStunnable) instead. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Throwable")
+    bool bFlashbang = false;
+
+    UPROPERTY(EditAnywhere, Category = "GTC|Throwable")
+    double StunRadiusCm = 700.0;
+
+    UPROPERTY(EditAnywhere, Category = "GTC|Throwable")
+    double StunSeconds = 3.0;
 
     /** Fire-patch class for the incendiary aftermath (defaults to AGTCFire). */
     UPROPERTY(EditAnywhere, Category = "GTC|Throwable")

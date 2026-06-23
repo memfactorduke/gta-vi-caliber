@@ -66,6 +66,11 @@ protected:
     UPROPERTY(EditAnywhere, Category = "GTC|Police|Heli")
     double AltitudeCm = 3200.0;
 
+    /** Door-gunner engagement range (cm) — must exceed the orbit slant distance
+     *  (~sqrt(OrbitRadius^2 + Altitude^2)) for the gunner to ever reach the player. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Police|Heli")
+    double FireRangeCm = 6000.0;
+
     /** Orbit angular speed (radians/sec). */
     UPROPERTY(EditAnywhere, Category = "GTC|Police|Heli")
     double AngularSpeed = 0.5;
@@ -94,9 +99,10 @@ protected:
     UPROPERTY(EditAnywhere, Category = "GTC|Police|Heli")
     double DropIntervalSec = 7.0;
 
-    /** Stars at/above which the chopper inserts troops (SWAT-grade response). */
+    /** Stars at/above which the chopper inserts troops. Matches the chopper's own deploy
+     *  threshold (3) so a deployed chopper actually uses its fast-rope insertion. */
     UPROPERTY(EditAnywhere, Category = "GTC|Police|Heli")
-    int32 DropMinStars = 4;
+    int32 DropMinStars = 3;
 
 private:
     UPROPERTY(VisibleAnywhere, Category = "GTC|Police|Heli", meta = (AllowPrivateAccess = "true"))

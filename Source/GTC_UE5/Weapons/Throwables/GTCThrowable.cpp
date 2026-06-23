@@ -11,6 +11,8 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+
+#include "../../AI/Combat/GTCStunnable.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Throwable.h"
@@ -85,6 +87,36 @@ void AGTCThrowable::Detonate()
 
     UWorld* World = GetWorld();
     const FVector Center = GetActorLocation();
+
+    // Flashbang: no blast — instead freeze every nearby combatant (IGTCStunnable) for
+    // StunSeconds. A tactical "clear the room" tool, not a damage grenade.
+    if (bFlashbang)
+    {
+        if (World != nullptr)
+        {
+            TArray<FOverlapResult> StunHits;
+            const FCollisionShape StunSphere = FCollisionShape::MakeSphere(static_cast<float>(StunRadiusCm));
+            World->OverlapMultiByChannel(StunHits, Center, FQuat::Identity, ECC_Pawn, StunSphere);
+            TSet<AActor*> Stunned;
+            for (const FOverlapResult& O : StunHits)
+            {
+                AActor* Actor = O.GetActor();
+                if (Actor == nullptr || Stunned.Contains(Actor))
+                {
+                    continue;
+                }
+                Stunned.Add(Actor);
+                if (IGTCStunnable* Target = Cast<IGTCStunnable>(Actor))
+                {
+                    Target->Stun(static_cast<float>(StunSeconds));
+                }
+            }
+        }
+        OnDetonate(Center, static_cast<float>(StunRadiusCm));
+        Destroy();
+        return;
+    }
+
     if (World != nullptr)
     {
         // Gather everything that can take a hit within the blast sphere.
@@ -167,7 +199,7 @@ void AGTCThrowable::Detonate()
 AGTCThrowable* AGTCThrowable::SpawnAndThrow(
     UWorld* World, const FVector& Origin, const FVector& AimDir, AActor* InInstigator,
     double ThrowSpeed, double FuseSeconds, double CookSeconds, TSubclassOf<AGTCThrowable> Class,
-    bool bIncendiary)
+    bool bIncendiary, bool bFlashbang)
 {
     if (World == nullptr || !Class)
     {
@@ -183,7 +215,15 @@ AGTCThrowable* AGTCThrowable::SpawnAndThrow(
         return nullptr;
     }
     Grenade->bIncendiary = bIncendiary;
+    Grenade->bFlashbang = bFlashbang;
     Grenade->FinishSpawning(Xform);
+
+    // Never collide with the thrower — it spawns close to the instigator, and a
+    // BlockAllDynamic projectile would otherwise ricochet straight off them.
+    if (InInstigator != nullptr && Grenade->Collision != nullptr)
+    {
+        Grenade->Collision->IgnoreActorWhenMoving(InInstigator, true);
+    }
 
     // Cooking shortens the fuse; an over-cooked grenade goes off effectively now.
     const double Fuse = FThrowable::FuseAfterCook(FuseSeconds, CookSeconds);

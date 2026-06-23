@@ -15,6 +15,9 @@ enum class EGTCPickupKind : uint8
 {
     Health,
     Armor,
+    FlashbangAmmo,
+    GrenadeAmmo,
+    MolotovAmmo,
 };
 
 /**
@@ -36,6 +39,7 @@ class GTC_UE5_API AGTCPickup : public AActor
 public:
     AGTCPickup();
 
+    virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
 
     /** Health or armor. */
@@ -52,6 +56,15 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Pickup")
     float RespawnSeconds = 30.0f;
+
+    /** A one-shot (non-respawning) pickup self-reclaims after this many seconds if left
+     *  uncollected, so dropped loot doesn't accumulate forever (0 = never). Set
+     *  bPersistent on a hand-placed one-shot to keep it. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Pickup")
+    float IdleDespawnSeconds = 90.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Pickup")
+    bool bPersistent = false;
 
     /** Fired when the player collects it — the seam for a pickup sound/VFX. */
     UFUNCTION(BlueprintImplementableEvent, Category = "GTC|Pickup")

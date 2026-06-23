@@ -114,6 +114,16 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Police")
     bool bDriveArrest = true;
 
+    /** Drive the wanted EVASION loop from police line-of-sight: break contact for the
+     *  evasion search window and the player "goes cold" and loses the stars. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Police")
+    bool bDriveEvasion = true;
+
+    /** Range (m) within which a pursuer with a clear sightline counts as seeing the
+     *  player (the escape loop's "are they still on me" test). */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Police")
+    double PoliceVisionRangeM = 45.0;
+
     /** Base seed for the deterministic spawn ring (angles/radii). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Police")
     int32 SpawnSeed = 1337;
@@ -177,4 +187,8 @@ private:
      *  streaming pass and fed to the arrest loop every frame. */
     int32 CachedStars = 0;
     double CachedNearestCopDistM = 1.0e6;
+
+    /** Whether any pursuer currently has eyes on the player (refreshed per frame; the
+     *  evasion driver feeds this to UWantedSubsystem::UpdateEvasion). */
+    bool bPlayerSeenByPolice = false;
 };

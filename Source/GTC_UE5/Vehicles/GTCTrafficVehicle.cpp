@@ -4,6 +4,7 @@
 
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "../World/Surfaces/SurfaceImpact.h"
 
 AGTCTrafficVehicle::AGTCTrafficVehicle()
 {
@@ -24,6 +25,12 @@ AGTCTrafficVehicle::AGTCTrafficVehicle()
     // are solid AND never drive through you, then this can go back to Block.
     Body->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     Body->SetMobility(EComponentMobility::Movable);
+    // Rounds into the car body throw sparks. The footprint is a single box (no separate
+    // glass collider), so the whole car resolves to Metal — the iconic shoot-a-car effect.
+    // A component tag needs no physical material on the BP mesh and never touches an asset,
+    // so it sidesteps the broken CitySample vehicle shader maps. See
+    // Source/GTC_UE5/World/Surfaces/SurfaceImpact.h.
+    Body->ComponentTags.Add(GTCSurfaceTags::SurfaceTag(EGTCSurface::Metal));
     RootComponent = Body;
 
     VehicleMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VehicleMesh"));

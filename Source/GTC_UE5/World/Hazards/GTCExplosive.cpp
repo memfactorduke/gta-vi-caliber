@@ -59,35 +59,36 @@ void AGTCExplosive::Detonate(AController* ByInstigator)
     TArray<AGTCExplosive*> ToChain;
     if (World != nullptr)
     {
-        // One overlap catches both blast targets and neighbouring explosives (both
-        // block ECC_Visibility); the query radius covers whichever reach is larger.
+        // Damage targets are ALL pawns — query the Pawn channel, because the player's
+        // capsule responds only to ECC_Pawn (AI capsules opt into Visibility so the
+        // player can shoot them, but the player's does not). Chain neighbours are other
+        // explosives, which block Visibility. Two queries so neither set is missed.
         const double QueryR = FMath::Max(BlastRadiusCm, ChainTriggerRadiusCm);
+        const FCollisionShape QuerySphere = FCollisionShape::MakeSphere(static_cast<float>(QueryR));
+
+        // Chain pass: neighbouring explosives within range (the bDetonated guard
+        // terminates the cascade — no A<->B ping-pong).
+        TArray<FOverlapResult> ChainOverlaps;
+        World->OverlapMultiByChannel(ChainOverlaps, Center, FQuat::Identity, ECC_Visibility, QuerySphere);
+        for (const FOverlapResult& O : ChainOverlaps)
+        {
+            AGTCExplosive* Other = Cast<AGTCExplosive>(O.GetActor());
+            if (Other != nullptr && Other != this && !Other->bDetonated
+                && FExplosionModel::ShouldChain(Center, Other->GetActorLocation(), ChainTriggerRadiusCm))
+            {
+                ToChain.Add(Other);
+            }
+        }
+
+        // Damage pass: every pawn caught on the Pawn channel.
         TArray<FOverlapResult> Overlaps;
-        World->OverlapMultiByChannel(
-            Overlaps, Center, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(static_cast<float>(QueryR)));
+        World->OverlapMultiByChannel(Overlaps, Center, FQuat::Identity, ECC_Pawn, QuerySphere);
 
         TSet<AActor*> Damaged;
         for (const FOverlapResult& O : Overlaps)
         {
             AActor* Actor = O.GetActor();
-            if (Actor == nullptr || Actor == this)
-            {
-                continue;
-            }
-
-            // A neighbouring explosive within chain range goes off too (the
-            // bDetonated guard terminates the cascade).
-            if (AGTCExplosive* Other = Cast<AGTCExplosive>(Actor))
-            {
-                if (!Other->bDetonated
-                    && FExplosionModel::ShouldChain(Center, Other->GetActorLocation(), ChainTriggerRadiusCm))
-                {
-                    ToChain.Add(Other);
-                }
-                continue;
-            }
-
-            if (Damaged.Contains(Actor))
+            if (Actor == nullptr || Actor == this || Damaged.Contains(Actor))
             {
                 continue;
             }

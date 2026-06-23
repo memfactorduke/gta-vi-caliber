@@ -26,11 +26,18 @@
 #include "../../World/Interaction/InteractionComponent.h"
 #include "../../Weapons/Component/GTCWeaponComponent.h"
 #include "../../Weapons/Throwables/GTCThrowable.h"
+#include "../../Weapons/Melee/MeleeCombat.h"
+#include "GameFramework/Pawn.h"
+#include "Kismet/GameplayStatics.h"
+#include "EngineUtils.h"
 #include "../../NPC/Appearance/GTCAppearanceSet.h"
 #include "../../Core/GTCGameInstance.h"
+#include "../../Systems/Save/SaveSubsystem.h"
 #include "../Stats/PlayerStats.h"
 #include "GTCPlayerState.h"
 #include "GtcDamageRouting.h"
+#include "../../World/Surfaces/SurfaceImpact.h"
+#include "../../World/Surfaces/SurfaceImpactFX.h"
 
 namespace
 {
@@ -210,24 +217,20 @@ AGTCPlayerCharacter::AGTCPlayerCharacter()
         TEXT("/Game/GTCaliberAssets/Content/Characters/Mannequins/Anims/Locomotion/MM_Crouch_Idle.MM_Crouch_Idle")));
     SwimPoseAnim = TSoftObjectPtr<UAnimSequence>(FSoftObjectPath(
         TEXT("/Game/GTCaliberAssets/Content/Characters/Mannequins/Anims/Locomotion/MM_Swim_Fwd.MM_Swim_Fwd")));
+
+    // Living pawn -> "creature" surface: rounds into the player spray blood, not a
+    // generic puff. See Source/GTC_UE5/World/Surfaces/SurfaceImpact.h.
+    Tags.Add(GTCSurfaceTags::CreatureTag());
 }
 
 void AGTCPlayerCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    // Restore the look the player built in the creator. The GameInstance survives
-    // level travel, so the character carries across every map.
-    if (UWorld* W = GetWorld())
-    {
-        if (UGTCGameInstance* GI = W->GetGameInstance<UGTCGameInstance>())
-        {
-            if (GI->HasSavedLook())
-            {
-                Look = GI->GetSavedLook();
-            }
-        }
-    }
+    // Re-apply any persistent player state the GameInstance carries (look + ammo +
+    // position) — from the creator, level travel, or a loaded save. The GameInstance
+    // survives travel, so the character carries across every map.
+    const bool bRestoredSavedTransform = RestorePersistentState();
 
     ApplyAppearance();
 
@@ -235,8 +238,9 @@ void AGTCPlayerCharacter::BeginPlay()
     // PlayerStarts currently sit, X ~0..150), drop into the built city so the
     // player isn't staring at empty terrain/ocean with no buildings in sight.
     // Self-disabling once a PlayerStart is placed in the city (X < threshold).
-    // Stopgap until the level's PlayerStart is relocated in-editor.
-    if (bRelocateIfSpawnedFarFromCity && GetActorLocation().X >= FarSpawnXThreshold)
+    // Stopgap until the level's PlayerStart is relocated in-editor. Skipped entirely when
+    // a saved transform was just restored — the save wins over the relocation net.
+    if (!bRestoredSavedTransform && bRelocateIfSpawnedFarFromCity && GetActorLocation().X >= FarSpawnXThreshold)
     {
         SetActorLocation(CityFallbackSpawn, /*bSweep=*/false);
         // Face roughly toward the city mass (which lies in -X) so the camera looks
@@ -248,6 +252,93 @@ void AGTCPlayerCharacter::BeginPlay()
             C->SetControlRotation(FaceCity);
         }
     }
+}
+
+bool AGTCPlayerCharacter::RestorePersistentState()
+{
+    bool bRestoredTransform = false;
+    UWorld* W = GetWorld();
+    if (W == nullptr)
+    {
+        return false;
+    }
+    UGTCGameInstance* GI = W->GetGameInstance<UGTCGameInstance>();
+    if (GI == nullptr)
+    {
+        return false;
+    }
+
+    if (GI->HasSavedLook())
+    {
+        Look = GI->GetSavedLook();
+    }
+    if (GI->HasSavedThrowableAmmo())
+    {
+        int32 SavedF = 0, SavedG = 0, SavedM = 0;
+        GI->GetSavedThrowableAmmo(SavedF, SavedG, SavedM);
+        OffenseLoadout.RestoreAmmo(SavedF, SavedG, SavedM);
+        OnThrowablesChanged();
+    }
+    if (GI->HasSavedTransform())
+    {
+        FVector SavedLoc = FVector::ZeroVector;
+        float SavedYaw = 0.0f;
+        GI->GetSavedTransform(SavedLoc, SavedYaw);
+        SetActorLocation(SavedLoc, /*bSweep=*/false);
+        const FRotator SavedRot(0.0, SavedYaw, 0.0);
+        SetActorRotation(SavedRot);
+        if (AController* C = GetController())
+        {
+            C->SetControlRotation(SavedRot);
+        }
+        bRestoredTransform = true;
+    }
+    return bRestoredTransform;
+}
+
+void AGTCPlayerCharacter::GTC_SaveGame()
+{
+    if (UGameInstance* GIBase = GetGameInstance())
+    {
+        if (USaveSubsystem* Save = GIBase->GetSubsystem<USaveSubsystem>())
+        {
+            Save->SaveToFile(USaveSubsystem::DefaultSavePath());
+        }
+    }
+}
+
+void AGTCPlayerCharacter::GTC_LoadGame()
+{
+    UGameInstance* GIBase = GetGameInstance();
+    if (GIBase == nullptr)
+    {
+        return;
+    }
+    USaveSubsystem* Save = GIBase->GetSubsystem<USaveSubsystem>();
+    if (Save == nullptr)
+    {
+        return;
+    }
+    // Load applies each section's hook (wanted heat restores live; the GameInstance's
+    // "player" hook updates its held look/ammo/transform). Then push that player state
+    // onto THIS live pawn and refresh its appearance.
+    if (Save->LoadFromFile(USaveSubsystem::DefaultSavePath()))
+    {
+        RestorePersistentState();
+        ApplyAppearance();
+    }
+}
+
+void AGTCPlayerCharacter::SyncThrowablesChanged()
+{
+    if (UWorld* W = GetWorld())
+    {
+        if (UGTCGameInstance* GI = W->GetGameInstance<UGTCGameInstance>())
+        {
+            GI->SetSavedThrowableAmmo(GetFlashbangAmmo(), GetGrenadeAmmo(), GetMolotovAmmo());
+        }
+    }
+    OnThrowablesChanged();
 }
 
 void AGTCPlayerCharacter::ApplyAppearance()
@@ -533,6 +624,10 @@ void AGTCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
         {
             RuntimeSprintAction = NewObject<UInputAction>(this, TEXT("IA_RuntimeSprint"));
         }
+        if (!RuntimeAimAction)
+        {
+            RuntimeAimAction = NewObject<UInputAction>(this, TEXT("IA_RuntimeAim"));
+        }
         EnhancedInput->BindAction(
             RuntimeCrouchAction, ETriggerEvent::Started, this, &AGTCPlayerCharacter::HandleCrouchStarted);
         EnhancedInput->BindAction(
@@ -541,6 +636,10 @@ void AGTCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
             RuntimeSprintAction, ETriggerEvent::Started, this, &AGTCPlayerCharacter::HandleSprintStarted);
         EnhancedInput->BindAction(
             RuntimeSprintAction, ETriggerEvent::Completed, this, &AGTCPlayerCharacter::HandleSprintCompleted);
+        EnhancedInput->BindAction(
+            RuntimeAimAction, ETriggerEvent::Started, this, &AGTCPlayerCharacter::HandleAimStarted);
+        EnhancedInput->BindAction(
+            RuntimeAimAction, ETriggerEvent::Completed, this, &AGTCPlayerCharacter::HandleAimCompleted);
 
         // Emotes are no longer per-key — they play through PlayEmote(Index) from the
         // single-key emote panel (B → SGTCEmoteWheel), so no emote actions bind here.
@@ -617,6 +716,12 @@ void AGTCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                 Imc->MapKey(RuntimeSprintAction, EKeys::LeftShift);
                 Imc->MapKey(RuntimeSprintAction, EKeys::Gamepad_LeftShoulder);
             }
+            if (RuntimeAimAction)
+            {
+                // Hold-to-aim: right mouse on KB&M, left trigger on gamepad (GTA scheme).
+                Imc->MapKey(RuntimeAimAction, EKeys::RightMouseButton);
+                Imc->MapKey(RuntimeAimAction, EKeys::Gamepad_LeftTrigger);
+            }
             // (No emote key mappings — emotes are picked from the one-key panel.)
 
             // High priority so it wins over any (empty/divergent) context the
@@ -679,6 +784,10 @@ void AGTCPlayerCharacter::HandleFireStarted(const FInputActionValue& /*Value*/)
         // layered-blend slot is authored so firing keeps the legs walking/running.
         PlayCombatAnim(FireAnim, FName(TEXT("DefaultSlot")));
     }
+    // Firing also pulls the body to face the mouse/camera (hip-fire still aims at
+    // the crosshair), so shots and the character line up even without the aim button.
+    bFireHeld = true;
+    RefreshAimPosture();
 }
 
 void AGTCPlayerCharacter::HandleFireCompleted(const FInputActionValue& /*Value*/)
@@ -686,6 +795,35 @@ void AGTCPlayerCharacter::HandleFireCompleted(const FInputActionValue& /*Value*/
     if (WeaponComponent != nullptr)
     {
         WeaponComponent->StopFire();
+    }
+    bFireHeld = false;
+    RefreshAimPosture();
+}
+
+void AGTCPlayerCharacter::HandleAimStarted(const FInputActionValue& /*Value*/)
+{
+    bAimButtonHeld = true;
+    RefreshAimPosture();
+}
+
+void AGTCPlayerCharacter::HandleAimCompleted(const FInputActionValue& /*Value*/)
+{
+    bAimButtonHeld = false;
+    RefreshAimPosture();
+}
+
+void AGTCPlayerCharacter::RefreshAimPosture()
+{
+    // GTA-style aim turn: while aiming or firing, lock the body yaw to the controller
+    // (camera) so the character snaps to face the mouse direction; otherwise let
+    // movement steer the body. The camera itself already follows the mouse via
+    // HandleLook. Tracking both sources (aim button + fire) so releasing one while
+    // the other is still held does not prematurely drop the aim posture.
+    const bool bAiming = bAimButtonHeld || bFireHeld;
+    bUseControllerRotationYaw = bAiming;
+    if (UCharacterMovementComponent* Movement = GetCharacterMovement())
+    {
+        Movement->bOrientRotationToMovement = !bAiming;
     }
 }
 
@@ -915,6 +1053,26 @@ void AGTCPlayerCharacter::GTC_Piss()
     PlayCombatAnim(PissAnim, FName(TEXT("DefaultSlot")));
 }
 
+void AGTCPlayerCharacter::AddThrowableAmmo(int32 KindIndex, int32 Count)
+{
+    if (KindIndex < 0 || KindIndex >= static_cast<int32>(EThrowableKind::Count))
+    {
+        return;
+    }
+    OffenseLoadout.AddAmmo(static_cast<EThrowableKind>(KindIndex), Count);
+    SyncThrowablesChanged();
+}
+
+bool AGTCPlayerCharacter::IsThrowableAtCap(int32 KindIndex) const
+{
+    if (KindIndex < 0 || KindIndex >= static_cast<int32>(EThrowableKind::Count))
+    {
+        return true;
+    }
+    const EThrowableKind K = static_cast<EThrowableKind>(KindIndex);
+    return OffenseLoadout.GetAmmo(K) >= OffenseLoadout.GetMaxAmmo(K);
+}
+
 void AGTCPlayerCharacter::GTC_ThrowGrenade()
 {
     UWorld* World = GetWorld();
@@ -922,12 +1080,20 @@ void AGTCPlayerCharacter::GTC_ThrowGrenade()
     {
         return;
     }
+    // Consume a grenade + arm the throw cooldown; refused if empty or still cooling down.
+    if (!OffenseLoadout.TryThrow(EThrowableKind::Grenade, World->GetTimeSeconds()))
+    {
+        return;
+    }
     const FVector AimDir = FollowCamera->GetForwardVector();
-    // Spawn just ahead of the camera so it clears the pawn, then lob it.
-    const FVector Origin = FollowCamera->GetComponentLocation() + AimDir * 80.0;
+    // Spawn in front of the PAWN at chest height: the camera sits on a long spring arm
+    // BEHIND the pawn, so spawning at the camera would drop the grenade behind the
+    // player and bounce it off the player's own capsule.
+    const FVector Origin = GetActorLocation() + FVector(0.0, 0.0, 50.0) + AimDir * 100.0;
     AGTCThrowable::SpawnAndThrow(
         World, Origin, AimDir, this, /*ThrowSpeed cm/s*/ 1500.0,
         /*FuseSeconds*/ 3.5, /*CookSeconds*/ 0.0, AGTCThrowable::StaticClass());
+    SyncThrowablesChanged();
 }
 
 void AGTCPlayerCharacter::GTC_ThrowMolotov()
@@ -937,11 +1103,116 @@ void AGTCPlayerCharacter::GTC_ThrowMolotov()
     {
         return;
     }
+    if (!OffenseLoadout.TryThrow(EThrowableKind::Molotov, World->GetTimeSeconds()))
+    {
+        return;
+    }
     const FVector AimDir = FollowCamera->GetForwardVector();
-    const FVector Origin = FollowCamera->GetComponentLocation() + AimDir * 80.0;
+    // Spawn in front of the pawn at chest height (camera is behind on a spring arm).
+    const FVector Origin = GetActorLocation() + FVector(0.0, 0.0, 50.0) + AimDir * 100.0;
     AGTCThrowable::SpawnAndThrow(
         World, Origin, AimDir, this, /*ThrowSpeed cm/s*/ 1300.0,
         /*FuseSeconds*/ 1.5, /*CookSeconds*/ 0.0, AGTCThrowable::StaticClass(), /*bIncendiary*/ true);
+    SyncThrowablesChanged();
+}
+
+void AGTCPlayerCharacter::GTC_ThrowFlashbang()
+{
+    UWorld* World = GetWorld();
+    if (World == nullptr || FollowCamera == nullptr)
+    {
+        return;
+    }
+    // The throw cooldown (1.2s) outlasts nothing, but it's the gate that stops the
+    // flashbang from chain-stunning a whole squad faster than the 3s stun wears off.
+    if (!OffenseLoadout.TryThrow(EThrowableKind::Flashbang, World->GetTimeSeconds()))
+    {
+        return;
+    }
+    const FVector AimDir = FollowCamera->GetForwardVector();
+    const FVector Origin = GetActorLocation() + FVector(0.0, 0.0, 50.0) + AimDir * 100.0;
+    AGTCThrowable::SpawnAndThrow(
+        World, Origin, AimDir, this, /*ThrowSpeed cm/s*/ 1500.0,
+        /*FuseSeconds*/ 1.5, /*CookSeconds*/ 0.0, AGTCThrowable::StaticClass(),
+        /*bIncendiary*/ false, /*bFlashbang*/ true);
+    SyncThrowablesChanged();
+}
+
+void AGTCPlayerCharacter::GTC_Melee()
+{
+    UWorld* World = GetWorld();
+    if (World == nullptr)
+    {
+        return;
+    }
+    // Melee cooldown (0.8s): stops chaining takedowns down a stunned line of enemies.
+    if (!OffenseLoadout.TryMelee(World->GetTimeSeconds()))
+    {
+        return;
+    }
+    const FVector Self = GetActorLocation();
+    const FVector Forward =
+        (FollowCamera != nullptr ? FollowCamera->GetForwardVector() : GetActorForwardVector()).GetSafeNormal2D();
+
+    // Pick the nearest pawn in a ~70-degree front arc within reach and strike it.
+    constexpr double ReachSq = 220.0 * 220.0; // ~2.2 m
+    constexpr double FrontArcDot = 0.35;
+    APawn* Best = nullptr;
+    double BestDistSq = ReachSq;
+    for (TActorIterator<APawn> It(World); It; ++It)
+    {
+        APawn* Other = *It;
+        if (Other == nullptr || Other == this)
+        {
+            continue;
+        }
+        FVector To = Other->GetActorLocation() - Self;
+        To.Z = 0.0;
+        const double DistSq = To.SizeSquared();
+        if (DistSq > BestDistSq)
+        {
+            continue;
+        }
+        if (FVector::DotProduct(Forward, To.GetSafeNormal()) < FrontArcDot)
+        {
+            continue; // outside the swing arc
+        }
+        BestDistSq = DistSq;
+        Best = Other;
+    }
+    if (Best != nullptr)
+    {
+        const FVector HitDir = (Best->GetActorLocation() - Self).GetSafeNormal();
+        // A strike into an enemy's back is a stealth takedown — lethal; otherwise a
+        // normal melee blow.
+        const FVector TargetFwd = Best->GetActorForwardVector().GetSafeNormal2D();
+        const FVector TargetToPlayer = (Self - Best->GetActorLocation()).GetSafeNormal2D();
+        const bool bFromBehind = FVector::DotProduct(TargetFwd, TargetToPlayer) < -0.5;
+        const double Damage = bFromBehind ? 1.0e4 : FMeleeCombat::BaseDamage(EMeleeStrike::Heavy);
+        UGameplayStatics::ApplyPointDamage(
+            Best, static_cast<float>(Damage), HitDir, FHitResult(), GetController(), this, nullptr);
+
+        // Blood on a melee blow: the strike only ever lands on a pawn (every pawn carries the
+        // Creature tag), so a synthetic hit at chest height resolves to the blood burst through
+        // the same registry the guns use. See Source/GTC_UE5/World/Surfaces/SurfaceImpactFX.h.
+        FHitResult MeleeHit;
+        MeleeHit.HitObjectHandle = FActorInstanceHandle(Best);
+        MeleeHit.ImpactPoint = Best->GetActorLocation() + FVector(0.0, 0.0, 40.0);
+        MeleeHit.ImpactNormal = -HitDir;
+        FGTCImpactFX::PlayImpact(World, MeleeHit);
+
+        // A frontal blow shoves the target back (creating space); a back-takedown just
+        // drops them.
+        if (!bFromBehind)
+        {
+            if (ACharacter* HitChar = Cast<ACharacter>(Best))
+            {
+                FVector Launch = HitDir * 45000.0;
+                Launch.Z = 25000.0;
+                HitChar->LaunchCharacter(Launch, true, true);
+            }
+        }
+    }
 }
 
 float AGTCPlayerCharacter::TakeDamageRouted(float Amount)

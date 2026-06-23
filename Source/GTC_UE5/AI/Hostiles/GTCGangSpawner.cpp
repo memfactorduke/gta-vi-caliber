@@ -68,13 +68,42 @@ void AGTCGangSpawner::Tick(float DeltaSeconds)
     }
     RespawnTimer = RespawnInterval;
 
-    if (PlayerInRange() && Members.Num() < FMath::Max(1, GangSize))
+    // Player left the turf: tear it down (members, turret, barricades) so the city
+    // isn't left full of idle gunmen and emplacements that never despawn.
+    if (!PlayerInRange())
+    {
+        for (const TWeakObjectPtr<AGTCHostile>& Weak : Members)
+        {
+            if (AGTCHostile* H = Weak.Get())
+            {
+                H->Destroy();
+            }
+        }
+        Members.Reset();
+        if (AGTCTurret* T = Turret.Get())
+        {
+            T->Destroy();
+        }
+        Turret = nullptr;
+        for (const TWeakObjectPtr<AGTCBarricade>& Weak : Barricades)
+        {
+            if (AGTCBarricade* B = Weak.Get())
+            {
+                B->Destroy();
+            }
+        }
+        Barricades.Reset();
+        bSpawnedBarricades = false;
+        return;
+    }
+
+    if (Members.Num() < FMath::Max(1, GangSize))
     {
         TopUp();
     }
 
     // Keep the turf's turret standing while the player is near.
-    if (bDeployTurret && PlayerInRange())
+    if (bDeployTurret)
     {
         AGTCTurret* T = Turret.Get();
         const bool bAlive = T != nullptr && !T->IsActorBeingDestroyed() && !T->IsDead();
@@ -95,7 +124,7 @@ void AGTCGangSpawner::Tick(float DeltaSeconds)
     }
 
     // Fortify the turf with destructible barricades — once, when the player first nears.
-    if (bDeployBarricades && !bSpawnedBarricades && PlayerInRange())
+    if (bDeployBarricades && !bSpawnedBarricades)
     {
         bSpawnedBarricades = true;
         if (UWorld* World = GetWorld())
@@ -122,7 +151,11 @@ void AGTCGangSpawner::Tick(float DeltaSeconds)
                 }
                 Point.Z += 60.0;
                 const float Yaw = static_cast<float>(FMath::RadiansToDegrees(Angle));
-                World->SpawnActor<AGTCBarricade>(BarCls, FTransform(FRotator(0.0f, Yaw, 0.0f), Point));
+                if (AGTCBarricade* Bar =
+                        World->SpawnActor<AGTCBarricade>(BarCls, FTransform(FRotator(0.0f, Yaw, 0.0f), Point)))
+                {
+                    Barricades.Add(Bar);
+                }
             }
         }
     }

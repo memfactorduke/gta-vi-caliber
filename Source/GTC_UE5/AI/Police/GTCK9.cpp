@@ -9,6 +9,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "../../World/Surfaces/SurfaceImpact.h"
 
 AGTCK9::AGTCK9()
 {
@@ -25,6 +26,10 @@ AGTCK9::AGTCK9()
         Move->MaxAcceleration = 2200.0f; // snappy, darting
     }
     bUseControllerRotationYaw = false;
+
+    // Living pawn -> "creature" surface: rounds into the dog spray blood, not a
+    // generic puff. See Source/GTC_UE5/World/Surfaces/SurfaceImpact.h.
+    Tags.Add(GTCSurfaceTags::CreatureTag());
 }
 
 void AGTCK9::InitializeK9(int32 /*Seed*/)
@@ -60,6 +65,11 @@ void AGTCK9::FaceTarget(const FVector& TargetPos, float DeltaSeconds)
     SetActorRotation(FMath::RInterpTo(GetActorRotation(), Desired, DeltaSeconds, 10.0f));
 }
 
+void AGTCK9::Stun(float Seconds)
+{
+    StunTimer = FMath::Max(StunTimer, static_cast<double>(Seconds));
+}
+
 void AGTCK9::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
@@ -69,6 +79,13 @@ void AGTCK9::Tick(float DeltaSeconds)
     }
 
     BiteTimer = FMath::Max(0.0, BiteTimer - DeltaSeconds);
+
+    // Flashbanged: cower, don't charge or bite, until the stun wears off.
+    if (StunTimer > 0.0)
+    {
+        StunTimer -= static_cast<double>(DeltaSeconds);
+        return;
+    }
 
     APawn* Target = ResolveTarget();
     if (Target == nullptr)

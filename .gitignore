@@ -125,3 +125,7 @@ cesium-request-cache.sqlite*
 
 # Per-user editor settings (machine-specific)
 /Config/DefaultEditorPerProjectUserSettings.ini
+
+# Nested Epic "Game Animation Sample" reference project (its own .uproject + build
+# caches) — a local download, not part of this game's source or content.
+/GameAnimationSample/

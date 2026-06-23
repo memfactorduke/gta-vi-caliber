@@ -7,7 +7,10 @@
 #include "WantedSystem.h"
 #include "CrimeWitness.h"
 #include "WantedEvasion.h"
+#include "../Save/SaveJson.h"
 #include "WantedSubsystem.generated.h"
+
+class USaveSubsystem;
 
 /**
  * UWantedSubsystem — UE 5.7 port of Godot's self-wiring `wanted_tracker.gd` (class
@@ -84,6 +87,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wanted")
     double CrimeActiveWindow = 0.6;
 
+    /** Go-cold search window scales with heat: EvasionBaseSeconds + per-star. So shaking
+     *  5 stars (≈36s) takes far longer than 1 (≈12s) — high heat shouldn't clear on the
+     *  same brief sightline break as low heat. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wanted")
+    double EvasionBaseSeconds = 6.0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wanted")
+    double EvasionPerStarSeconds = 6.0;
+
     /** Fires when the quantised star count changes (Godot stars_changed). */
     UPROPERTY(BlueprintAssignable, Category = "Wanted")
     FOnStarsChanged OnStarsChanged;
@@ -103,6 +115,13 @@ public:
     const FWantedEvasion& GetEvasion() const { return _Evasion; }
     /** Number of in-flight witness reports still dialling. */
     int32 PendingReportCount() const { return _PendingReports.Num(); }
+
+    /** True for a short window (CrimeActiveWindow) after the player commits a crime —
+     *  i.e. they're actively fighting/shooting right now. Police use this as the
+     *  "armed/dangerous suspect" signal so they don't try to cuff a player mid-firefight
+     *  (the bArmed flag from the crowd snapshot is only set if a weapon-equip path wires
+     *  SetPlayerArmed, which may not be active). */
+    bool IsCrimeActive() const { return _CrimeTimer > 0.0; }
 
     // --- Crime drivers (ported from the WantedTracker Node) ----------------
 
@@ -131,7 +150,15 @@ public:
     // --- Evasion driver ----------------------------------------------------
 
     /** Feed line-of-sight + delta into the owned evasion state machine. */
-    void UpdateEvasion(bool bSeenByPolice, double Delta) { _Evasion.Update(bSeenByPolice, Delta); }
+    void UpdateEvasion(bool bSeenByPolice, double Delta)
+    {
+        // Retarget the search window to the current heat before ticking. Setting it on a
+        // 'seen' frame (which refills _TimeLeft = SearchDuration) means a player who later
+        // breaks line of sight counts down from the star-scaled window, not a flat 12s.
+        _Evasion.SearchDuration = FMath::Max(
+            EvasionBaseSeconds + EvasionPerStarSeconds * static_cast<double>(FMath::Max(0, Stars())), 0.001);
+        _Evasion.Update(bSeenByPolice, Delta);
+    }
 
     // --- State management --------------------------------------------------
 
@@ -144,9 +171,32 @@ public:
     /** Restore heat from a snapshot, floored at 0 (Godot restore). */
     void RestoreHeat(double Heat);
 
+    // --- Save persistence --------------------------------------------------
+    // The wanted level (heat) is save-persisted: this subsystem registers a "wanted"
+    // section hook with USaveSubsystem (the same self-registration the mission editor
+    // uses, so no new serializer subsystem is needed). Split out RegisterSaveHooks so a
+    // test can wire a directly-constructed USaveSubsystem without the live init path.
+
+    /** Bind + register this subsystem's save/load hooks with `Save`. Idempotent; returns
+     *  false if Save is null. */
+    bool RegisterSaveHooks(USaveSubsystem* Save);
+
+    /** Drop the save/load hooks from the USaveSubsystem they were registered with. */
+    void UnregisterSaveHooks();
+
 private:
     /** Re-evaluate the quantised star count and broadcast OnStarsChanged on change. */
     void RefreshStars();
+
+    /** Save hook: write the live heat into the "wanted" section. */
+    void OnSaveWanted(const TSharedRef<FGtcJsonObject>& SectionOut);
+
+    /** Load hook: restore heat from the "wanted" section (absent -> 0). */
+    void OnLoadWanted(const TSharedRef<FGtcJsonObject>& SectionIn);
+
+    /** The USaveSubsystem our hook is registered with (non-owning), for clean unregister. */
+    UPROPERTY(Transient)
+    TObjectPtr<USaveSubsystem> RegisteredSave = nullptr;
 
     /** One queued civilian witness report: a dialling timer plus the heat it will apply. */
     struct FPendingReport

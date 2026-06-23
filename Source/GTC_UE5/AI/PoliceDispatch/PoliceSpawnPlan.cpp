@@ -33,9 +33,11 @@ TArray<FPoliceSpawnSlot> FPoliceSpawnPlan::Build(
             FVector::ZeroVector, SpawnRadiusMeters, Angle, Rng.FRand(), RadialJitterMeters);
 
         FPoliceSpawnSlot Slot;
-        // Deal the heat's unit mix round-robin so a small wave still reflects the
-        // composition (e.g. a 1-of-3 wave isn't always the first listed type).
-        Slot.UnitType = Units[Index % Units.Num()];
+        // Deal the heat's unit mix round-robin with a cursor that is CONTINUOUS across
+        // waves (seeded by the live count), not reset to 0 each wave. Resetting每 wave
+        // front-loads the early types and strands the later ones (e.g. SWAT) whenever a
+        // wave is smaller than the mix. Advancing the cursor guarantees every type lands.
+        Slot.UnitType = Units[(Alive + Index) % Units.Num()];
         Slot.PlanarOffset = Offset;
         Out.Add(Slot);
     }

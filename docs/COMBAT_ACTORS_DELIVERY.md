@@ -41,6 +41,9 @@ land, air and ground → you fight, flee, or get cuffed; and the world is destru
   `GTC_ThrowGrenade` / `GTC_ThrowMolotov`. The AI-aim path added to
   `UGTCWeaponComponent` (`SetAimOverride`) lets every NPC/police gun reuse the
   player's weapon component.
+- **Melee** — `GTC_Melee` exec: a front-arc strike (`FMeleeCombat` damage + knockback)
+  or, into an enemy's back, a lethal **stealth takedown**. Rounds out player offense
+  (shoot + throw + melee).
 
 ### Environmental destruction
 - **`AGTCExplosive`** — shootable barrel over `FExplosionModel` with chain
@@ -61,11 +64,20 @@ land, air and ground → you fight, flee, or get cuffed; and the world is destru
 - **`AGTCGangSpawner`** — a turf that keeps a small band alive nearby while the player
   is in range.
 
-### Live wiring (was dormant)
+### Live wiring (was dormant) — the wanted lifecycle now closes end-to-end
 - Crime reporting: `AGTCCitizen` / police actors call `UWantedSubsystem::ReportCrime`
   on player wounds/kills (was never called).
 - `AGTCPoliceDirector` drives `UWantedSubsystem::TickFrame` and feeds
   `UArrestSubsystem::Tick` the nearest living-officer distance.
+- **Escape:** the director feeds `UpdateEvasion` from police line-of-sight (chopper
+  overhead, or nearest officer within range with a clear sightline) and clears the
+  stars when the player has gone **cold** — breaking contact actually loses the cops.
+- **Bust:** apprehend closes officers to the catch range so the grapple lands; the
+  director drains the arrest subsystem's `ConsumeClearHeatRequest` and clears the
+  stars. So the full loop is wired: crime → chase → **escape / busted / killed**.
+- Remaining BP hook: bind `UArrestSubsystem::OnBusted` for the cuff/respawn FX
+  (gameplay consequence on a bust) — the only loop-level wiring left, and it's editor
+  work.
 
 ## Activating it in the editor (the system is dormant until placed)
 
@@ -98,17 +110,18 @@ with air + ground + barricades, then drive into gang turf for a three-way fight.
 ## New / changed files
 
 New (cleanly mine):
-- `AI/Police/{GTCPoliceOfficer,GTCPoliceDirector,GTCPoliceHelicopter,GTCPoliceCar,GTCRoadblock,GTCSpikeStrip,GTCSwatVan}.{h,cpp}`
-- `AI/Hostiles/{GTCHostile,GTCGangSpawner}.{h,cpp}`
+- `AI/Police/{GTCPoliceOfficer,GTCPoliceDirector,GTCPoliceHelicopter,GTCPoliceCar,GTCRoadblock,GTCSpikeStrip,GTCSwatVan,GTCK9}.{h,cpp}`
+- `AI/Hostiles/{GTCHostile,GTCGangSpawner,GTCTurret}.{h,cpp}`
 - `AI/PoliceDispatch/PoliceSpawnPlan.{h,cpp}` + `Tests/PoliceSpawnPlanTest.cpp`
 - `AI/Combat/Apprehend.h` + `Tests/ApprehendTest.cpp`; `AI/Combat/Suppression.h` + `Tests/SuppressionTest.cpp`
-- `Weapons/Throwables/GTCThrowable.{h,cpp}`, `World/Hazards/{GTCExplosive,GTCFire}.{h,cpp}`, `World/Pickups/GTCPickup.{h,cpp}`
+- `Weapons/Throwables/GTCThrowable.{h,cpp}`, `World/Hazards/{GTCExplosive,GTCFire}.{h,cpp}`, `World/Pickups/GTCPickup.{h,cpp}`, `World/Cover/GTCBarricade.{h,cpp}`
 - `Scripts/gtc_police/*` (host-clang pure-core verifier: apprehend + spawn-plan + suppression)
 
 Modified (SHARED — entangled with other loops' WIP): `GTC_UE5.Build.cs`
 (`bUseUnity=false`), `Weapons/Component/GTCWeaponComponent.{h,cpp}` (AI-aim),
 `NPC/Agent/GTCCitizen.{h,cpp}` (crime reporting), `Player/Pawn/GTCPlayerCharacter.{h,cpp}`
-(throw execs).
+(throw + melee execs), `Systems/Wanted/WantedSubsystem.cpp` (one line: evasion resets
+on a fresh crime).
 
 ## Build verification
 
@@ -122,6 +135,43 @@ Modified (SHARED — entangled with other loops' WIP): `GTC_UE5.Build.cs`
   if-assignment form).
 - The running editor was NOT disturbed (its loaded binary lacks these new UCLASSes;
   loading them needs a restart, which the one-editor rule forbids).
+
+## Hardening — adversarial review (correctness, then design)
+
+Because the actors compile cleanly but had never run, the code was hardened with
+multi-agent reviews (every finding independently verified to kill false positives).
+
+- **Correctness — 4 passes, converged 9 → 4 → 0.** Found and fixed **13 real runtime
+  bugs** that compiling could not catch: a helicopter searchlight frame-mismatch, a
+  no-op armor pickup, the player taking zero barrel-explosion damage (wrong collision
+  channel), several actor leaks (SWAT-van barricades, gang turf), grenades hitting the
+  thrower, cover scored against the wrong position, a broken roadblock cooldown, and a
+  regression one fix introduced. The final feature (flashbang) reviewed clean.
+- **Design / exploit — 1 pass, 13 holes found, 8 fixed green.** A different lens (a
+  bug-free system can still be unfun/broken). Fixed: escape was impossible at 3+ stars
+  (chopper pinned you just for being airborne → now needs real line-of-sight); SWAT
+  never spawned at 3 stars (per-wave round-robin stranded later unit types → continuous
+  cursor); cops couldn't catch you on foot (run speed raised above the player sprint); a
+  flashbanged cop could still bust you, and van/heli-dropped troopers were invisible to
+  the bust/seen checks; the 3-star chopper's troop insertion was dead; and cops cuffed a
+  player mid-firefight (the "armed suspect" gate was dead — now driven by the wanted
+  system's recent-crime timer).
+
+### Known design limitations (fix when the relevant system is wired)
+
+- **Throwables + melee are now finite, rate-limited abilities** (`FPlayerOffenseLoadout`,
+  host-verified + `GTC.Player.Offense.Loadout.*` tests): per-type ammo with carry caps,
+  a shared throw cooldown, and a melee cooldown — so the flashbang can't chain-stun and
+  the back-takedown can't be spammed down a line. Ammo restocks from `AGTCPickup`
+  (`FlashbangAmmo`/`GrenadeAmmo`/`MolotovAmmo` kinds) and enemy loot drops. **The one
+  remaining step is binding `GTC_ThrowFlashbang`/`Grenade`/`Molotov`/`GTC_Melee` to
+  EnhancedInput keys** (an editor asset) — the C++ is binding-ready, and the HUD can read
+  `GetFlashbang/Grenade/MolotovAmmo()` with the `OnThrowablesChanged` event.
+- **Escape clears all stars on a fixed ~12 s window** regardless of heat. Largely
+  mitigated by the chopper-LOS fix (high-star escape now also means breaking the
+  chopper's sightline); scaling the search window with stars is a tuning follow-up.
+- **Military (6-star) is defined but unreachable** since the wanted system caps at 5 —
+  harmless, but decide whether to add a 6th star or fold Military into the 5-star mix.
 
 ## ⚠️ `bUseUnity = false` — review this
 

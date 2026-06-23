@@ -21,6 +21,7 @@
 
 #include "../../World/Pickups/GTCPickup.h"
 #include "../../Weapons/Throwables/GTCThrowable.h"
+#include "../../World/Surfaces/SurfaceImpact.h"
 
 namespace
 {
@@ -42,6 +43,10 @@ AGTCHostile::AGTCHostile()
         Move->MaxWalkSpeed = static_cast<float>(RunSpeed);
     }
     bUseControllerRotationYaw = false;
+
+    // Living pawn -> "creature" surface: rounds into the body spray blood. See
+    // Source/GTC_UE5/World/Surfaces/SurfaceImpact.h.
+    Tags.Add(GTCSurfaceTags::CreatureTag());
 }
 
 void AGTCHostile::InitializeHostile(int32 Seed, bool bMeleeVariant)
@@ -69,6 +74,11 @@ void AGTCHostile::InitializeHostile(int32 Seed, bool bMeleeVariant)
     {
         Move->MaxWalkSpeed = static_cast<float>(RunSpeed);
     }
+}
+
+void AGTCHostile::Stun(float Seconds)
+{
+    StunTimer = FMath::Max(StunTimer, static_cast<double>(Seconds));
 }
 
 void AGTCHostile::BeginPlay()
@@ -140,6 +150,31 @@ APawn* AGTCHostile::PickTarget() const
         }
     }
     return Best;
+}
+
+int32 AGTCHostile::CountNearbyAllies(double RangeCm) const
+{
+    const UWorld* World = GetWorld();
+    if (World == nullptr)
+    {
+        return 0;
+    }
+    const FVector Self = GetActorLocation();
+    const double RangeSq = RangeCm * RangeCm;
+    int32 Count = 0;
+    for (TActorIterator<AGTCHostile> It(World); It; ++It)
+    {
+        const AGTCHostile* Other = *It;
+        if (Other == nullptr || Other == this || Other->IsDead())
+        {
+            continue;
+        }
+        if (FVector::DistSquared(Self, Other->GetActorLocation()) <= RangeSq)
+        {
+            ++Count;
+        }
+    }
+    return Count;
 }
 
 bool AGTCHostile::HasLineOfSight(const APawn* Target) const
@@ -241,11 +276,20 @@ void AGTCHostile::Tick(float DeltaSeconds)
     if (RetargetTimer <= 0.0 || !CurrentTarget.IsValid())
     {
         CurrentTarget = PickTarget();
+        NearbyAllyCount = CountNearbyAllies(2500.0); // ~25 m
         RetargetTimer = 0.5;
     }
     APawn* Target = CurrentTarget.Get();
     if (Target == nullptr)
     {
+        if (Weapon != nullptr) { Weapon->StopFire(); }
+        return;
+    }
+
+    // Flashbanged: hold position and hold fire until the stun wears off.
+    if (StunTimer > 0.0)
+    {
+        StunTimer -= static_cast<double>(DeltaSeconds);
         if (Weapon != nullptr) { Weapon->StopFire(); }
         return;
     }
@@ -285,9 +329,18 @@ void AGTCHostile::Tick(float DeltaSeconds)
     const int32 Ammo = (Weapon != nullptr) ? Weapon->CurrentAmmoInMag() : 0;
 
     const FVector2D Band = FCombatAi::EngagementBand(PreferredRangeM, /*Hysteresis*/ 2.0);
-    const ECombatAction Action = FCombatAi::DecideAction(
+    // Morale: a thug whose gang has been decimated AND who is taking damage loses its
+    // nerve and routs. The reduced aggression nudges the tactical AI, but DecideAction's
+    // own Retreat only fires near death, so force the rout explicitly when alone + hurt
+    // (real cover still wins if it found some).
+    const double EffectiveAggression = (NearbyAllyCount <= 1) ? Aggression * 0.35 : Aggression;
+    ECombatAction Action = FCombatAi::DecideAction(
         DistanceM, Band, bLos, bInArc,
-        FSuppression::EffectiveHealthFrac(Vitals.Fraction(), Suppression), Aggression, Ammo);
+        FSuppression::EffectiveHealthFrac(Vitals.Fraction(), Suppression), EffectiveAggression, Ammo);
+    if (NearbyAllyCount <= 1 && Vitals.Fraction() < 0.6 && Action != ECombatAction::TakeCover)
+    {
+        Action = ECombatAction::Retreat;
+    }
 
     // Movement — TakeCover heads to a real LOS-blocked spot, not just a backpedal.
     FVector MoveDir;

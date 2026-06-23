@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "../../NPC/Vitals/NpcVitals.h"
+#include "../Combat/GTCStunnable.h"
 #include "GTCK9.generated.h"
 
 /**
@@ -17,7 +18,7 @@
  * Spawned alongside officers as a low/mid-heat unit, or placed directly.
  */
 UCLASS()
-class GTC_UE5_API AGTCK9 : public ACharacter
+class GTC_UE5_API AGTCK9 : public ACharacter, public IGTCStunnable
 {
     GENERATED_BODY()
 
@@ -25,6 +26,9 @@ public:
     AGTCK9();
 
     virtual void Tick(float DeltaSeconds) override;
+
+    /** IGTCStunnable: a flashbang freezes the dog for `Seconds`. */
+    virtual void Stun(float Seconds) override;
 
     virtual float TakeDamage(
         float DamageAmount, const FDamageEvent& DamageEvent,
@@ -68,6 +72,7 @@ private:
     FNpcVitals Vitals;
     bool bDead = false;
     double BiteTimer = 0.0;
+    double StunTimer = 0.0;
 
     APawn* ResolveTarget() const;
     void FaceTarget(const FVector& TargetPos, float DeltaSeconds);

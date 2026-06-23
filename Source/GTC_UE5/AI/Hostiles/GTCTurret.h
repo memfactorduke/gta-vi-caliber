@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../../NPC/Vitals/NpcVitals.h"
+#include "../Combat/GTCStunnable.h"
 #include "GTCTurret.generated.h"
 
 class UStaticMeshComponent;
@@ -21,7 +22,7 @@ class UGTCWeaponComponent;
  * rooftop or a chokepoint, or have a faction place them.
  */
 UCLASS()
-class GTC_UE5_API AGTCTurret : public AActor
+class GTC_UE5_API AGTCTurret : public AActor, public IGTCStunnable
 {
     GENERATED_BODY()
 
@@ -30,6 +31,9 @@ public:
 
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
+
+    /** IGTCStunnable: a flashbang disables the turret for `Seconds`. */
+    virtual void Stun(float Seconds) override;
 
     UFUNCTION(BlueprintCallable, Category = "GTC|Turret")
     bool IsDead() const { return bDead; }
@@ -79,6 +83,7 @@ private:
     FNpcVitals Vitals;
     bool bDead = false;
     double FireTimer = 0.0;
+    double StunTimer = 0.0;
 
     APawn* ResolveTarget() const;
     bool HasLineOfSight(const FVector& From, const APawn* Target) const;

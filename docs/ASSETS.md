@@ -66,6 +66,10 @@ original project work, CC BY 4.0.
 | `Content/Input/IA_Interact.uasset` | Enhanced Input Action: interact (bool) | project contributors | original | CC BY 4.0 |
 | `Content/Input/IA_Fire.uasset` | Enhanced Input Action: fire (bool) | project contributors | original | CC BY 4.0 |
 | `Content/Environment/Sky/M_GTCStars.uasset` | Additive unlit night-sky star material; procedural (grid-hashed view direction, no texture), driven by `AGTCWeatherController` scalar params StarOpacity/StarBrightness | project contributors | original | CC BY 4.0 |
+| `Content/Surfaces/Physical/PM_GTC_*.uasset` | 13 physical materials (Wood/Metal/Glass/Concrete/Asphalt/Brick/Ceramic/Rubber/Vegetation/Ice/Leather/Paper/Water) tagging SurfaceType1..14 for the weapon/melee impact-FX system; no art, each just sets a surface-type byte | project contributors | original | CC BY 4.0 |
+| `Content/Surfaces/Decals/M_GTC_BulletDecal.uasset` | Deferred-decal master for bullet marks (MarkTex*Tint -> BaseColor, MarkTex.R -> Opacity); references VFX-pack textures by path only, embeds none | project contributors | original | CC BY 4.0 |
+| `Content/Surfaces/Decals/MI_GTC_BulletHole.uasset`, `MI_GTC_BulletScorch.uasset`, `MI_GTC_GlassCrack.uasset` | 3 bullet-mark decal instances (tints of `M_GTC_BulletDecal`) for hole / metal scorch / glass crack | project contributors | original | CC BY 4.0 |
+| `Content/Surfaces/FX/M_GTC_Tracer.uasset` | Unlit additive tracer-streak material (Color*Brightness -> Emissive, no texture); the faint muzzle->impact "ammo line" | project contributors | original | CC BY 4.0 |
 
 *(Append one row per project-authored asset. Path relative to repo root. "Source"
 is `original` or a URL. License must be CC0, CC-BY-4.0, or CC-BY-4.0-compatible.

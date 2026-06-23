@@ -2,6 +2,16 @@
 
 #include "WantedSubsystem.h"
 
+#include "../Save/SaveSubsystem.h"
+#include "../Save/SaveJson.h"
+#include "Engine/GameInstance.h"
+
+namespace
+{
+    const FString WantedSaveSection = TEXT("wanted");
+    const FString WantedHeatKey = TEXT("heat");
+}
+
 void UWantedSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
@@ -13,12 +23,58 @@ void UWantedSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     _CrimeTimer = 0.0;
     _Stars = -1;
     RefreshStars();
+
+    // Persist the wanted level: ensure the save subsystem exists, then register our hook.
+    if (UGameInstance* GI = GetGameInstance())
+    {
+        Collection.InitializeDependency(USaveSubsystem::StaticClass());
+        RegisterSaveHooks(GI->GetSubsystem<USaveSubsystem>());
+    }
 }
 
 void UWantedSubsystem::Deinitialize()
 {
+    UnregisterSaveHooks();
     _PendingReports.Reset();
     Super::Deinitialize();
+}
+
+bool UWantedSubsystem::RegisterSaveHooks(USaveSubsystem* Save)
+{
+    if (Save == nullptr)
+    {
+        return false;
+    }
+    FSaveHook OnSave;
+    OnSave.BindUObject(this, &UWantedSubsystem::OnSaveWanted);
+    FLoadHook OnLoad;
+    OnLoad.BindUObject(this, &UWantedSubsystem::OnLoadWanted);
+    if (!Save->RegisterHook(WantedSaveSection, OnSave, OnLoad))
+    {
+        return false;
+    }
+    RegisteredSave = Save;
+    return true;
+}
+
+void UWantedSubsystem::UnregisterSaveHooks()
+{
+    if (RegisteredSave)
+    {
+        RegisteredSave->UnregisterHook(WantedSaveSection);
+    }
+    RegisteredSave = nullptr;
+}
+
+void UWantedSubsystem::OnSaveWanted(const TSharedRef<FGtcJsonObject>& SectionOut)
+{
+    SectionOut->SetNumber(WantedHeatKey, SerializeHeat());
+}
+
+void UWantedSubsystem::OnLoadWanted(const TSharedRef<FGtcJsonObject>& SectionIn)
+{
+    // Absent section (no saved wanted level) restores to a clean slate (heat 0).
+    RestoreHeat(SectionIn->GetNumber(WantedHeatKey, 0.0));
 }
 
 int32 UWantedSubsystem::Stars() const
@@ -35,6 +91,7 @@ void UWantedSubsystem::ReportCrime(bool bKilled)
 {
     _Wanted.AddCrime(bKilled ? KillHeat : WoundHeat);
     _CrimeTimer = CrimeActiveWindow;
+    _Evasion.NotifyCrime(); // a fresh crime re-engages the chase (evasion -> Visible)
     RefreshStars();
 }
 

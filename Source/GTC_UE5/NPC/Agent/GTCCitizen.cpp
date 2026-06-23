@@ -12,6 +12,7 @@
 #include "../../World/Places/GTCPlaceRegistrySubsystem.h"
 #include "../Locomotion/NpcLocomotion.h"
 #include "../Decision/NpcReaction.h"
+#include "../../World/Surfaces/SurfaceImpact.h"
 #include "../Decision/NpcMemory.h"
 #include "../Decision/NpcIdleAction.h"
 #include "../Decision/NpcCrudeAction.h"
@@ -52,14 +53,30 @@
 
 namespace
 {
-    // The project's stock mannequins + their locomotion AnimBlueprint (blends
+    // The project's rigged humanoid body + its locomotion AnimBlueprint (blends
     // idle/walk/run from speed), soft-referenced by path so the editor-closed
-    // headless build never hard-links them. Citizens pick one for variety; the
-    // ABP makes them visibly stride, turn, and idle as they move — turning the
-    // bare capsule into something that reads as a walking person.
-    const TCHAR* MannyMeshPath = TEXT("/Game/GTCaliberAssets/Content/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple");
-    const TCHAR* QuinnMeshPath = TEXT("/Game/GTCaliberAssets/Content/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple");
-    const TCHAR* LocomotionAbpPath = TEXT("/Game/GTCaliberAssets/Content/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.ABP_Unarmed_C");
+    // headless build never hard-links them. The ABP makes a citizen visibly stride,
+    // turn, and idle as it moves — turning the bare capsule into a walking person.
+    //
+    // CRITICAL: the body mesh and the ABP must share a SKELETON, or the engine
+    // silently refuses to run the anim instance and the body slides frozen in ref
+    // pose. Every character AnimBlueprint in the project is built on the Mixamo
+    // soldier skeleton (Rifle_Aiming_Idle-3_Skeleton), and the only
+    // rigged-and-animated humanoid mesh on that skeleton is the soldier body —
+    // the same mesh the player pawn uses. The old SKM_Manny_Simple/SKM_Quinn meshes
+    // are on SK_Mannequin (no compatible ABP exists), so they never animated. Until
+    // the locomotion set is retargeted onto SK_Mannequin for crowd variety, every
+    // citizen wears the soldier body so the whole crowd actually animates.
+    //
+    // The crowd drives its own AnimBlueprint, ABP_GTC_Citizen — a copy of the stock
+    // Manny locomotion graph (Cast-To-Character driven, so it works on any ACharacter
+    // including this one), giving a citizen a speed-blended idle/walk/run plus a
+    // jump/fall/land state machine off CharacterMovement->IsFalling(). It is a
+    // sibling of the player's ABP_Unarmed rather than a share of it, so tuning the
+    // crowd's locomotion never disturbs the player pawn and vice versa.
+    const TCHAR* MannyMeshPath = TEXT("/Game/Mixamo/SoldierRifle/Rifle_Aiming_Idle-3.Rifle_Aiming_Idle-3");
+    const TCHAR* QuinnMeshPath = TEXT("/Game/Mixamo/SoldierRifle/Rifle_Aiming_Idle-3.Rifle_Aiming_Idle-3");
+    const TCHAR* LocomotionAbpPath = TEXT("/Game/GTCaliberAssets/Content/Characters/Mannequins/Anims/Unarmed/ABP_GTC_Citizen.ABP_GTC_Citizen_C");
 
     // Candidate head/face meshes, indexed by the citizen's HeadVariant. These are
     // the slots a modular or MetaHuman head drops into: author SK_Head_0N (skinned
@@ -107,6 +124,33 @@ namespace
     {
         return static_cast<EGTCContactReaction>(static_cast<uint8>(R));
     }
+
+    // ---- Built-in crowd variety -------------------------------------------------
+    // Used whenever the data-authored appearance set (DA_PlayerAppearance) leaves its
+    // pools empty — which is the default state, and the reason an un-configured crowd
+    // reads as one repeated template (same body, same height, white skin). Everything
+    // here keys off the citizen's stable seed, so a given person always looks the same
+    // across spawns, and none of it swaps the body mesh (so animation never breaks).
+
+    // A spread of believable skin tones, pushed into the body/head material's already
+    // wired "SkinTone" vector parameter.
+    const FLinearColor GCitizenSkinTones[] = {
+        FLinearColor(0.91f, 0.76f, 0.64f), FLinearColor(0.85f, 0.67f, 0.53f),
+        FLinearColor(0.77f, 0.57f, 0.43f), FLinearColor(0.66f, 0.46f, 0.34f),
+        FLinearColor(0.53f, 0.36f, 0.26f), FLinearColor(0.42f, 0.27f, 0.19f),
+        FLinearColor(0.32f, 0.20f, 0.14f), FLinearColor(0.24f, 0.15f, 0.10f),
+    };
+
+    // Per-seed uniform stature so the crowd spans many heights instead of one. Uniform
+    // scale keeps the mesh grounded (the body's -89 z offset scales with it) and leaves
+    // proportions intact; ~0.90..1.12 of the base soldier height.
+    float CitizenStature(int32 Seed)
+    {
+        constexpr int32 N = 23;
+        const uint32 H = static_cast<uint32>(Seed) * 2654435761u;
+        const float T = static_cast<float>((H >> 8) % N) / static_cast<float>(N - 1);
+        return 0.90f + T * 0.22f;
+    }
 }
 
 AGTCCitizen::AGTCCitizen()
@@ -148,6 +192,11 @@ AGTCCitizen::AGTCCitizen()
         Body->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
         Body->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
     }
+
+    // A living pawn is a "creature" surface: a shot into the body resolves to blood
+    // (FGTCSurfaceImpact / SurfaceImpactFX) even when the skeletal mesh carries no
+    // physical material. See Source/GTC_UE5/World/Surfaces/SurfaceImpact.h.
+    Tags.Add(GTCSurfaceTags::CreatureTag());
 
     // A separate head/face mesh that rides the body and follows its animation (set
     // up as a leader-pose follower once a head asset is assigned). Empty by default
@@ -297,6 +346,10 @@ void AGTCCitizen::ApplyIdentity(const FNpcCitizenRecord& Record)
     // FromSeed) so the same seed is always the same look + wander.
     Rng = FRandomStream(Record.Seed);
 
+    // Per-seed stature so a crowd reads as many different people, not one cloned body
+    // at one height. Applied to the actor (capsule + mesh) so feet stay grounded.
+    SetActorScale3D(FVector(CitizenStature(Record.Seed)));
+
     // Give the citizen an actual animated body so it reads as a walking person,
     // not an invisible capsule. Soft-loaded + guarded so a headless/cooked build
     // with the assets absent simply stays bodiless rather than failing.
@@ -307,8 +360,14 @@ void AGTCCitizen::ApplyIdentity(const FNpcCitizenRecord& Record)
         // fall back to the stock mannequins + head paths so an un-configured citizen
         // still gets a body. Selection is by seed, so the same person looks the same.
         UGTCAppearanceSet* Appearance = AppearanceSet.LoadSynchronous();
-        const FLinearColor SkinTone =
+        FLinearColor SkinTone =
             Appearance ? Appearance->ResolveSkinTone(Record.Seed, FLinearColor::White) : FLinearColor::White;
+        // No data-authored tone (the default white) → spread the crowd across the
+        // built-in palette so skin isn't uniform. unsigned modulo: Seed may be negative.
+        if (SkinTone.Equals(FLinearColor::White))
+        {
+            SkinTone = GCitizenSkinTones[static_cast<uint32>(Record.Seed) % UE_ARRAY_COUNT(GCitizenSkinTones)];
+        }
 
         const bool bQuinn = (Rng.RandHelper(2) == 0);
         USkeletalMesh* Body = Appearance ? Appearance->ResolveBody(Record.Seed) : nullptr;
@@ -320,7 +379,9 @@ void AGTCCitizen::ApplyIdentity(const FNpcCitizenRecord& Record)
         {
             MeshComp->SetSkeletalMesh(Body);
             // Stand the mesh on the capsule and face +X (the ACharacter convention).
-            MeshComp->SetRelativeLocationAndRotation(FVector(0.0, 0.0, -90.0), FRotator(0.0, -90.0, 0.0));
+            // Z=-89 / yaw=-90 matches the player pawn's mesh transform for this same
+            // soldier body, so a citizen's feet sit on the ground exactly as the player's do.
+            MeshComp->SetRelativeLocationAndRotation(FVector(0.0, 0.0, -89.0), FRotator(0.0, -90.0, 0.0));
 
             UClass* AbpClass = Appearance ? Appearance->ResolveBodyAnimClass() : nullptr;
             if (!AbpClass)

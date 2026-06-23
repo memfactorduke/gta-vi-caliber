@@ -24,6 +24,9 @@
 #include "../../Systems/Wanted/WantedSubsystem.h"
 #include "../../World/Pickups/GTCPickup.h"
 #include "../../Weapons/Throwables/GTCThrowable.h"
+#include "../Hostiles/GTCHostile.h"
+#include "../../World/Surfaces/SurfaceImpact.h"
+#include "EngineUtils.h"
 
 namespace
 {
@@ -101,6 +104,10 @@ AGTCPoliceOfficer::AGTCPoliceOfficer()
     // The officer's gun: the same component the player uses, fired via an aim
     // override (this owner has no follow camera).
     Weapon = CreateDefaultSubobject<UGTCWeaponComponent>(TEXT("Weapon"));
+
+    // Living pawn -> "creature" surface: rounds into the officer spray blood, not a
+    // generic puff. See Source/GTC_UE5/World/Surfaces/SurfaceImpact.h.
+    Tags.Add(GTCSurfaceTags::CreatureTag());
 }
 
 void AGTCPoliceOfficer::BeginPlay()
@@ -128,11 +135,17 @@ void AGTCPoliceOfficer::InitializeUnit(EPoliceUnitType InUnitType, int32 Seed)
     Rng.Initialize(Seed);
     StrafeSign = Rng.FRand() < 0.5 ? -1.0 : 1.0;
     Vitals = FNpcVitals(MaxHealthForUnit(UnitType));
+    bShielded = (UnitType == EPoliceUnitType::Swat) && (Rng.FRand() < ShieldChance);
     if (UCharacterMovementComponent* Move = GetCharacterMovement())
     {
         Move->MaxWalkSpeed = static_cast<float>(RunSpeed);
     }
     bInitialized = true;
+}
+
+void AGTCPoliceOfficer::Stun(float Seconds)
+{
+    StunTimer = FMath::Max(StunTimer, static_cast<double>(Seconds));
 }
 
 float AGTCPoliceOfficer::GetHealthFraction() const
@@ -151,13 +164,16 @@ void AGTCPoliceOfficer::Tick(float DeltaSeconds)
 
     FireTimer = FMath::Max(0.0, FireTimer - DeltaSeconds);
 
-    // Refresh the live wanted level (the escalation input).
+    // Refresh the live wanted level (the escalation input) + whether the player is
+    // actively committing crimes right now (the "armed/dangerous" signal for apprehend).
     CachedStars = 0;
+    bCachedPlayerDangerous = false;
     if (const UGameInstance* GI = GetGameInstance())
     {
         if (const UWantedSubsystem* Wanted = GI->GetSubsystem<UWantedSubsystem>())
         {
             CachedStars = Wanted->Stars();
+            bCachedPlayerDangerous = Wanted->IsCrimeActive();
         }
     }
 
@@ -171,17 +187,46 @@ void AGTCPoliceOfficer::Tick(float DeltaSeconds)
         {
             Weapon->StopFire();
         }
-        if (CachedStars <= 0)
+        // No actionable target (player gone OR no longer wanted): after a grace period
+        // go home. Accumulate whenever we're standing down — not only at zero stars —
+        // so an officer with a momentarily-null player pawn still eventually retires.
+        StandDownTimer += DeltaSeconds;
+        if (StandDownTimer > 8.0)
         {
-            StandDownTimer += DeltaSeconds;
-            if (StandDownTimer > 8.0)
-            {
-                Destroy();
-            }
+            Destroy();
+        }
+        return;
+    }
+
+    // Retire if the player has left this officer far behind. The director distance-
+    // recalls its pooled officers, but van/heli-dropped troopers aren't pooled, so this
+    // is their only distance cull (without it they linger map-wide at sustained heat).
+    constexpr double FarCullCm = 22000.0; // ~220 m
+    if (FVector::DistSquaredXY(GetActorLocation(), Target->GetActorLocation()) > FarCullCm * FarCullCm)
+    {
+        if (Weapon != nullptr)
+        {
+            Weapon->StopFire();
+        }
+        StandDownTimer += DeltaSeconds;
+        if (StandDownTimer > 8.0)
+        {
+            Destroy();
         }
         return;
     }
     StandDownTimer = 0.0;
+
+    // Flashbanged: hold position and hold fire until the stun wears off.
+    if (StunTimer > 0.0)
+    {
+        StunTimer -= DeltaSeconds;
+        if (Weapon != nullptr)
+        {
+            Weapon->StopFire();
+        }
+        return;
+    }
 
     // Pursuit memory: track the last spot we actually saw the player; when the
     // sightline is broken, steer to that last-known point rather than the true
@@ -198,11 +243,29 @@ void AGTCPoliceOfficer::Tick(float DeltaSeconds)
     {
         TimeUnseen += DeltaSeconds;
     }
-    const FVector EffectiveTarget =
+    // Default combat target: pursue the player (live when seen, last-known when not).
+    APawn* CombatPawn = Target;
+    FVector CombatPos =
         bHasLastKnown ? FPursuitMemory::Target(bLos, TruePlayerPos, LastKnownPos) : TruePlayerPos;
+    bool bCombatLos = bLos;
+    bool bFightingHostile = false;
 
-    FaceTarget(EffectiveTarget, DeltaSeconds);
-    DriveCombat(DeltaSeconds, Target, EffectiveTarget, bLos);
+    // Self-defense: ONLY when the player is out of sight, turn on a gang member that's
+    // right on top of us (so a cop being shot at by gangs shoots back). When the player
+    // is visible nothing changes — player pursuit always wins.
+    if (!bLos)
+    {
+        if (AGTCHostile* Foe = FindNearbyHostile(1200.0))
+        {
+            CombatPawn = Foe;
+            CombatPos = Foe->GetActorLocation();
+            bCombatLos = HasLineOfSight(Foe);
+            bFightingHostile = true;
+        }
+    }
+
+    FaceTarget(CombatPos, DeltaSeconds);
+    DriveCombat(DeltaSeconds, CombatPawn, CombatPos, bCombatLos, bFightingHostile);
 }
 
 APawn* AGTCPoliceOfficer::ResolveTarget() const
@@ -254,7 +317,7 @@ void AGTCPoliceOfficer::FaceTarget(const FVector& TargetPos, float DeltaSeconds)
     SetActorRotation(FRotator(0.0f, NewYaw, 0.0f));
 }
 
-bool AGTCPoliceOfficer::FindCover(const APawn* Target, FVector& OutCover) const
+bool AGTCPoliceOfficer::FindCover(const APawn* Target, const FVector& ThreatPos, FVector& OutCover) const
 {
     const UWorld* World = GetWorld();
     if (World == nullptr || Target == nullptr)
@@ -262,7 +325,7 @@ bool AGTCPoliceOfficer::FindCover(const APawn* Target, FVector& OutCover) const
         return false;
     }
     const FVector SelfPos = GetActorLocation();
-    const FVector PlayerChest = Target->GetActorLocation() + FVector(0.0, 0.0, 50.0);
+    const FVector PlayerChest = ThreatPos + FVector(0.0, 0.0, 50.0);
 
     // Sample a ring of nearby spots; a spot whose sightline to the player is blocked
     // by world geometry is cover. Its normal faces the threat by construction, so
@@ -308,7 +371,35 @@ bool AGTCPoliceOfficer::FindCover(const APawn* Target, FVector& OutCover) const
     return true;
 }
 
-void AGTCPoliceOfficer::DriveCombat(float DeltaSeconds, APawn* Target, const FVector& TargetPos, bool bLos)
+AGTCHostile* AGTCPoliceOfficer::FindNearbyHostile(double RangeCm) const
+{
+    const UWorld* World = GetWorld();
+    if (World == nullptr)
+    {
+        return nullptr;
+    }
+    const FVector Self = GetActorLocation();
+    AGTCHostile* Best = nullptr;
+    double BestDistSq = RangeCm * RangeCm;
+    for (TActorIterator<AGTCHostile> It(World); It; ++It)
+    {
+        AGTCHostile* Foe = *It;
+        if (Foe == nullptr || Foe->IsDead())
+        {
+            continue;
+        }
+        const double DistSq = FVector::DistSquared(Self, Foe->GetActorLocation());
+        if (DistSq <= BestDistSq)
+        {
+            BestDistSq = DistSq;
+            Best = Foe;
+        }
+    }
+    return Best;
+}
+
+void AGTCPoliceOfficer::DriveCombat(
+    float DeltaSeconds, APawn* Target, const FVector& TargetPos, bool bLos, bool bFightingHostile)
 {
     const FVector SelfPos = GetActorLocation();
 
@@ -323,18 +414,23 @@ void AGTCPoliceOfficer::DriveCombat(float DeltaSeconds, APawn* Target, const FVe
     // --- Apprehend: at low heat, an unarmed compliant suspect is arrested rather
     // than gunned down. Closing to the catch range is what lets the (already wired)
     // bust loop land — the gunfight plan below holds at ~12-20 m, never within 2 m. ---
-    bool bPlayerArmed = false;
-    double PlayerThreat01 = 0.0;
+    // A player who's actively committing crimes (just shot someone) is treated as armed
+    // and maximally threatening, so cops fight instead of walking up to cuff them — this
+    // is the live fallback for the crowd snapshot's bArmed, which only flips if a weapon
+    // path wires SetPlayerArmed.
+    bool bPlayerArmed = bCachedPlayerDangerous;
+    double PlayerThreat01 = bCachedPlayerDangerous ? 1.0 : 0.0;
     if (const UWorld* World = GetWorld())
     {
         if (const UGTCCrowdSubsystem* Crowd = World->GetSubsystem<UGTCCrowdSubsystem>())
         {
             const FGTCThreatSnapshot Threat = Crowd->GetPlayerThreat();
-            bPlayerArmed = Threat.bArmed;
-            PlayerThreat01 = Threat.bArmed ? 1.0 : FMath::Clamp(Threat.Speed / 600.0, 0.0, 1.0);
+            bPlayerArmed = bPlayerArmed || Threat.bArmed;
+            PlayerThreat01 = FMath::Max(
+                PlayerThreat01, Threat.bArmed ? 1.0 : FMath::Clamp(Threat.Speed / 600.0, 0.0, 1.0));
         }
     }
-    if (FApprehend::ShouldApprehend(CachedStars, bPlayerArmed, PlayerThreat01))
+    if (!bFightingHostile && FApprehend::ShouldApprehend(CachedStars, bPlayerArmed, PlayerThreat01))
     {
         // Walk straight in and plant inside the catch range (matches
         // UArrestSubsystem::CatchDistance) so the director's bust loop can grapple.
@@ -364,8 +460,12 @@ void AGTCPoliceOfficer::DriveCombat(float DeltaSeconds, APawn* Target, const FVe
     const int32 Ammo = (Weapon != nullptr) ? Weapon->CurrentAmmoInMag() : 0;
     const bool bCooldownReady = FireTimer <= 0.0;
 
+    // A shielded SWAT pushes forward behind the shield rather than hiding: it plans as
+    // if at full health, so the tactical AI never has it take cover or retreat — the
+    // frontal armor lets it survive the advance, and you have to flank it.
+    const double PlanHealth = bShielded ? 1.0 : HealthFrac;
     const FPoliceCombat::FCombatPlan Plan = FPoliceCombat::Plan(
-        DistanceM, bLos, FacingCore, ToTargetCore, HealthFrac, CachedStars, Ammo, bCooldownReady);
+        DistanceM, bLos, FacingCore, ToTargetCore, PlanHealth, CachedStars, Ammo, bCooldownReady);
 
     // --- Movement: walk the chosen action's intent through CharacterMovement -----
     // Top speed rises with heat (a 5-star response closes faster than a 1-star one);
@@ -389,7 +489,7 @@ void AGTCPoliceOfficer::DriveCombat(float DeltaSeconds, APawn* Target, const FVe
         if (!bHasCover || (bLos && !bPeeking) || CoverSearchTimer <= 0.0)
         {
             FVector Found;
-            bHasCover = FindCover(Target, Found);
+            bHasCover = FindCover(Target, TargetPos, Found);
             if (bHasCover)
             {
                 CoverPos = Found;
@@ -542,7 +642,19 @@ float AGTCPoliceOfficer::TakeDamage(
         bByPlayer = EventInstigator != nullptr && EventInstigator == World->GetFirstPlayerController();
     }
 
-    ApplyGunshot(static_cast<double>(DamageAmount), BulletTravel, bByPlayer);
+    // Riot shield: a hit into the officer's front is mostly absorbed — the bullet
+    // travels roughly opposite the way the officer faces, so the player must flank.
+    double Damage = static_cast<double>(DamageAmount);
+    if (bShielded && !BulletTravel.IsNearlyZero())
+    {
+        const FVector Fwd = GetActorForwardVector().GetSafeNormal2D();
+        if (FVector::DotProduct(Fwd, BulletTravel.GetSafeNormal()) < -0.3)
+        {
+            Damage *= (1.0 - FMath::Clamp(ShieldFrontReduction, 0.0, 1.0));
+        }
+    }
+
+    ApplyGunshot(Damage, BulletTravel, bByPlayer);
     return Applied;
 }
 
