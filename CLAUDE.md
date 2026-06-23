@@ -57,6 +57,72 @@ Key plugins (from `GTC_UE5.uproject`): `CesiumForUnreal` (3D-tiles world),
 `ChaosVehiclesPlugin`, `MassGameplay`, `EnhancedInput`, plus the MCP/Python
 toolset plugins above.
 
+## Where things go (repository map)
+
+Content has **two homes by provenance**. Put new work in the right one — full law
+in `docs/ASSETS.md` (provenance ledger) and `docs/ASSET_HANDLING.md` (third-party).
+
+**Project-authored — tracked in THIS repo** (original / CC0 / CC-BY only, every new
+binary needs a ledger row in `docs/ASSETS.md`, routed through Git LFS):
+
+- **Features / gameplay (C++)** → `Source/GTC_UE5/<feature>/` (see Source layout
+  above). New systems are C++ first, with a `GTC.*` automation test.
+- **Authored Blueprints** → `Content/Blueprints/` (subfolders: `AI/`, `weapons/`,
+  `weapons_pickup/`, `Cameras/`, `ControlRigs/`, `Data/`, `ENUMS/`, `Interfaces/`,
+  `MovementModes/`, `SmartObjects/`, `AnimModifiers/`, `AnimNotifies/`). The
+  top-level game-mode/pawn/NPC Blueprints live in `Content/Core/`
+  (`BP_GTCGameMode`, `BP_GTCPlayerCharacter`, `BP_NPC`).
+- **Materials / surfaces / environment** → `Content/Materials/`,
+  `Content/Surfaces/`, `Content/Environment/`. **UI / widgets** → `Content/UI/`.
+- **Maps:** prototype / feature-test levels → `Content/Levels/` (`DefaultLevel`,
+  `LocomotorLevel`, `NPCLevel`). The **shipping world map (CityBeachStrip) is NOT
+  here** — it lives in the submodule (below).
+
+**Third-party / licensed / paid — NEVER committed to this (public) repo.** Either
+in the asset submodule or kept on disk local-only and **gitignored**:
+
+- **Asset submodule** `Content/GTCaliberAssets/` (~15 GB Git-LFS gitlink → private
+  `duolahypercho/GT-Caliber-Asset`). Holds the shipping world (`CityBeachStrip/Maps/`),
+  licensed `Characters/`, `ThirdPerson/`, `LevelPrototyping/`, and the canonical
+  **Input**. UE path `/Game/GTCaliberAssets/Content/...`. **Licensed/paid art goes
+  HERE** (commit to the submodule repo), never into the parent tree.
+- **Vendored plugins** → `Plugins/` (gitignored). **Marketplace/Fab packs** kept
+  for the editor but gitignored: `CitySampleVehicles/`, `FPS_Weapon_Bundle/`,
+  `CesiumSettings/`.
+- ⚠ **Leak risk:** packs currently on disk but **not yet gitignored** must never be
+  committed and should be added to `.gitignore`: `Realistic_Starter_VFX_Pack_Vol2/`,
+  `MarketplaceBlockout/`, `Fab/`, `Locomotor/`, `MetaHumans/`.
+
+**Animations & characters** (mostly third-party, treat as above):
+
+- **Animations** → `Content/Anims/GASP/` (Epic Game-Animation-Sample library),
+  `Content/Mixamo/` (Mixamo clips; player retargets in
+  `Content/Mixamo/SoldierRifle/`). Retargeted assets → `Content/Mixamo/.../Anims`
+  and `Content/Blueprints/RetargetedCharacters/`. The player is on the **soldier
+  rig** (`ABP_PlayCharacter`).
+- **Characters / skeletons** → `Content/Characters/` (Epic Mannequins, Paragon
+  samples), MetaHuman heroes → `Content/MetaHumans/`.
+
+## Enhanced Input — one canonical source (do not duplicate)
+
+The input assets the **game actually loads** live ONLY in the submodule at
+`Content/GTCaliberAssets/Content/Input/` (`IMC_Default`, `IMC_MouseLook`,
+`Actions/IA_*`, `Touch/`). A CoreRedirect in `Config/DefaultEngine.ini`
+(`+PackageRedirects=(OldName="/Game/Input/",NewName="/Game/GTCaliberAssets/Content/Input/",MatchSubstring=true)`)
+rewrites **every** `/Game/Input/...` reference into that submodule path.
+
+- **Add new `IA_*` / `IMC_*` to the submodule only.** Anything dropped loose into
+  `Content/Input/` is shadowed by the redirect and never loads — that is the
+  recurring "duplicate input" trap.
+- **One copy per asset.** Before creating an input action/context, check it does
+  not already exist in the submodule set. Never keep a same-named copy in two
+  places.
+- Reference input by `/Game/Input/...` (the redirect resolves it); the loose
+  `Content/Input/` `IA_Aim/Crouch/Sprint/...` + `IMC_Sandbox` + `MobileHUD/` files
+  are the **Sandbox/mobile WIP**, not gameplay input, and are currently mis-wired
+  by that same redirect (fix in-editor by moving them into the submodule or
+  narrowing the redirect — never by duplicating).
+
 ## Conventions (see AGENTS.md for the full set)
 
 - UE5 C++ to the repo `.clang-format` / `.editorconfig`; `PascalCase` types with
