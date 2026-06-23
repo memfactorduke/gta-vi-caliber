@@ -47,15 +47,44 @@ So in this module the streaming core is greenfield. Build it fresh under
 
 > **Pure-core checklist COMPLETE (2026-06-19).** All seven editor-free pieces are
 > implemented, compiled green together (`Build.sh GTC_UE5Editor` → Result:
-> Succeeded), and covered by `GTC.World.Streaming.*` automation tests. The
-> remaining work below all needs the LIVE editor — stop and ask before attempting.
+> Succeeded), and covered by `GTC.World.Streaming.*` automation tests.
+
+## Runtime adapter — headless half DONE (2026-06-22)
+
+The `UWorldSubsystem` adapter was split: its planner-driving half is **headless-clean**
+(it talks to World Partition only through an empty virtual seam, so it pulls no
+WorldPartition module dependency), so it builds and is testable without the editor.
+The WP cell hop *behind* the seam stays live-editor work (below).
+
+- [x] **Stateful streaming brain** — `FStreamingResidency` (`World/Streaming/
+  StreamingResidency.{h,cpp}`): owns the resident set + per-tile LOD band across
+  frames, applies each `FResidencyPlanner::Plan` and re-bands with hysteresis.
+- [x] **Runtime adapter** — `UWorldStreamingSubsystem` (`World/Streaming/
+  WorldStreamingSubsystem.{h,cpp}`): a tickable `UWorldSubsystem` (the
+  `UGTCTrafficSubsystem` shape) that samples player pos+velocity each tick, drives
+  the brain, and forwards load/unload/LOD events to virtual WP hooks
+  (`OnTileLoad`/`OnTileUnload`/`OnTileLodChanged`, no-ops by default). Exposes
+  resident-count / last-load / player-tile getters for the debug HUD.
+- [x] **4 km traverse acceptance probe** — `GTC.World.Streaming.Traverse.FourKmNoHitch`
+  (`World/Streaming/Tests/StreamingTraverseTest.cpp`): drives the brain over a 4 km
+  straight + 1 km past a 90° corner, asserts ring-stays-ahead, no thrash (loads
+  inside / unloads outside the hysteresis band), budget respected, residency bounded.
+  Verified on host clang against the real cores (834 steps, max-residency 47/169,
+  every tile loaded exactly once — zero thrash through the corner). UObject glue +
+  the automation wrapper compile-pending a maintainer `GTC_UE5Editor` build (not run
+  here: rebuilding the editor module's dylib while the shared editor holds it open is
+  forbidden — stated honestly per `AGENTS.md`).
 
 ## Needs the LIVE editor (STOP and ask — do not attempt headless)
 
-- [ ] World Partition runtime cell wiring / actual async cell load+unload.
+- [ ] World Partition runtime cell wiring behind the adapter seam: a live-wired
+  subclass overrides `OnTileLoad`/`OnTileUnload`/`OnTileLodChanged` to drive actual
+  WP cell load/unload + the HLOD/impostor swap, on a WP-authored canonical map.
 - [ ] Nanite / HLOD **impostor baking** for distant buildings (Impostor Baker).
-- [ ] `UWorldSubsystem` adapter that drives the planner each tick and the
-  streaming debug HUD readout (tiles resident, VRAM, frame budget).
+- [ ] Streaming debug HUD readout (tiles resident, VRAM, frame budget) reading the
+  adapter getters.
+- [ ] Capture the 4 km live profile (streaming ≤ 1 ms main-thread); it gates whether
+  the custom worldcore async streamer / impostor baker are ever promoted.
 
 ## Verification notes (this environment)
 
