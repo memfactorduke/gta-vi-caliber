@@ -1,6 +1,6 @@
 # GT-caliber_5.8 — working rules
 
-Original open-source open-world game on **Unreal Engine 5.8**. Game code is a
+Original open-source open-world game on **Unreal Engine 5.7.4**. Game code is a
 single C++ runtime module, **`GTC_UE5`** (`GTC_UE5.uproject`). This file is the
 quick contract for working in the repo; the full machine-readable rules live in
 `AGENTS.md`, and the deeper docs in `docs/` (`ROADMAP.md` = tasks,
@@ -30,19 +30,31 @@ the intent above so you never hit it.
 
 ## Connecting to the running editor
 
-Act on the live editor through one of these, in order of preference:
+Act on the live editor through the **UnrealClaude plugin** — the in-editor
+"Claude Assistant" panel plus the `mcp__unrealclaude__*` tools. It serves an HTTP
+server (`FUnrealClaudeMCPServer`) on **`http://127.0.0.1:3000`** (default port
+3000). This is the primary control surface — use its tools to inspect/modify the
+world and run editor actions, and `execute_script` to run editor Python through
+the live connection, not a fresh `-run=pythonscript` process (`PythonScriptPlugin`
+/ `EditorScriptingUtilities` are enabled).
 
-- **Unreal MCP** — the `unreal-mcp` server in `.mcp.json`, served by the
-  in-editor `ModelContextProtocol` plugin at `http://127.0.0.1:8000/mcp`
-  (configured in `Config/DefaultEditorPerProjectUserSettings.ini`:
-  `ServerPortNumber=8000`, `ServerUrlPath=/mcp`). This is the primary control
-  surface — use its tools to inspect/modify the world and run editor actions.
-- **Python inside the editor** — `PythonScriptPlugin` /
-  `EditorScriptingUtilities` are enabled; run editor Python through the live
-  connection, not a fresh `-run=pythonscript` process.
+- **The `unreal-mcp` / port-8000 entry in `.mcp.json` is NOT wired up.** It
+  expects a `ModelContextProtocol` plugin that isn't installed (not listed in
+  `GTC_UE5.uproject`), so nothing listens on 8000. Ignore it — use UnrealClaude
+  on 3000.
+- **Hidden tools.** The bridge
+  (`Plugins/UnrealClaude/UnrealClaude/Resources/mcp-bridge/tool-router.js`) hides
+  the `scripting` + `task_*` groups by default to save tokens, so only ~15 of 28
+  tools list. To enable all ~24 (needed for FBX import / `execute_script`), add
+  those names to `SIMPLE_TOOL_NAMES` and restart the editor. This is a **local
+  patch** — the plugin is a vendored repo (`Natfii/UnrealClaude`), so it never
+  comes from `git pull`; each dev applies it themselves.
+- **Restart race.** After restarting the editor the server occasionally fails to
+  bind 3000 if the previous instance hasn't released the port. If `unreal_status`
+  reports not-connected, restart the editor once more.
 
-If the MCP server is unreachable, the editor or its plugin may be down — stop
-and ask rather than launching anything.
+If the MCP server is unreachable, the editor or its plugin may be down — stop and
+ask rather than launching anything.
 
 ## Source layout (`Source/GTC_UE5/`)
 
