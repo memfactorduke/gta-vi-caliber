@@ -1,0 +1,88 @@
+{
+	"format": "gtc_routine_bank",
+	"version": 1,
+	"routines": [
+		{
+			"id": "early_bird_office",
+			"name": "Early-Bird Office Worker",
+			"blocks": [
+				{ "start": 6.0, "end": 7.0, "activity": "loiter", "place": "home" },
+				{ "start": 7.0, "end": 8.0, "activity": "goof_off", "place": "gym" },
+				{ "start": 8.0, "end": 8.5, "activity": "commute", "place": "street" },
+				{ "start": 8.5, "end": 12.5, "activity": "work", "place": "office" },
+				{ "start": 12.5, "end": 13.5, "activity": "eat", "place": "diner" },
+				{ "start": 13.5, "end": 17.5, "activity": "work", "place": "office" },
+				{ "start": 17.5, "end": 18.0, "activity": "commute", "place": "street" },
+				{ "start": 18.0, "end": 19.5, "activity": "socialize", "place": "bar" },
+				{ "start": 19.5, "end": 22.5, "activity": "loiter", "place": "home" },
+				{ "start": 22.5, "end": 6.0, "activity": "sleep", "place": "home" }
+			]
+		},
+		{
+			"id": "night_owl_bartender",
+			"name": "Night-Owl Bartender",
+			"blocks": [
+				{ "start": 4.0, "end": 12.0, "activity": "sleep", "place": "home" },
+				{ "start": 12.0, "end": 13.0, "activity": "eat", "place": "diner" },
+				{ "start": 13.0, "end": 15.0, "activity": "loiter", "place": "home" },
+				{ "start": 15.0, "end": 16.5, "activity": "goof_off", "place": "gym" },
+				{ "start": 16.5, "end": 20.5, "activity": "loiter", "place": "home" },
+				{ "start": 20.5, "end": 21.0, "activity": "commute", "place": "street" },
+				{ "start": 21.0, "end": 4.0, "activity": "work", "place": "bar" }
+			]
+		},
+		{
+			"id": "cafe_freelancer",
+			"name": "Cafe Freelancer",
+			"blocks": [
+				{ "start": 7.0, "end": 8.5, "activity": "goof_off", "place": "park" },
+				{ "start": 8.5, "end": 13.0, "activity": "work", "place": "diner" },
+				{ "start": 13.0, "end": 14.0, "activity": "eat", "place": "diner" },
+				{ "start": 14.0, "end": 17.0, "activity": "work", "place": "diner" },
+				{ "start": 17.0, "end": 19.0, "activity": "goof_off", "place": "gym" },
+				{ "start": 19.0, "end": 23.0, "activity": "socialize", "place": "bar" },
+				{ "start": 23.0, "end": 7.0, "activity": "sleep", "place": "home" }
+			]
+		},
+		{
+			"id": "park_retiree",
+			"name": "Park-Bench Retiree",
+			"blocks": [
+				{ "start": 6.5, "end": 9.0, "activity": "loiter", "place": "park" },
+				{ "start": 9.0, "end": 12.0, "activity": "goof_off", "place": "park" },
+				{ "start": 12.0, "end": 13.0, "activity": "eat", "place": "diner" },
+				{ "start": 13.0, "end": 15.0, "activity": "loiter", "place": "home" },
+				{ "start": 15.0, "end": 18.0, "activity": "loiter", "place": "park" },
+				{ "start": 18.0, "end": 20.0, "activity": "socialize", "place": "bar" },
+				{ "start": 20.0, "end": 6.5, "activity": "sleep", "place": "home" }
+			]
+		},
+		{
+			"id": "campus_student",
+			"name": "Campus Student",
+			"blocks": [
+				{ "start": 8.0, "end": 8.5, "activity": "commute", "place": "street" },
+				{ "start": 8.5, "end": 12.0, "activity": "work", "place": "office" },
+				{ "start": 12.0, "end": 13.0, "activity": "eat", "place": "diner" },
+				{ "start": 13.0, "end": 16.0, "activity": "work", "place": "office" },
+				{ "start": 16.0, "end": 18.0, "activity": "goof_off", "place": "gym" },
+				{ "start": 18.0, "end": 19.0, "activity": "eat", "place": "diner" },
+				{ "start": 19.0, "end": 24.0, "activity": "socialize", "place": "bar" },
+				{ "start": 0.0, "end": 8.0, "activity": "sleep", "place": "home" }
+			]
+		},
+		{
+			"id": "remote_homebody",
+			"name": "Remote Homebody",
+			"blocks": [
+				{ "start": 7.0, "end": 9.0, "activity": "loiter", "place": "home" },
+				{ "start": 9.0, "end": 12.0, "activity": "work", "place": "home" },
+				{ "start": 12.0, "end": 13.0, "activity": "eat", "place": "home" },
+				{ "start": 13.0, "end": 17.0, "activity": "work", "place": "home" },
+				{ "start": 17.0, "end": 19.0, "activity": "goof_off", "place": "park" },
+				{ "start": 19.0, "end": 23.0, "activity": "loiter", "place": "home" },
+				{ "start": 23.0, "end": 7.0, "activity": "sleep", "place": "home" }
+			]
+		}
+	]
+}

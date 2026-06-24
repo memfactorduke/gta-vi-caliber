@@ -116,11 +116,14 @@ public:
     double SpawnRadiusMin = 2500.0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Crowd|Population")
-    double SpawnRadiusMax = 6000.0;
+    double SpawnRadiusMax = 9000.0;
 
-    /** Beyond this (cm) from the player, a citizen is retired. */
+    /** Beyond this (cm) from the player, a citizen is retired. Roomy on purpose: a
+     *  citizen heading off to a distant POI stays embodied long enough that you SEE
+     *  it walk away and live, rather than blinking out the moment it leaves your
+     *  immediate bubble (which read as a crowd that only exists to orbit you). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Crowd|Population")
-    double DespawnRadius = 8000.0;
+    double DespawnRadius = 14000.0;
 
     /** Max citizens to spawn per streaming pass (amortises spikes). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GTC|Crowd|Population")

@@ -6,13 +6,13 @@
 
 double FDriveBy::AimAngleFromForward(const FVector& VehicleForward, const FVector& AimDir)
 {
-    const FVector FwdDir = VehicleForward.GetSafeNormal();
+    const FVector DriveByFwd = VehicleForward.GetSafeNormal();
     const FVector Aim = AimDir.GetSafeNormal();
-    if (FwdDir.IsNearlyZero() || Aim.IsNearlyZero())
+    if (DriveByFwd.IsNearlyZero() || Aim.IsNearlyZero())
     {
         return 0.0; // degenerate -> "ahead", which CanFire blocks
     }
-    const double CosA = FMath::Clamp(FVector::DotProduct(FwdDir, Aim), -1.0, 1.0);
+    const double CosA = FMath::Clamp(FVector::DotProduct(DriveByFwd, Aim), -1.0, 1.0);
     return FMath::Acos(CosA);
 }
 

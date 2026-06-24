@@ -32,7 +32,7 @@ namespace
 		return B;
 	}
 
-	TArray<FString> MixamoBones()
+	TArray<FString> RigProfileMixamoBones()
 	{
 		return {
 			TEXT("mixamorig:Hips"), TEXT("mixamorig:Spine"), TEXT("mixamorig:Head"),
@@ -62,7 +62,7 @@ bool FRigProfileTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("MetaHuman detected (FACIAL_ bones)"),
 		GTCDetectRigConvention(MetaHumanBones()), ERigConvention::MetaHuman);
 	TestEqual(TEXT("Mixamo detected"),
-		GTCDetectRigConvention(MixamoBones()), ERigConvention::Mixamo);
+		GTCDetectRigConvention(RigProfileMixamoBones()), ERigConvention::Mixamo);
 	TestEqual(TEXT("generic humanoid detected"),
 		GTCDetectRigConvention(GenericBones()), ERigConvention::Generic);
 	TestEqual(TEXT("empty rig is unknown"),
@@ -88,7 +88,7 @@ bool FRigProfileTest::RunTest(const FString& Parameters)
 
 	// --- Canonical resolution: Mixamo keeps the namespace prefix --------------
 	{
-		const TArray<FString> B = MixamoBones();
+		const TArray<FString> B = RigProfileMixamoBones();
 		TestEqual(TEXT("Mixamo pelvis is Hips"),
 			GTCResolveCanonicalBone(ECanonicalBone::Pelvis, B), FString(TEXT("mixamorig:Hips")));
 		TestEqual(TEXT("Mixamo right hand verbatim"),

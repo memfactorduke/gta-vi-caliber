@@ -9,7 +9,8 @@
 #include "../../UI/Phone/SGTCPhone.h"
 #include "../../UI/Menus/SGTCPauseMenu.h"
 #include "../../UI/Menus/SGTCCharacterCreator.h"
-#include "../../UI/Menus/SGTCEmoteWheel.h"
+#include "../../UI/Menus/SGTCRadialMenu.h"
+#include "../../Weapons/Component/GTCWeaponComponent.h"
 
 #include "TimerManager.h"
 
@@ -75,6 +76,15 @@ void AGTCPlayerController::BeginPlay()
         PhoneConsoleCmds.Add(CM.RegisterConsoleCommand(TEXT("gtc.Creator.Toggle"), TEXT("Toggle the character creator."),
             FConsoleCommandDelegate::CreateUObject(this, &AGTCPlayerController::ToggleCharacterCreator), ECVF_Default));
 
+        // Radial wheels — open them from the console (also lets a headless/MCP run pop
+        // them for a screenshot, since they otherwise only open on a held key).
+        PhoneConsoleCmds.Add(CM.RegisterConsoleCommand(TEXT("gtc.Wheel.Weapon"), TEXT("Toggle the weapon wheel."),
+            FConsoleCommandDelegate::CreateUObject(this, &AGTCPlayerController::ToggleWeaponWheel), ECVF_Default));
+        PhoneConsoleCmds.Add(CM.RegisterConsoleCommand(TEXT("gtc.Wheel.Emote"), TEXT("Toggle the emote wheel."),
+            FConsoleCommandDelegate::CreateUObject(this, &AGTCPlayerController::ToggleEmoteWheel), ECVF_Default));
+        PhoneConsoleCmds.Add(CM.RegisterConsoleCommand(TEXT("gtc.Wheel.Close"), TEXT("Close any open radial wheel."),
+            FConsoleCommandDelegate::CreateLambda([this]() { CloseWeaponWheel(); CloseEmoteWheel(); }), ECVF_Default));
+
         // Auto-show the creator on every gameplay map. Poll until the pawn is
         // possessed (it usually isn't yet at controller BeginPlay), then open once.
         if (UWorld* W = GetWorld())
@@ -110,12 +120,23 @@ void AGTCPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
         if (PauseMenu.IsValid()) VPC->RemoveViewportWidgetContent(PauseMenu.ToSharedRef());
         if (CharacterCreator.IsValid()) VPC->RemoveViewportWidgetContent(CharacterCreator.ToSharedRef());
         if (EmoteWheel.IsValid()) VPC->RemoveViewportWidgetContent(EmoteWheel.ToSharedRef());
+        if (WeaponWheel.IsValid()) VPC->RemoveViewportWidgetContent(WeaponWheel.ToSharedRef());
+    }
+    // Lift any slow-mo the weapon wheel left on before this controller dies.
+    if (bWeaponWheelOpen)
+    {
+        if (UWorld* W = GetWorld())
+        {
+            UGameplayStatics::SetGlobalTimeDilation(W, 1.0f);
+        }
     }
     Phone.Reset();
     PauseMenu.Reset();
     CharacterCreator.Reset();
     EmoteWheel.Reset();
+    WeaponWheel.Reset();
     bPhoneOpen = bPhoneInViewport = bPauseMenuOpen = bCreatorOpen = bEmoteWheelOpen = false;
+    bWeaponWheelOpen = false;
 
     Super::EndPlay(EndPlayReason);
 }
@@ -137,10 +158,23 @@ void AGTCPlayerController::SetupInputComponent()
     // and has an "Edit Character" entry in the Esc menu).
     InputComponent->BindKey(EKeys::F4, IE_Pressed, this, &AGTCPlayerController::ToggleCharacterCreator);
 
-    // Emote panel: ONE key (B, or gamepad face-left) opens the picker for all emotes —
-    // replaces the old per-emote hard keys (H/G/J).
+    // Emote wheel: ONE key (B, or gamepad face-left) opens the radial picker for all
+    // emotes — replaces the old per-emote hard keys (H/G/J).
     InputComponent->BindKey(EKeys::B, IE_Pressed, this, &AGTCPlayerController::ToggleEmoteWheel);
     InputComponent->BindKey(EKeys::Gamepad_FaceButton_Left, IE_Pressed, this, &AGTCPlayerController::ToggleEmoteWheel);
+
+    // Weapon wheel: HOLD Tab (GTA muscle memory) or gamepad left-shoulder to open the
+    // radial picker + slow time; point (mouse or right stick) to highlight; RELEASE to
+    // equip. A quick tap just re-confirms the equipped weapon. Right-click cancels.
+    InputComponent->BindKey(EKeys::Tab, IE_Pressed, this, &AGTCPlayerController::OpenWeaponWheel);
+    InputComponent->BindKey(EKeys::Tab, IE_Released, this, &AGTCPlayerController::OnWeaponWheelReleased);
+    InputComponent->BindKey(EKeys::Gamepad_LeftShoulder, IE_Pressed, this, &AGTCPlayerController::OpenWeaponWheel);
+    InputComponent->BindKey(EKeys::Gamepad_LeftShoulder, IE_Released, this, &AGTCPlayerController::OnWeaponWheelReleased);
+
+    // Right stick steers whichever wheel is open (gamepad has no cursor). Harmless
+    // when none is open — the handlers just cache the axis values.
+    InputComponent->BindAxisKey(EKeys::Gamepad_RightX, this, &AGTCPlayerController::OnWheelStickX);
+    InputComponent->BindAxisKey(EKeys::Gamepad_RightY, this, &AGTCPlayerController::OnWheelStickY);
 }
 
 void AGTCPlayerController::EnterGameInputMode()
@@ -469,8 +503,36 @@ void AGTCPlayerController::CloseCharacterCreator()
 }
 
 // ============================================================================
-//  Emote panel — one key (B) opens a picker for ALL emotes
+//  Radial wheels — emote picker (B) and weapon picker (Tab, slow-mo)
+//  Both reuse the one generic SGTCRadialMenu; the services differ.
 // ============================================================================
+
+void AGTCPlayerController::CloseRadial(
+    TSharedPtr<SGTCRadialMenu>& Wheel, bool& bOpenFlag, bool bRestoreTimeDilation)
+{
+    if (!bOpenFlag)
+    {
+        return;
+    }
+    if (Wheel.IsValid())
+    {
+        if (UGameViewportClient* VPC = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
+        {
+            VPC->RemoveViewportWidgetContent(Wheel.ToSharedRef());
+        }
+    }
+    Wheel.Reset();
+    bOpenFlag = false;
+
+    if (bRestoreTimeDilation)
+    {
+        if (UWorld* W = GetWorld())
+        {
+            UGameplayStatics::SetGlobalTimeDilation(W, 1.0f);
+        }
+    }
+    EnterGameInputMode();
+}
 
 void AGTCPlayerController::ToggleEmoteWheel()
 {
@@ -484,12 +546,24 @@ void AGTCPlayerController::OpenEmoteWheel()
     {
         return;
     }
+    if (bWeaponWheelOpen) CloseWeaponWheel(); // only one wheel on screen
 
-    // Rebuild the service bridge from the live pawn each open (re-resolves the pawn so
-    // it survives a respawn, mirroring the creator/phone services).
-    FGTCEmoteServices Services;
-    Services.Names = AGTCPlayerCharacter::GetEmoteNames();
-    Services.Play = [this](int32 Index)
+    // Rebuild from the live emote table each open (mirrors the creator/phone services,
+    // so the wheel survives a respawn).
+    FGTCRadialServices Services;
+    Services.Title = NSLOCTEXT("GTCRadial", "EmotesTitle", "EMOTES");
+    for (const AGTCPlayerCharacter::FGTCEmoteInfo& Info : AGTCPlayerCharacter::GetEmoteInfos())
+    {
+        FGTCRadialItem Item;
+        Item.Name = Info.Name;
+        Item.Description = Info.Description;
+        Item.Glyph = Info.Glyph;
+        Item.Caption = TEXT("Emote");
+        Item.Accent = FLinearColor(0.98f, 0.42f, 0.52f); // warm coral "social" hue
+        Services.Items.Add(Item);
+    }
+    Services.InitialIndex = 0;
+    Services.Confirm = [this](int32 Index)
     {
         if (AGTCPlayerCharacter* P = Cast<AGTCPlayerCharacter>(GetPawn()))
         {
@@ -498,39 +572,151 @@ void AGTCPlayerController::OpenEmoteWheel()
     };
     Services.Close = [this]() { CloseEmoteWheel(); };
 
-    EmoteWheel = SNew(SGTCEmoteWheel).Services(Services);
-
+    EmoteWheel = SNew(SGTCRadialMenu).Services(Services);
     if (UGameViewportClient* VPC = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
     {
         VPC->AddViewportWidgetContent(EmoteWheel.ToSharedRef(), 5500);
     }
-
     bEmoteWheelOpen = true;
 
-    // Do NOT pause — the chosen emote plays on the live pawn in real time. Show the
-    // cursor + GameAndUI so a click or a number key lands on the panel.
+    // Do NOT pause / slow — the chosen emote plays on the live pawn in real time.
+    // Focused + cursor (centred) so number keys land and the pointer steers it.
     FInputModeGameAndUI InputMode;
     InputMode.SetWidgetToFocus(EmoteWheel);
     InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
     SetInputMode(InputMode);
     SetShowMouseCursor(true);
+    CenterCursor();
 }
 
 void AGTCPlayerController::CloseEmoteWheel()
 {
-    if (!bEmoteWheelOpen)
+    CloseRadial(EmoteWheel, bEmoteWheelOpen, /*bRestoreTimeDilation=*/false);
+}
+
+void AGTCPlayerController::ToggleWeaponWheel()
+{
+    if (bWeaponWheelOpen) CloseWeaponWheel();
+    else OpenWeaponWheel();
+}
+
+void AGTCPlayerController::OpenWeaponWheel()
+{
+    if (bWeaponWheelOpen)
     {
         return;
     }
+    if (bEmoteWheelOpen) CloseEmoteWheel();
 
-    if (EmoteWheel.IsValid())
+    AGTCPlayerCharacter* P = Cast<AGTCPlayerCharacter>(GetPawn());
+    UGTCWeaponComponent* Weapons = P ? P->FindComponentByClass<UGTCWeaponComponent>() : nullptr;
+    if (!Weapons || Weapons->WeaponCount() == 0)
     {
-        if (UGameViewportClient* VPC = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
-        {
-            VPC->RemoveViewportWidgetContent(EmoteWheel.ToSharedRef());
-        }
+        return; // nothing owned -> nothing to show
     }
 
-    bEmoteWheelOpen = false;
-    EnterGameInputMode();
+    FGTCRadialServices Services;
+    Services.Title = NSLOCTEXT("GTCRadial", "WeaponsTitle", "WEAPONS");
+    for (const FGTCWeaponWheelEntry& E : Weapons->WeaponWheelEntries())
+    {
+        const bool bShotgun = E.Name.Contains(TEXT("Shotgun"));
+
+        FGTCRadialItem Item;
+        Item.Name = FText::FromString(E.Name);
+        Item.Description = FText::FromString(E.Blurb);
+        Item.Ammo = FString::Printf(TEXT("%d / %d"), E.AmmoInMag, E.Reserve);
+        Item.Caption = bShotgun ? TEXT("Shotgun") : (E.bAutomatic ? TEXT("Automatic") : TEXT("Sidearm"));
+        // Coherent class palette: shotguns warm red, autos amber, sidearms cyan.
+        Item.Accent = bShotgun     ? FLinearColor(1.00f, 0.35f, 0.18f)
+                      : E.bAutomatic ? FLinearColor(1.00f, 0.62f, 0.15f)
+                                     : FLinearColor(0.20f, 0.70f, 1.00f);
+        Services.Items.Add(Item);
+    }
+    Services.InitialIndex = Weapons->EquippedWheelIndex();
+    Services.Confirm = [this](int32 Index)
+    {
+        if (AGTCPlayerCharacter* Pawn = Cast<AGTCPlayerCharacter>(GetPawn()))
+        {
+            if (UGTCWeaponComponent* W = Pawn->FindComponentByClass<UGTCWeaponComponent>())
+            {
+                W->EquipIndex(Index);
+            }
+        }
+    };
+    Services.Close = [this]() { CloseWeaponWheel(); };
+
+    WeaponWheel = SNew(SGTCRadialMenu).Services(Services);
+    if (UGameViewportClient* VPC = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
+    {
+        VPC->AddViewportWidgetContent(WeaponWheel.ToSharedRef(), 5600);
+    }
+    bWeaponWheelOpen = true;
+
+    // GTA-style: slow the world to a crawl while choosing (Slate + input stay real-time,
+    // so the wheel is still snappy). The wheel is NOT keyboard-focused: that keeps the
+    // game's Tab/LB key flowing to the controller so RELEASE can equip the highlight
+    // (hold-to-open feel). Mouse still reaches the wheel for pointing + click/cancel.
+    if (UWorld* World = GetWorld())
+    {
+        UGameplayStatics::SetGlobalTimeDilation(World, WeaponWheelTimeDilation);
+    }
+    FInputModeGameAndUI InputMode;
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    SetInputMode(InputMode);
+    SetShowMouseCursor(true);
+    CenterCursor();
+}
+
+void AGTCPlayerController::CloseWeaponWheel()
+{
+    CloseRadial(WeaponWheel, bWeaponWheelOpen, /*bRestoreTimeDilation=*/true);
+}
+
+void AGTCPlayerController::OnWeaponWheelReleased()
+{
+    if (bWeaponWheelOpen && WeaponWheel.IsValid())
+    {
+        // Hold released: equip whatever the pointer/stick is over, then close. Keep a
+        // local ref so the widget survives self-closing mid-call (Confirm -> Close
+        // removes it from the viewport and resets our member).
+        TSharedPtr<SGTCRadialMenu> KeepAlive = WeaponWheel;
+        KeepAlive->ConfirmHighlighted();
+    }
+}
+
+void AGTCPlayerController::OnWheelStickX(float Value)
+{
+    WheelStickX = Value;
+    FeedOpenWheelStick();
+}
+
+void AGTCPlayerController::OnWheelStickY(float Value)
+{
+    WheelStickY = Value;
+    FeedOpenWheelStick();
+}
+
+void AGTCPlayerController::FeedOpenWheelStick()
+{
+    const FVector2D Stick(WheelStickX, WheelStickY);
+    if (bWeaponWheelOpen && WeaponWheel.IsValid())
+    {
+        WeaponWheel->SetAnalogDirection(Stick);
+    }
+    else if (bEmoteWheelOpen && EmoteWheel.IsValid())
+    {
+        EmoteWheel->SetAnalogDirection(Stick);
+    }
+}
+
+void AGTCPlayerController::CenterCursor()
+{
+    if (UGameViewportClient* VPC = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
+    {
+        if (FViewport* VP = VPC->Viewport)
+        {
+            const FIntPoint Size = VP->GetSizeXY();
+            VP->SetMouse(Size.X / 2, Size.Y / 2);
+        }
+    }
 }

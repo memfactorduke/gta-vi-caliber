@@ -10,7 +10,7 @@ class UInputMappingContext;
 class SGTCPhone;
 class SGTCPauseMenu;
 class SGTCCharacterCreator;
-class SGTCEmoteWheel;
+class SGTCRadialMenu;
 class IConsoleObject;
 
 /**
@@ -89,13 +89,45 @@ private:
     bool bCreatorAutoShown = false;
     FTimerHandle CreatorAutoOpenTimer;
 
-    // ---- Emote panel (one key opens a picker for all emotes) ------------------
+    // ---- Emote wheel (one key opens a radial picker for all emotes) -----------
     void ToggleEmoteWheel();
     void OpenEmoteWheel();
     void CloseEmoteWheel();
 
-    TSharedPtr<SGTCEmoteWheel> EmoteWheel;
+    TSharedPtr<SGTCRadialMenu> EmoteWheel;
     bool bEmoteWheelOpen = false;
+
+    // ---- Weapon wheel (GTA-style radial weapon picker, slow-mo while open) -----
+    void ToggleWeaponWheel();
+    void OpenWeaponWheel();
+    void CloseWeaponWheel();
+
+    /** Hold-to-open release: equips the highlighted slice and closes (GTA feel).
+     *  A quick tap just re-confirms the equipped weapon, so it's a harmless flash. */
+    void OnWeaponWheelReleased();
+
+    // Right-stick steering for a gamepad (no cursor): the axes are stored every input
+    // frame and fed to whichever wheel is open so the stick points the selection.
+    void OnWheelStickX(float Value);
+    void OnWheelStickY(float Value);
+    void FeedOpenWheelStick();
+    float WheelStickX = 0.f;
+    float WheelStickY = 0.f;
+
+    TSharedPtr<SGTCRadialMenu> WeaponWheel;
+    bool bWeaponWheelOpen = false;
+
+    /** Drop world time-dilation to this while the weapon wheel is up (GTA feel),
+     *  restored to 1.0 on close. */
+    static constexpr float WeaponWheelTimeDilation = 0.2f;
+
+    /** Shared close helper: pull a viewport widget, restore gameplay input, and
+     *  (if it was the weapon wheel) lift the slow-mo. */
+    void CloseRadial(TSharedPtr<SGTCRadialMenu>& Wheel, bool& bOpenFlag, bool bRestoreTimeDilation);
+
+    /** Warp the OS cursor to the viewport centre so a wheel opens with a neutral
+     *  (hub-centred) selection, the way a console wheel snaps to centre. */
+    void CenterCursor();
 
     /** Registered phone/dev console commands, unregistered on EndPlay. */
     TArray<IConsoleObject*> PhoneConsoleCmds;

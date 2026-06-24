@@ -16,6 +16,8 @@
 #include "../Firing/WeaponFireController.h"
 #include "../Ballistics/WeaponBallistics.h"
 #include "../Core/WeaponStats.h"
+#include "../../World/Surfaces/SurfaceImpactFX.h"
+#include "GTCTracer.h"
 
 namespace
 {
@@ -154,6 +156,32 @@ void UGTCWeaponComponent::GiveDefaultArsenal()
     OnEquippedChanged();
 }
 
+void UGTCWeaponComponent::SetSingleWeapon(const FWeaponStats& Stats)
+{
+    Arsenal.Reset();
+    WeaponNames.Reset();
+    Arsenal.Add(MakeShared<FWeaponFireController>(Stats));
+    WeaponNames.Add(Stats.DisplayName);
+    EquippedIndex = 0;
+    OnEquippedChanged();
+}
+
+void UGTCWeaponComponent::SetAimOverride(const FVector& WorldAimDir)
+{
+    const FVector Dir = WorldAimDir.GetSafeNormal();
+    if (Dir.IsNearlyZero())
+    {
+        return; // keep the previous aim rather than firing at world origin
+    }
+    AimOverrideDir = Dir;
+    bHasAimOverride = true;
+}
+
+void UGTCWeaponComponent::ClearAimOverride()
+{
+    bHasAimOverride = false;
+}
+
 // --- HUD queries -------------------------------------------------------------
 
 FString UGTCWeaponComponent::CurrentWeaponName() const
@@ -176,6 +204,42 @@ int32 UGTCWeaponComponent::CurrentReserveAmmo() const
 int32 UGTCWeaponComponent::WeaponCount() const
 {
     return Arsenal.Num();
+}
+
+TArray<FGTCWeaponWheelEntry> UGTCWeaponComponent::WeaponWheelEntries() const
+{
+    TArray<FGTCWeaponWheelEntry> Out;
+    Out.Reserve(Arsenal.Num());
+    for (int32 i = 0; i < Arsenal.Num(); ++i)
+    {
+        const FWeaponFireController* Ctrl = Arsenal[i].Get();
+        if (!Ctrl)
+        {
+            continue;
+        }
+        const FWeaponStats& S = Ctrl->Weapon.Stats;
+
+        FGTCWeaponWheelEntry E;
+        E.Name = WeaponNames.IsValidIndex(i) ? WeaponNames[i] : S.DisplayName;
+        E.bAutomatic = S.bAutomatic;
+        E.AmmoInMag = Ctrl->AmmoInMag();
+        E.Reserve = Ctrl->Reserve();
+
+        // Brief one-liner for the wheel hub (the "center description").
+        const TCHAR* Mode = S.bAutomatic ? TEXT("Automatic") : TEXT("Semi-auto");
+        if (S.Pellets > 1)
+        {
+            E.Blurb = FString::Printf(
+                TEXT("%s · %d-round mag · %d pellets"), Mode, S.MagSize, S.Pellets);
+        }
+        else
+        {
+            E.Blurb = FString::Printf(
+                TEXT("%s · %d-round mag · %.0f dmg"), Mode, S.MagSize, S.Damage);
+        }
+        Out.Add(MoveTemp(E));
+    }
+    return Out;
 }
 
 // --- Internals ---------------------------------------------------------------
@@ -267,7 +331,10 @@ void UGTCWeaponComponent::FireOneShot()
         return;
     }
 
-    // Aim source: the third-person follow camera if present, else the pawn eyes.
+    // Aim source: the third-person follow camera if present (the player), else the
+    // pawn eyes. For a camera-less owner (an NPC/police officer), an AI aim override
+    // points the shot at its target; absent that, the eyes view direction is used.
+    // The camera always wins, so this path never perturbs player aim.
     FVector CamLoc;
     FVector CamForward;
     if (const UCameraComponent* Cam = FindOwnerCamera())
@@ -279,7 +346,7 @@ void UGTCWeaponComponent::FireOneShot()
     {
         FRotator ViewRot;
         OwnerActor->GetActorEyesViewPoint(CamLoc, ViewRot);
-        CamForward = ViewRot.Vector();
+        CamForward = bHasAimOverride ? AimOverrideDir : ViewRot.Vector();
     }
 
     // Visual muzzle origin for tracers/flash (falls back to the camera).
@@ -303,7 +370,9 @@ void UGTCWeaponComponent::FireOneShot()
     }
 
     FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(GTCWeaponShot), /*bTraceComplex=*/true, OwnerActor);
-    TraceParams.bReturnPhysicalMaterial = false;
+    // Read back the physical material so untagged geometry still resolves to a surface burst
+    // (FGTCImpactFX falls back to the SurfaceTypeN index when nothing carries a Surface.* tag).
+    TraceParams.bReturnPhysicalMaterial = true;
 
     FVector PrimaryImpact = CamLoc + CamForward * RangeCm;
     bool bAnyHit = false;
@@ -322,6 +391,15 @@ void UGTCWeaponComponent::FireOneShot()
         {
             PrimaryImpact = Impact;
             bAnyHit = bHit;
+        }
+
+        // Surface-keyed impact burst: splinters off wood, sparks off metal, shards off glass,
+        // dust off concrete, blood off a creature. Fires on any hit — tagged actors, tagged
+        // world geometry, or untagged geometry via its physical material. See
+        // Source/GTC_UE5/World/Surfaces/SurfaceImpactFX.h.
+        if (bHit)
+        {
+            FGTCImpactFX::PlayImpact(World, Hit);
         }
 
         if (bHit && Hit.GetActor() != nullptr && Hit.GetActor() != OwnerActor)
@@ -349,10 +427,22 @@ void UGTCWeaponComponent::FireOneShot()
     }
 
     // Upward recoil kick on the controller pitch (RecoilKick is radians; negative
-    // pitch input looks up).
-    if (APawn* OwnerPawn = Cast<APawn>(OwnerActor))
+    // pitch input looks up). Camera-driven aim only: an AI owner aims via the world
+    // override (no camera), so kicking its controller pitch would just accumulate
+    // unused drift on the AIController's control rotation.
+    if (FindOwnerCamera() != nullptr)
     {
-        OwnerPawn->AddControllerPitchInput(-FMath::RadiansToDegrees(Stats.RecoilKick));
+        if (APawn* OwnerPawn = Cast<APawn>(OwnerActor))
+        {
+            OwnerPawn->AddControllerPitchInput(-FMath::RadiansToDegrees(Stats.RecoilKick));
+        }
+    }
+
+    // Faint tracer streak from the muzzle to where the primary pellet landed, on a fraction of
+    // shots so it reads as occasional tracer rounds rather than a beam on every bullet.
+    if (bShowTracers && TracerEveryNthShot > 0 && (++TracerShotCounter % TracerEveryNthShot == 0))
+    {
+        AGTCTracer::Spawn(World, MuzzleLoc, PrimaryImpact, TracerThicknessCm, TracerLifeSeconds);
     }
 
     OnWeaponFired.Broadcast(MuzzleLoc, PrimaryImpact, bAnyHit);

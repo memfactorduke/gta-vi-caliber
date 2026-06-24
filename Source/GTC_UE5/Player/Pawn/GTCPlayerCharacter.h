@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GTCPlayerLook.h"
+#include "../Offense/PlayerOffenseLoadout.h"
 #include "GTCPlayerCharacter.generated.h"
 
 class UPlayerHealthComponent;
@@ -191,16 +192,89 @@ public:
     UFUNCTION(Exec)
     void GTC_Piss();
 
+    /** Lob a fragmentation grenade from the camera: a short-fused throwable that
+     *  arcs, bounces, and detonates (AGTCThrowable over FThrowable/FExplosionModel). */
+    UFUNCTION(Exec)
+    void GTC_ThrowGrenade();
+
+    /** Lob a molotov from the camera: a throwable that detonates and leaves a
+     *  spreading fire (AGTCThrowable incendiary + AGTCFire). */
+    UFUNCTION(Exec)
+    void GTC_ThrowMolotov();
+
+    /** Front-arc melee strike at the nearest pawn ahead (FMeleeCombat damage) — rounds
+     *  out player offense alongside guns and throwables. */
+    UFUNCTION(Exec)
+    void GTC_Melee();
+
+    /** Lob a flashbang: stuns nearby enemies for a few seconds (no damage). */
+    UFUNCTION(Exec)
+    void GTC_ThrowFlashbang();
+
+    /** Write a savegame to the default slot (wanted level + look + ammo + position). */
+    UFUNCTION(Exec)
+    void GTC_SaveGame();
+
+    /** Load the default-slot savegame and re-apply it to the live player. */
+    UFUNCTION(Exec)
+    void GTC_LoadGame();
+
+    // --- Throwable ammo / action pacing (FPlayerOffenseLoadout) -----------------
+    // The throw/melee execs consume a finite, rate-limited loadout, so they're real
+    // abilities rather than spammable cheats.
+
+    UFUNCTION(BlueprintPure, Category = "GTC|Offense")
+    int32 GetFlashbangAmmo() const { return OffenseLoadout.GetAmmo(EThrowableKind::Flashbang); }
+
+    UFUNCTION(BlueprintPure, Category = "GTC|Offense")
+    int32 GetGrenadeAmmo() const { return OffenseLoadout.GetAmmo(EThrowableKind::Grenade); }
+
+    UFUNCTION(BlueprintPure, Category = "GTC|Offense")
+    int32 GetMolotovAmmo() const { return OffenseLoadout.GetAmmo(EThrowableKind::Molotov); }
+
+    /** Refill a throwable (KindIndex 0=flashbang, 1=grenade, 2=molotov), clamped to its
+     *  cap — for ammo pickups / debug. Fires OnThrowablesChanged. */
+    UFUNCTION(BlueprintCallable, Category = "GTC|Offense")
+    void AddThrowableAmmo(int32 KindIndex, int32 Count);
+
+    /** True if a throwable kind is already at its carry cap (a pickup leaves itself on
+     *  the ground rather than be wasted). Out-of-range index reads as full. */
+    UFUNCTION(BlueprintPure, Category = "GTC|Offense")
+    bool IsThrowableAtCap(int32 KindIndex) const;
+
+    /** HUD seam: fired whenever a throwable count changes (a throw or a refill). */
+    UFUNCTION(BlueprintImplementableEvent, Category = "GTC|Offense")
+    void OnThrowablesChanged();
+
     /** Play an emote by its index in GetEmoteNames() (the order the emote panel shows).
      *  The single entry point the emote panel calls; out-of-range is a safe no-op. */
     UFUNCTION(BlueprintCallable, Category = "GTC|Player|Anim")
     void PlayEmote(int32 Index);
 
-    /** Display names of the player's emotes, in panel order. Drives the one-key emote
-     *  panel (SGTCEmoteWheel) so the picker and PlayEmote stay in sync from one list. */
+    /** One emote's wheel data: display name, a one-line description for the wheel hub
+     *  (the "center description"), and a short glyph drawn on the slice (optional;
+     *  empty renders the name alone, font-safe). Index order matches PlayEmote(). */
+    struct FGTCEmoteInfo
+    {
+        FText Name;
+        FText Description;
+        FString Glyph;
+    };
+
+    /** Every emote for the wheel, in PlayEmote() index order. Single source of truth:
+     *  GetEmoteNames() is derived from it so the picker, hub text, and PlayEmote can
+     *  never drift apart. Adding an emote here (plus its clip) lights up the wheel. */
+    static TArray<FGTCEmoteInfo> GetEmoteInfos();
+
+    /** Display names of the player's emotes, in panel order. Derived from
+     *  GetEmoteInfos() so the picker and PlayEmote stay in sync from one list. */
     static TArray<FText> GetEmoteNames();
 
 protected:
+    /** Finite throwable ammo + throw/melee cooldowns the offense execs consume. Plain
+     *  pure-core (not a UPROPERTY); seeded from its own defaults. */
+    FPlayerOffenseLoadout OffenseLoadout;
+
     // --- Enhanced Input actions (soft-referenced by path) ----------------------
 
     UPROPERTY(EditDefaultsOnly, Category = "GTC|Input")
@@ -233,6 +307,12 @@ protected:
 
     UPROPERTY(Transient)
     TObjectPtr<UInputAction> RuntimeSprintAction;
+
+    // Aim is a code-created action too (no editor IA_Aim asset). Hold to pull the
+    // body to face the camera/mouse (GTA-style over-the-shoulder aim); release to
+    // return to free-run orientation. Mapped to Right Mouse / Left Trigger below.
+    UPROPERTY(Transient)
+    TObjectPtr<UInputAction> RuntimeAimAction;
 
     // Emotes (wave / middle finger / piss) are no longer per-key: they are played
     // through PlayEmote(Index) from the single-key emote panel (SGTCEmoteWheel), so
@@ -314,8 +394,32 @@ protected:
     void HandleCrouchCompleted(const FInputActionValue& Value);
     void HandleSprintStarted(const FInputActionValue& Value);
     void HandleSprintCompleted(const FInputActionValue& Value);
+    void HandleAimStarted(const FInputActionValue& Value);
+    void HandleAimCompleted(const FInputActionValue& Value);
+
+    /** Recompute the body-orientation posture from the current aim sources. While
+     *  aiming (right-mouse held) or firing, the body yaw is locked to the controller
+     *  (camera/mouse) so the character faces where it shoots; otherwise the body
+     *  orients to its movement direction (free run). */
+    void RefreshAimPosture();
+
+    /** True while the dedicated aim button (right-mouse / left-trigger) is held. */
+    bool bAimButtonHeld = false;
+
+    /** True while the fire button is held (firing also pulls the body to aim). */
+    bool bFireHeld = false;
 
 private:
+    /** Push the current throwable ammo up to the GameInstance (so it persists across
+     *  travel + into a save) and fire OnThrowablesChanged for the HUD. Called wherever
+     *  ammo changes (a throw or a refill). */
+    void SyncThrowablesChanged();
+
+    /** Re-apply the GameInstance's persistent player state (look + ammo + transform) to
+     *  this pawn. Used on spawn (BeginPlay) and after a mid-play load. Returns true if a
+     *  saved transform was applied (so BeginPlay can skip the spawn-relocation net). */
+    bool RestorePersistentState();
+
     /** Load + apply the configured body/face/anim (guarded; absent assets are a
      *  no-op so the headless build and an un-authored BP both still run). Prefers
      *  the AppearanceSet pools (indexed by Look), falling back to the single soft

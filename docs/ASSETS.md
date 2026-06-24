@@ -65,8 +65,41 @@ original project work, CC BY 4.0.
 | `Content/Input/IA_Jump.uasset` | Enhanced Input Action: jump (bool) | project contributors | original | CC BY 4.0 |
 | `Content/Input/IA_Interact.uasset` | Enhanced Input Action: interact (bool) | project contributors | original | CC BY 4.0 |
 | `Content/Input/IA_Fire.uasset` | Enhanced Input Action: fire (bool) | project contributors | original | CC BY 4.0 |
+| `Content/Environment/Sky/M_GTCStars.uasset` | Additive unlit night-sky star material; procedural (grid-hashed view direction, no texture), driven by `AGTCWeatherController` scalar params StarOpacity/StarBrightness | project contributors | original | CC BY 4.0 |
+| `Content/Surfaces/Physical/PM_GTC_*.uasset` | 13 physical materials (Wood/Metal/Glass/Concrete/Asphalt/Brick/Ceramic/Rubber/Vegetation/Ice/Leather/Paper/Water) tagging SurfaceType1..14 for the weapon/melee impact-FX system; no art, each just sets a surface-type byte | project contributors | original | CC BY 4.0 |
+| `Content/Surfaces/Decals/M_GTC_BulletDecal.uasset` | Deferred-decal master for bullet marks (MarkTex*Tint -> BaseColor, MarkTex.R -> Opacity); references VFX-pack textures by path only, embeds none | project contributors | original | CC BY 4.0 |
+| `Content/Surfaces/Decals/MI_GTC_BulletHole.uasset`, `MI_GTC_BulletScorch.uasset`, `MI_GTC_GlassCrack.uasset` | 3 bullet-mark decal instances (tints of `M_GTC_BulletDecal`) for hole / metal scorch / glass crack | project contributors | original | CC BY 4.0 |
+| `Content/Surfaces/FX/M_GTC_Tracer.uasset` | Unlit additive tracer-streak material (Color*Brightness -> Emissive, no texture); the faint muzzle->impact "ammo line" | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/AI/*.uasset` (8) | AI StateTree assets + AI-controller Blueprints driving police/NPC combat, dispatch and navigation behavior | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/Cameras/**/*.uasset` (20) | Camera rig prefabs + camera-behavior Blueprints for the player/gameplay cameras (config; reference only engine GameplayCameras types, embed no art) | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/ControlRigs/*.uasset` (1) | Control Rig asset for the player/NPC skeleton | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/Data/*.uasset` (34) | Primary data assets / data tables for weapon, NPC, appearance and gameplay configuration | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/ENUMS/*.uasset` (1) | Blueprint enumeration used by the gameplay systems | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/Interfaces/*.uasset` (1) | Blueprint interaction interface (`BPI_Interction`) for the press-E system | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/Magazines/*.uasset` (4) | Weapon magazine Blueprints | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/MovementModes/*.uasset` (5) | Custom movement-mode Blueprints (Mover plugin) | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/SmartObjects/*.uasset` (22) | SmartObject definition Blueprints for NPC interaction/occupation points | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/weapons/*.uasset` (5) | Base weapon Blueprints (full-auto / semi / burst / SMG) parented to the C++ weapon classes | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/weapons_pickup/*.uasset` (8) | Weapon-pickup actor Blueprints | project contributors | original | CC BY 4.0 |
+| `Content/Blueprints/BP_NPC.uasset`, `Content/Core/BP_NPC.uasset` (2) | NPC pawn Blueprint(s) | project contributors | original | CC BY 4.0 |
+| `Content/Core/BP_ThirdPersonCharacter.uasset` (1) | Player pawn Blueprint — original project logic; structure derived from the Epic UE third-person template (UE EULA), wiring the project Mixamo soldier ABP + Enhanced Input; references only project/engine assets, embeds no licensed art | project contributors | original (Epic template-derived) | CC BY 4.0 |
+| `Content/Misc/SandboxAnimCurveCompressionSettings.uasset` (1) | Animation curve compression settings asset | project contributors | original | CC BY 4.0 |
+| `Content/Characters/Wooden/*.uasset` (4), `Content/Tripo/{SK_WoodenChar*,M_WoodenChar,T_WoodenChar_BaseColor,IK_WoodenChar,ABP_WoodenChar}.uasset` | AI-generated "Wooden" playable character — skeletal mesh, skeleton, physics asset, material, base-color texture, IK rig and anim blueprint (original-art replacement for licensed humans) | project contributors | AI (Tripo) | CC BY 4.0 |
+| `Content/Tripo/RTG_Soldier_to_WoodenChar.uasset`, `Content/Tripo/Anims/WC_*.uasset` (5) | IK retargeter + clips retargeted from the project's existing library animations onto the Wooden rig | project contributors | original (project retarget) | CC BY 4.0 |
 
 *(Append one row per project-authored asset. Path relative to repo root. "Source"
 is `original` or a URL. License must be CC0, CC-BY-4.0, or CC-BY-4.0-compatible.
 Third-party / licensed packs do NOT go here; they belong in the
 `Content/GTCaliberAssets/` submodule and are tracked in ASSET_HANDLING.md.)*
+
+## Known exception — third-party kept in-tree by project decision
+
+The asset below is **not** CC BY 4.0 and, by Rules 1 and 6, would normally live in
+the private `Content/GTCaliberAssets/` submodule rather than in this repository. It
+is retained directly here as a deliberate, documented project decision, governed by
+its upstream license and **not** relicensed by inclusion. It is recorded separately
+so the CC-BY ledger above remains accurate.
+
+| Path | Description | Source | License |
+| --- | --- | --- | --- |
+| `Content/Mixamo/SoldierRifle/**` (52) | Adobe Mixamo soldier-rifle character (mesh / skeleton / textures), Mixamo motion clips, project-retargeted `SR_*` clips, retarget + IK rigs, the player anim blueprint `ABP_PlayCharacter`, and the locomotion blendspace | Adobe Mixamo (mixamo.com) | Mixamo License — free use within projects; redistribution of the raw asset files is restricted |

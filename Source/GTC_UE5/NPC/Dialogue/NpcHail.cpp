@@ -5,7 +5,14 @@
 
 namespace
 {
-	using GtcSeq::PosMod;
+	int32 HailPosMod(int32 Value, int32 Modulus)
+	{
+		if (Modulus <= 0)
+		{
+			return 0;
+		}
+		return ((Value % Modulus) + Modulus) % Modulus;
+	}
 
 	// Role -> player-directed hail lines. Keyed by FNpcOccupation::RoleFor tokens.
 	// The mime has no bank (stays silent); a non-job citizen never reaches here.
@@ -126,5 +133,5 @@ FString FNpcHail::Line(FName Role, int32 Index)
 	{
 		return FString();
 	}
-	return (*Bank)[PosMod(Index, Bank->Num())];
+	return (*Bank)[HailPosMod(Index, Bank->Num())];
 }

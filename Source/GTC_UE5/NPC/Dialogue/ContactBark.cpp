@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ContactBark.h"
-#include "../NpcSeqMath.h"
 
 namespace
 {
@@ -74,7 +73,10 @@ namespace
     }
 
     // Godot posmod(index, n): always non-negative in [0, n).
-    using GtcSeq::Wrap;
+    int32 ContactWrap(int32 Index, int32 N)
+    {
+        return ((Index % N) + N) % N;
+    }
 }
 
 namespace
@@ -222,7 +224,7 @@ FString FContactBark::Line(const FString& Voice, ENpcContactReaction Reaction, i
     {
         return FString(); // Ignore / unknown — nothing to say
     }
-    return (*Pool)[Wrap(Index, Pool->Num())];
+    return (*Pool)[ContactWrap(Index, Pool->Num())];
 }
 
 int32 FContactBark::Count(const FString& Voice, ENpcContactReaction Reaction)
@@ -234,7 +236,7 @@ int32 FContactBark::Count(const FString& Voice, ENpcContactReaction Reaction)
 FString FContactBark::PassingLine(int32 Index)
 {
     const TArray<FString>& P = PassingLines();
-    return P[Wrap(Index, P.Num())];
+    return P[ContactWrap(Index, P.Num())];
 }
 
 int32 FContactBark::PassingCount()

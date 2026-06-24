@@ -13,6 +13,7 @@ class UStaticMesh;
 class USkeletalMeshComponent;
 class UCameraComponent;
 struct FWeaponFireController;
+struct FWeaponStats;
 
 /**
  * Broadcast each time a shot leaves the barrel, so Blueprints can drive the
@@ -25,6 +26,21 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 
 /** Broadcast when the equipped weapon changes (HUD weapon-name / ammo refresh). */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGTCWeaponChangedSignature, const FString&, WeaponName);
+
+/**
+ * One row of weapon-wheel data: the display name, a one-line blurb for the wheel
+ * hub ("Semi-auto · 12-round mag · 18 dmg"), live ammo, and whether the weapon is
+ * automatic (so the UI can class-colour the slice). UI-agnostic — the player
+ * controller maps this to the radial widget's FGTCRadialItem.
+ */
+struct FGTCWeaponWheelEntry
+{
+    FString Name;
+    FString Blurb;
+    int32 AmmoInMag = 0;
+    int32 Reserve = 0;
+    bool bAutomatic = false;
+};
 
 /**
  * UGTCWeaponComponent — the Wave-3 Unreal adapter that lets the player pawn HOLD
@@ -90,6 +106,24 @@ public:
     UFUNCTION(BlueprintCallable, Category = "GTC|Weapon")
     void GiveDefaultArsenal();
 
+    /** Replace the arsenal with a single named weapon (for an AI loadout). */
+    void SetSingleWeapon(const FWeaponStats& Stats);
+
+    // --- AI aim (camera-less owners: NPCs/police) -----------------------------
+
+    /**
+     * Aim along an explicit WORLD direction instead of an owner camera. Set by an
+     * AI each tick to point its shots at a target; consumed by the firing path
+     * ONLY when the owner has no follow camera (the player's camera always wins,
+     * so this never perturbs player aim). The vector is normalised internally.
+     */
+    UFUNCTION(BlueprintCallable, Category = "GTC|Weapon")
+    void SetAimOverride(const FVector& WorldAimDir);
+
+    /** Drop any AI aim override (fall back to the pawn's eyes view direction). */
+    UFUNCTION(BlueprintCallable, Category = "GTC|Weapon")
+    void ClearAimOverride();
+
     // --- HUD queries ----------------------------------------------------------
 
     UFUNCTION(BlueprintPure, Category = "GTC|Weapon")
@@ -103,6 +137,12 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "GTC|Weapon")
     int32 WeaponCount() const;
+
+    /** Snapshot of every owned weapon for the weapon wheel, in wheel order. */
+    TArray<FGTCWeaponWheelEntry> WeaponWheelEntries() const;
+
+    /** Index of the equipped weapon within WeaponWheelEntries(), or INDEX_NONE. */
+    int32 EquippedWheelIndex() const { return EquippedIndex; }
 
     // --- Cosmetic / HUD events ------------------------------------------------
 
@@ -130,6 +170,22 @@ public:
     UPROPERTY(EditAnywhere, Category = "GTC|Weapon")
     bool bDrawDebugShots = true;
 
+    /** Show a faint muzzle->impact tracer streak on a fraction of shots. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Weapon|Tracer")
+    bool bShowTracers = true;
+
+    /** One tracer every Nth shot (1 = every shot). Keeps it reading as tracer rounds, not a beam. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Weapon|Tracer", meta = (ClampMin = "1"))
+    int32 TracerEveryNthShot = 3;
+
+    /** Tracer line thickness in centimetres — keep it thin so it stays subtle. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Weapon|Tracer", meta = (ClampMin = "0.1"))
+    float TracerThicknessCm = 1.25f;
+
+    /** How long a tracer streak lingers, in seconds — a brief blip. */
+    UPROPERTY(EditAnywhere, Category = "GTC|Weapon|Tracer", meta = (ClampMin = "0.0"))
+    float TracerLifeSeconds = 0.035f;
+
     /** Held weapon mesh; defaults to an engine basic shape so the gun is visible without content. */
     UPROPERTY(EditAnywhere, Category = "GTC|Weapon")
     TSoftObjectPtr<UStaticMesh> PlaceholderWeaponMesh;
@@ -147,6 +203,14 @@ private:
 
     /** Deterministic-per-instance spread RNG. */
     FRandomStream SpreadRng;
+
+    /** Rolling count of shots fired, for the tracer-every-Nth cadence. */
+    int32 TracerShotCounter = 0;
+
+    /** AI aim override: when set on a camera-less owner, shots fly along this world
+     *  direction instead of the pawn's eyes view rotation. */
+    bool bHasAimOverride = false;
+    FVector AimOverrideDir = FVector::ForwardVector;
 
     FWeaponFireController* Equipped() const;
 

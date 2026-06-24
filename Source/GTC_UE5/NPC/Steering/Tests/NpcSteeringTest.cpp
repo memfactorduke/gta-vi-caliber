@@ -14,7 +14,7 @@ using GtcTest::Eps;
  * Parity tests for FNpcSteering, mapped 1:1 from the Godot oracle
  * game/tests/unit/test_npc_steering.gd. Tolerance mirrors the oracle's
  * is_equal_approx / explicit 0.001 length compares (Eps = 1e-4 for vector
- * equality; SpeedEps = 1e-3 for the speed-magnitude asserts the oracle writes as
+ * equality; SteerSpeedEps = 1e-3 for the speed-magnitude asserts the oracle writes as
  * `absf(... ) < 0.001`).
  *
  * Grouped by the oracle's method sections (prefix GTC.NPC.Steering.NpcSteering).
@@ -27,7 +27,7 @@ using GtcTest::Eps;
 namespace
 {
     // The oracle asserts speed magnitudes with `absf(len - x) < 0.001`.
-    using GtcTest::SpeedEps;
+    constexpr double SteerSpeedEps = 1e-3;
 }
 
 // --- seek -------------------------------------------------------------------
@@ -65,12 +65,12 @@ bool FNpcSteeringArriveTest::RunTest(const FString& Parameters)
     // test_arrive_full_speed_when_far
     {
         const FVector V = FNpcSteering::Arrive(FVector::ZeroVector, FVector(100, 0, 0), 4.0, 5.0);
-        TestTrue(TEXT("full speed when far"), FMath::Abs(V.Size() - 4.0) < SpeedEps);
+        TestTrue(TEXT("full speed when far"), FMath::Abs(V.Size() - 4.0) < SteerSpeedEps);
     }
     // test_arrive_ramps_down_in_slow_radius
     {
         const FVector V = FNpcSteering::Arrive(FVector::ZeroVector, FVector(2.5, 0, 0), 4.0, 5.0);
-        TestTrue(TEXT("ramps down in slow radius"), FMath::Abs(V.Size() - 2.0) < SpeedEps);
+        TestTrue(TEXT("ramps down in slow radius"), FMath::Abs(V.Size() - 2.0) < SteerSpeedEps);
     }
     // test_arrive_stops_at_target
     TestTrue(TEXT("stops at target"),
@@ -93,7 +93,7 @@ bool FNpcSteeringSeparationTest::RunTest(const FString& Parameters)
     {
         const FVector V =
             FNpcSteering::Separation(FVector::ZeroVector, {FVector(1, 0, 0)}, 2.0, 4.0);
-        TestTrue(TEXT("pushes away from neighbor"), V.X < 0.0 && FMath::Abs(V.Z) < SpeedEps);
+        TestTrue(TEXT("pushes away from neighbor"), V.X < 0.0 && FMath::Abs(V.Z) < SteerSpeedEps);
     }
     // test_separation_ignores_distant_neighbors
     TestTrue(TEXT("ignores distant neighbors"),
@@ -116,7 +116,7 @@ bool FNpcSteeringCombineTest::RunTest(const FString& Parameters)
     {
         const FVector V = FNpcSteering::Combine(
             {FVector(10, 0, 0), FVector(0, 0, 10)}, {1.0, 1.0}, 4.0);
-        TestTrue(TEXT("clamps to max speed"), FMath::Abs(V.Size() - 4.0) < SpeedEps);
+        TestTrue(TEXT("clamps to max speed"), FMath::Abs(V.Size() - 4.0) < SteerSpeedEps);
     }
 
     return true;

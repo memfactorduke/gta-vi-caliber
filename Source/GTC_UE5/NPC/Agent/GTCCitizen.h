@@ -10,6 +10,8 @@
 #include "../Decision/NpcBrain.h"
 #include "../Decision/NpcContact.h"
 #include "../Decision/NpcAcquaintance.h"
+#include "../Decision/NpcAttitude.h"
+#include "../Decision/NpcCommute.h"
 #include "../Voice/NpcVoice.h"
 #include "../Vitals/NpcVitals.h"
 #include "GTCCitizen.generated.h"
@@ -388,6 +390,34 @@ public:
     void OnIdleAction(FName Action);
 
     /**
+     * Fired when a riled-up citizen throws a rude gesture at the player — the seam
+     * for a middle-finger / dismissive wave-off montage. `Direction` is the planar
+     * world direction at the player. Fired alongside an R-rated curse from the
+     * attitude layer (a hothead who's been barged or honked at), so the gesture and
+     * the words land together. The C++ has already voiced the curse; leaving this
+     * unbound is harmless.
+     */
+    UFUNCTION(BlueprintImplementableEvent, Category = "GTC|NPC|Reaction")
+    void OnRudeGesture(FVector Direction);
+
+    /**
+     * Fired when a citizen reaches their parked car and gets in — the seam for an
+     * open-door / climb-in montage. The C++ then hides the body and hands a directed
+     * car to the traffic layer to drive home; leaving this unbound is harmless (the
+     * citizen simply vanishes into the car). Pairs with OnExitVehicle on arrival.
+     */
+    UFUNCTION(BlueprintImplementableEvent, Category = "GTC|NPC|Vehicle")
+    void OnEnterVehicle();
+
+    /**
+     * Fired when a citizen's car reaches its destination and they get out — the seam
+     * for a get-out montage. The C++ has already surfaced the body at the destination;
+     * leaving this unbound is harmless. Pairs with OnEnterVehicle.
+     */
+    UFUNCTION(BlueprintImplementableEvent, Category = "GTC|NPC|Vehicle")
+    void OnExitVehicle();
+
+    /**
      * Fired repeatedly while a brave citizen is squaring up to the player (the
      * Confront reaction) and throwing a retaliatory shove — the seam for a
      * shove/swing montage. `TowardPlayer` is the planar world direction at the
@@ -496,6 +526,17 @@ protected:
     UPROPERTY(EditAnywhere, Category = "GTC|NPC|Idle", meta = (ClampMin = "0.0", ClampMax = "1.0"))
     double IdleBarkChance = 0.4;
 
+    /** Master switch for the crude idle layer (pee / vomit / spit). Off => those
+     *  actions never fire, whatever the context. Lets a build dial the gross-out out. */
+    UPROPERTY(EditAnywhere, Category = "GTC|NPC|Idle")
+    bool bAllowCrudeActions = true;
+
+    /** Chance, when an idle action fires, that a crude action is even CONSIDERED
+     *  (FNpcCrudeAction then gates hard on context). Low by design — the crude stuff
+     *  should be a rare bit of colour, not a habit. */
+    UPROPERTY(EditAnywhere, Category = "GTC|NPC|Idle", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+    double CrudeActionChance = 0.05;
+
     /** A player this close (cm) counts as touching the citizen — roughly the sum
      *  of the two capsule radii plus a little margin. */
     UPROPERTY(EditAnywhere, Category = "GTC|NPC|Contact")
@@ -597,6 +638,9 @@ private:
     double Discipline = 0.0;
     double Bravery = 0.5;
     double Curiosity = 0.5;
+    /** Fixed temper (seeded) — how readily this citizen mouths off / squares up.
+     *  Drives the confrontational dialogue layer (FNpcAttitude + FInsultBark). */
+    ENpcTemper Temper = ENpcTemper::Easygoing;
     double WalkSpeed = 150.0; // cm/s
     double RunSpeed = 420.0;  // cm/s
     TMap<FString, double> DecayRates;
@@ -681,6 +725,22 @@ private:
      *  on the rising edge of a near-miss (not every frame the car is close). */
     bool bWasTrafficStartled = false;
 
+    /** Busyness of the place currently claimed (ENpcBusyness as uint8), cached at
+     *  replan so the crude-action gate can tell a quiet corner from a packed plaza. */
+    uint8 LastBusyness = 0; // ENpcBusyness::Empty
+
+    // --- Drive-home FSM (walk to a parked car, get in, drive home) --------------
+    /** Current stage of the drive-home behaviour; None for an ordinary pedestrian. */
+    ENpcDriveStage DriveStage = ENpcDriveStage::None;
+    /** Dwell timer for the Entering / Exiting stages. */
+    double DriveStageTimer = 0.0;
+    /** The world point the directed car drives to (the resolved home/office). */
+    FVector DriveDestination = FVector::ZeroVector;
+    /** The curb/parked-car point the citizen walks to before getting in. */
+    FVector DriveCarPoint = FVector::ZeroVector;
+    /** Set by the traffic layer's arrival callback (the car reached home). */
+    bool bDriveArrived = false;
+
     double ReplanAccum = 0.0;
     double IdleWanderAccum = 0.0;
     /** Counter for the idle-action roll, independent of the wander RNG stream. */
@@ -737,6 +797,21 @@ private:
     /** Maybe say something, gated by cooldown + situation. */
     void MaybeBark(float DeltaSeconds, bool bThreatActive);
 
+    // --- Drive-home FSM ---------------------------------------------------------
+    /** Decide, when a long trip to a commute anchor is resolved, whether this citizen
+     *  drives it: if so, redirect the walk to a nearby parked car. `HomeDest` is the
+     *  resolved destination; `DestPlace` is its place token ("home"/"office"/...). */
+    void MaybeBeginDriveHome(const FVector& HomeDest, const FString& DestPlace);
+    /** Advance the drive FSM. Returns true when it fully owns the frame (Entering /
+     *  Driving / Exiting); false while WalkingToCar so normal locomotion proceeds. */
+    bool TickDrive(float DeltaSeconds);
+    /** Get into the car: hide + freeze the body and fire OnEnterVehicle. */
+    void EnterVehicleAndHide();
+    /** Hand a directed car to the traffic layer and switch to Driving. */
+    void HandOffDriveToTraffic();
+    /** Surface the body at the destination, fire OnExitVehicle, begin the Exiting dwell. */
+    void ArriveHomeFromDrive();
+
     /** Record + announce a spoken line: stores it as LastBark and fires OnSpeak (the
      *  lip-sync hook) with an estimated duration. Does NOT touch the bark cadence
      *  timer — callers own TimeSinceBark so existing pacing is unchanged. */
@@ -756,12 +831,18 @@ private:
     void ApplyContact(double ImpactSpeedMps, bool bStrike, const FVector& PushDir, const FVector& ThreatPos);
 
     /** Route a resolved gunshot: draw down vitals, then wound-react or die.
-     *  `BulletTravel` is the planar world direction the round was travelling. */
-    void ApplyGunshot(double Damage, const FVector& BulletTravel);
+     *  `BulletTravel` is the planar world direction the round was travelling;
+     *  `bByPlayer` is true when the player fired it (gates the wanted-heat report). */
+    void ApplyGunshot(double Damage, const FVector& BulletTravel, bool bByPlayer);
 
     /** Enter the death state: end social ties, stop the AI/brain, ragdoll the body,
-     *  start the despawn countdown. `BulletTravel` shoves the corpse off the shot. */
-    void EnterDeath(const FVector& BulletTravel);
+     *  start the despawn countdown. `BulletTravel` shoves the corpse off the shot;
+     *  `bByPlayer` reports the kill as a crime when the player did it. */
+    void EnterDeath(const FVector& BulletTravel, bool bByPlayer);
+
+    /** Raise heat on the live wanted system for a crime against this citizen
+     *  (a player wounding or killing a civilian). No-op if the subsystem is absent. */
+    void ReportCrimeToWanted(bool bKilled) const;
 
     /** Voice the moment of contact with a line that fits the reaction. */
     void BarkForContact(ENpcContactReaction Reaction);

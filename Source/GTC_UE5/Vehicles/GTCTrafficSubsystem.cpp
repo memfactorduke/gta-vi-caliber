@@ -221,6 +221,92 @@ bool UGTCTrafficSubsystem::SpawnCar(const FVector& PlayerCm, FCar& OutCar)
     return true;
 }
 
+bool UGTCTrafficSubsystem::SpawnDirectedCar(
+    const FVector& StartCm, const FVector& DestCm, TFunction<void()> OnArrived)
+{
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        return false;
+    }
+    // The graph is built around the player; a citizen driving home starts near the
+    // player, so build one if we somehow don't have it yet (centred on the start).
+    if (!bNetworkBuilt)
+    {
+        RebuildNetwork(StartCm);
+    }
+    if (!bNetworkBuilt)
+    {
+        return false;
+    }
+
+    const FRoadNetwork::FNearestPoint StartHit = RoadNet.NearestPoint(ToNetwork(StartCm));
+    const FRoadNetwork::FNearestPoint DestHit = RoadNet.NearestPoint(ToNetwork(DestCm));
+    if (!StartHit.bValid || !DestHit.bValid)
+    {
+        return false;
+    }
+
+    FCar Car;
+    Car.Agent.LateralOffset = LaneOffset * MetresPerCm;
+    Car.Agent.Drive.DesiredSpeed = FMath::RandRange(DesiredSpeedMin, DesiredSpeedMax) * MetresPerCm;
+    // Start where the car actually is on its nearest lane, from a standstill.
+    if (!Car.Agent.StartOnSegment(RoadNet, StartHit.Seg, StartHit.Offset, 0.0))
+    {
+        return false;
+    }
+
+    const int32 FromNode = RoadNet.SegmentEndNode(StartHit.Seg);
+    const int32 ToNode = RoadNet.SegmentEndNode(DestHit.Seg);
+    if (FromNode < 0 || ToNode < 0)
+    {
+        return false;
+    }
+    Car.Agent.SetRoute(RoadNet.FindPath(FromNode, ToNode));
+    Car.bDirected = true;
+    Car.OnArrived = MoveTemp(OnArrived);
+
+    // Spawn the avatar at the start pose (same as ambient cars).
+    const double RoadZCm = StartCm.Z + RoadZOffset;
+    const FLanePath::FPose Pose = Car.Agent.Pose();
+    const FVector SpawnPos = ToWorld(Pose.Pos, RoadZCm);
+    const double Yaw = FMath::RadiansToDegrees(FMath::Atan2(Pose.Heading.Z, Pose.Heading.X));
+    const FTransform Xform(FRotator(0.0, Yaw, 0.0), SpawnPos);
+
+    TSubclassOf<AGTCTrafficVehicle> SpawnClass = VehicleClass;
+    if (!SpawnClass)
+    {
+        SpawnClass = AGTCTrafficVehicle::StaticClass();
+    }
+    AGTCTrafficVehicle* Actor = World->SpawnActorDeferred<AGTCTrafficVehicle>(
+        SpawnClass, Xform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+    if (!Actor)
+    {
+        return false;
+    }
+    Actor->FinishSpawning(Xform);
+    Car.Actor = Actor;
+    Car.HalfLengthM = FMath::Max(0.5, Actor->BodyHalfExtent.X * MetresPerCm);
+
+    Cars.Add(MoveTemp(Car));
+    return true;
+}
+
+bool UGTCTrafficSubsystem::NearestRoadPointCm(const FVector& FromCm, FVector& OutCm)
+{
+    if (!bNetworkBuilt)
+    {
+        return false;
+    }
+    const FRoadNetwork::FNearestPoint Hit = RoadNet.NearestPoint(ToNetwork(FromCm));
+    if (!Hit.bValid)
+    {
+        return false;
+    }
+    OutCm = ToWorld(Hit.Pos, FromCm.Z);
+    return true;
+}
+
 void UGTCTrafficSubsystem::NearestLeader(int32 SelfIndex, double& OutGapM, double& OutLeaderSpeedM) const
 {
     OutGapM = FTrafficAgent::OpenRoadGap;
@@ -286,6 +372,13 @@ void UGTCTrafficSubsystem::StreamTraffic(const FVector& PlayerCm)
         const double DistSq = FMath::Square(CarM.X - PlayerM.X) + FMath::Square(CarM.Z - PlayerM.Z);
         if (!Car.Actor.IsValid() || !Car.Agent.IsDriving() || DistSq > KeepMSq)
         {
+            // A directed car (a citizen driving home) that leaves the window off-screen
+            // counts as arrived — fire its callback so the driver completes the trip
+            // (surfaces / despawns into the census as "home") instead of stranding.
+            if (Car.bDirected && Car.OnArrived)
+            {
+                Car.OnArrived();
+            }
             if (AGTCTrafficVehicle* Actor = Car.Actor.Get())
             {
                 Actor->Destroy();
@@ -341,9 +434,25 @@ void UGTCTrafficSubsystem::Tick(float DeltaTime)
         {
             continue; // recycled next stream pass
         }
-        // Arrived at its destination? Pick a fresh one so it keeps touring the city.
+        // Arrived at its destination? A directed car (driving someone home) fires its
+        // callback once and leaves; an ambient car picks a fresh destination and keeps
+        // touring the city.
         if (Car.Agent.IsRouteExhausted())
         {
+            if (Car.bDirected)
+            {
+                if (Car.OnArrived)
+                {
+                    Car.OnArrived();
+                }
+                if (AGTCTrafficVehicle* Actor = Car.Actor.Get())
+                {
+                    Actor->Destroy();
+                }
+                Cars.RemoveAt(i);
+                --i;
+                continue;
+            }
             AssignRandomRoute(Car);
         }
 

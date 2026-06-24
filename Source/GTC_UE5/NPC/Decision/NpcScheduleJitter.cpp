@@ -1,13 +1,25 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "NpcScheduleJitter.h"
-#include "../NpcSeqMath.h"
 
 namespace
 {
 	// Deterministic hash -> [0,1). FNV-1a-ish with an avalanche finalizer, matching
 	// the NPC layer's other hashed-but-stable choices (no RNG).
-	using GtcSeq::Hash01;
+	double JitterHash01(int32 Seed)
+	{
+		uint32 H = 2166136261u;
+		const uint32 S = static_cast<uint32>(Seed);
+		for (int32 Byte = 0; Byte < 4; ++Byte)
+		{
+			H ^= (S >> (Byte * 8)) & 0xFFu;
+			H *= 16777619u;
+		}
+		H ^= H >> 15;
+		H *= 2246822519u;
+		H ^= H >> 13;
+		return static_cast<double>(H & 0xFFFFFFu) / static_cast<double>(0x1000000u);
+	}
 }
 
 double FNpcScheduleJitter::HourOffset(int32 Seed, double MaxHours)
@@ -17,7 +29,7 @@ double FNpcScheduleJitter::HourOffset(int32 Seed, double MaxHours)
 		return 0.0;
 	}
 	// Map [0,1) -> [-MaxHours, +MaxHours).
-	return (Hash01(Seed) * 2.0 - 1.0) * MaxHours;
+	return (JitterHash01(Seed) * 2.0 - 1.0) * MaxHours;
 }
 
 double FNpcScheduleJitter::Apply(double Hour, int32 Seed, double MaxHours)

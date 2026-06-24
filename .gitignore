@@ -87,6 +87,9 @@ DerivedDataCache/*
 # untracks an already-staged entry, and this pattern does not match the bare
 # path "Content/GTCaliberAssets"). See docs/ASSET_HANDLING.md.
 /Content/GTCaliberAssets/**
+/GTCaliberAssets/**
+/Fab/**
+/Content/Fab/**
 
 assets/*
 
@@ -100,6 +103,27 @@ assets/*
 
 # Fab "City Sample Vehicles" pack — binary .uasset car models (vendored)
 /Content/CitySampleVehicles/
+
+# Quixel/Megascans presets (Epic Content / Fab Standard License) — auto-dropped
+# by the Megascans/Bridge plugin (MS_DefaultMaterial + MSTextures fallback maps).
+# Licensed, not original/CC0; the EULA forbids standalone redistribution, so it
+# must never land in this (eventually public) tree. Contributors claim their own
+# free copy from Fab. Belongs in the GTCaliberAssets submodule otherwise.
+/Content/MSPresets/
+
+# MetaHuman characters (Common rig + Kellan/GTC heroes). Epic Licensed Content
+# under the Content/Unreal EULA: source-format redistribution to third parties is
+# forbidden, so the raw .uasset files must never land in this (eventually public)
+# tree — even ones we authored embed Epic's RigLogic. Contributors generate their
+# own free MetaHuman in-editor; ship only cooked builds. Belongs in the
+# GTCaliberAssets submodule otherwise.
+/Content/MetaHumans/
+
+# Epic-licensed audio (UE EULA) — GASP Foley bank + Starter Content ambience.
+# NOT original/CC0, so it must never land in this (eventually public) tree.
+# Belongs in the GTCaliberAssets submodule; relocate there in-editor (reference
+# fixup) once MCP/vibeue is reachable, then this ignore can be narrowed.
+/Content/Audio/
 
 # Cesium runtime settings + on-disk request cache
 /Content/CesiumSettings/
@@ -116,10 +140,16 @@ cesium-request-cache.sqlite*
 /Assets/
 
 # AI / editor tooling dirs (local agent + IDE config, not project source)
+/.claude/
 /.codex/
 /.cursor/
 /.gemini/
 /.vscode/
+/.mcp.json
 
 # Per-user editor settings (machine-specific)
 /Config/DefaultEditorPerProjectUserSettings.ini
+# Loose Content/Input — Sandbox/mobile WIP, shadowed by the CoreRedirect into the
+# GTCaliberAssets submodule (the "duplicate input trap"). The input the game
+# actually loads lives ONLY in the submodule; never commit loose copies here.
+/Content/Input/

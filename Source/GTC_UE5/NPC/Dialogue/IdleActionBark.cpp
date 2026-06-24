@@ -48,6 +48,12 @@ namespace
                 TEXT("Lookin' good."),
                 TEXT("There we go."),
             }},
+            // --- crude actions (FNpcCrudeAction tokens) — quiet, in-the-moment ---
+            // (relieve_self / vomit disabled for now — see FNpcCrudeAction::Pick.)
+            { TEXT("spit"), {
+                TEXT("Ptoo."),
+                TEXT("Bleh."),
+            }},
         };
         return B;
     }
