@@ -9,7 +9,7 @@
 /**
  * UGTCPlaceRegistrySubsystem — turns the abstract "place" strings the NPC brain
  * speaks (FNpcIntent::Place: "home", "diner", "bar", "park", "office", "gym",
- * "street", "restroom") into concrete world locations a citizen can walk to.
+ * "street", "restroom", "shop") into concrete world locations a citizen can walk to.
  *
  * The decision layer (FNpcMind / FNpcArchetypes) is deliberately scene-free: it
  * only ever names a *kind* of place. Something has to map that name onto the map,
@@ -94,7 +94,7 @@ public:
     double SynthesizedCellSize = 4000.0;
 
     /** When true, lay down a believable spread of POIs (home/office/diner/bar/park/
-     *  gym/restroom/street) the first time EnsureSeeded is called, so a level with
+     *  gym/shop/restroom/street) the first time EnsureSeeded is called, so a level with
      *  no hand-authored markers — like CityBeachStrip — still gives citizens real,
      *  spread-out destinations instead of every drive resolving to a stand-in.
      *  Hand-placed markers coexist (nearest-of-kind still wins). */
