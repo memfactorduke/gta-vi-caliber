@@ -153,3 +153,19 @@ cesium-request-cache.sqlite*
 # GTCaliberAssets submodule (the "duplicate input trap"). The input the game
 # actually loads lives ONLY in the submodule; never commit loose copies here.
 /Content/Input/
+
+# Staging copies from ProjectMegaSample (Epic "Mega" anim sample: GASP/ALS/Lyra on
+# SK_Mannequin) used as a RETARGET SOURCE for the soldier aim offsets. Epic Licensed
+# Content — must NEVER land in this (eventually public) tree. Only the retargeted
+# soldier outputs (SR_*/AO_Soldier_* on the Mixamo soldier skeleton) are kept; this
+# raw Manny-skeleton staging is local-only and deleted after retarget. See
+# docs/ASSET_HANDLING.md and memory gtc-mega-aim-offsets.
+/Content/Characters/Mannequins/
+/Content/_AnimationLibrary/
+/Content/_MegaStaging/
+/Content/_WeaponsPacks/
+/Content/_MegaSample/
+# Retargeted Mega-derived soldier pipeline (SoldierUni AO/BS/IK + source clips).
+# Kept LOCAL-ONLY — the player ABP references it, but it is Epic-derived so it must
+# not sit in this (public) repo. Re-build locally via Scripts/gtc_anim if missing.
+/Content/_AnimPipeline/
