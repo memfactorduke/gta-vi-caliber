@@ -145,10 +145,48 @@ Python queries instead); can't build C++ / relaunch the editor on this Mac; the
 `/Game/GTCShooter` set + the kit are gitignored, so the public PR carries only
 legal-clean text (a C++ gamemode base, config, docs) — not the paid-derived BPs.
 
-Next in this loop: default-weapon in hand (kit + MarketplaceBlockout arsenal) →
-weapon pickups in the map → remove the duplicate raw kit copy
-(`/Game/ThirdPersonShooterKit/Content/ThirdPersonKit` vs `/Game/ThirdPersonKit`) →
-commit the committable slice to a branch → PR.
+Done (iteration 2):
+3. **Player spawns armed.** The kit's `BP_DebugWeaponGiver` (hidden) placed at the
+   player start in CityBeachStrip arms `BP_GTCPlayer` via its `BP_WeaponComponent`
+   (PIE-verified: pistol equipped with holo-display + flashlight attachments + weapon
+   mesh). Map saved. Interim arming mechanism — to be replaced by a proper starting
+   loadout / GTA weapon-stand pickups once kit BP-var names are resolved.
+4. **Committable C++ gamemode base + branch.** Added `AGTCShooterGameMode`
+   (Source/GTC_UE5/Core) — our extensible GTA game-mode base (starting
+   loadout/cash/health, respawn + spawn-protection) with pure, unit-tested
+   `GTCShooter::Normalize` (`GTC.Core.ShooterRules.Normalize`). Zero hard refs to the
+   paid kit (soft, empty `StartingWeapons`). Committed with these docs to branch
+   **`feat/gta6-shooter-gamemode`** (pushed). C++ unbuilt in this env (Mac, no UBT) —
+   build + automation pending a build host; BP child reparent to it is a post-build step.
+
+Done (iteration 3):
+5. **Duplicate removed.** Deleted the redundant raw kit project drop
+   `Content/ThirdPersonShooterKit/` (12 GB, its own `.uproject` — a full copy of the
+   migrated `Content/ThirdPersonKit/` that's actually used). Verified zero references
+   into it from our GTCShooter BPs, the CityBeachStrip map, or the kit gamemode before
+   deleting. Contents were gitignored, so this is a pure local disk cleanup (no PR/leak
+   impact); the migrated copy is intact.
+6. **City is alive under our gamemode (verified).** CityBeachStrip holds **57,253
+   actors** — 171 POIs/shops, 8 enterable vehicles, the GTC police director (spawns
+   cops on wanted>0), with 3,742 actors within 50 m of the player spawn (player spawns
+   *inside* the dense city, not the void). The gamemode swap did not break GTC's
+   subsystem/placed-actor world systems.
+7. **Arsenal is multi-weapon (verified).** The debug giver grants the player a
+   pistol + rifle + melee knife (PIE-confirmed by reading the equipped weapon meshes:
+   `SKM_PistolSciFi`, `SKM_RifleScifi_01`, `SM_Knife_01`), switchable via the kit's
+   weapon inputs. The kit weapon system works end-to-end on `BP_GTCPlayer`.
+
+**Known limit:** this Mac editor build won't enumerate kit Blueprint variables/
+functions via Python (`dir(cdo)` empty, `new_variables`/`export_text` unsupported,
+no UFunction listing), so configuring the FULL arsenal (all ~20 kit
+`DA_WeaponDefinition`s incl. the modern non-sci-fi set + integrating MarketplaceBlockout
+`PDA_WeaponDefinition`s) and swapping the giver's default sci-fi loadout for realistic
+guns is a Blueprint-editor / data-asset task — not doable headless. Captured for a
+build/BP-editor session.
+
+Next in this loop: GTA weapon-stand pickups in the map (once stand config is
+reachable) → confirm wanted→police-combat loop on the armed player → keep committing
+small updates to the branch → open the PR when the slice is complete.
 
 ## Sequencing & risk notes
 
