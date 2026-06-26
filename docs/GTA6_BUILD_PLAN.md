@@ -184,9 +184,32 @@ no UFunction listing), so configuring the FULL arsenal (all ~20 kit
 guns is a Blueprint-editor / data-asset task — not doable headless. Captured for a
 build/BP-editor session.
 
-Next in this loop: GTA weapon-stand pickups in the map (once stand config is
-reachable) → confirm wanted→police-combat loop on the armed player → keep committing
-small updates to the branch → open the PR when the slice is complete.
+Done (iteration 4):
+8. **Wanted/police loop wired for testing.** Read the GTC C++ loop: `UWantedSubsystem`
+   (GameInstanceSubsystem; `ReportCrime`/`Stars`/`TickFrame`, all non-Blueprint so not
+   Python-drivable) feeds `AGTCPoliceDirector` (placed actor, present in the map), which
+   each tick reads `Stars()` and streams officers/cars/heli/SWAT/K9 by heat. Found the
+   real gap: **kit weapon fire does not report crimes to the wanted system** (the Phase-3
+   kit-damage → `ReportWitnessedCrime` bridge is unbuilt). Added committable
+   `Source/GTC_UE5/Systems/Wanted/WantedConsole.cpp` — dev-only `gtc.Wanted.Crime [0|1]`
+   and `gtc.Wanted.Status` console commands that drive the existing public subsystem API,
+   so the crime→cops loop can be exercised on a build (and as a GTA cheat) until the
+   bridge lands.
+
+**Verified vs build-gated (honest status):**
+- *Verified live (PIE):* our gamemode + GTC controller + armed motion-matching kit
+  player in CityBeachStrip; multi-weapon arsenal (pistol/rifle/knife); the city is alive
+  (57k actors, police director, POIs, vehicles).
+- *Committable, NOT compiled here (Mac, no UBT):* `AGTCShooterGameMode` + rules + test,
+  `WantedConsole` commands. Build + automation + the BP reparent of
+  `BP_GTCShooterGameMode` → `AGTCShooterGameMode` are pending a build host.
+- *Needs the Blueprint editor / data work:* full arsenal breadth (all kit
+  `DA_WeaponDefinition`s + MarketplaceBlockout), GTA weapon-stand pickups, and the
+  kit-damage→wanted bridge.
+
+Remaining toward "a close GTA6 game" (build/BP-editor session): compile the C++,
+reparent the BP gamemode to it, configure the full realistic arsenal + MarketplaceBlockout,
+build the kit-damage→wanted bridge, then a content/polish grind.
 
 ## Sequencing & risk notes
 
