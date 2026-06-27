@@ -47,10 +47,14 @@ feature-foldered C++ backbone:
 - Never toggles physics, never touches input. Flat level = instant settle, no change.
 - Pure core `FVehicleSpawnSettle::Evaluate` + test `GTC.Vehicles.Spawn.Settle`.
 
-### Traffic yield — `GTCTrafficSubsystem`
+### Traffic yield & spawn guard — `GTCTrafficSubsystem`
 - `NearestLeader` projects each registered `ExternalVehicle` onto the ambient car's
   lane; if it sits ahead inside the lane corridor it is fed to the IDM as the
   leader, so the ambient car brakes/queues behind it instead of driving into it.
+- **Meshless-spawn guard:** `SpawnCar`/`SpawnDirectedCar` bail when no real
+  `VehicleClass` is set, so ambient traffic stays dormant until a meshed car BP is
+  assigned — it never spawns the invisible `AGTCTrafficVehicle` boxes that used to
+  collide with and launch the player car.
 
 ## Rules — do not break the car
 
@@ -71,8 +75,12 @@ will be requested-changes / closed in review.
 4. **`VehicleSpawnSettleComponent` stays on the car.** Removing it brings back the
    spawn launch in the streaming city.
 5. **Do not globally disable ambient traffic** (`bStreamTraffic`) in shared code to
-   "fix" the flying car — the fix is the `NearestLeader` yield + `SpawnSettle`,
-   already in place. A local dev toggle is fine; **never commit it**.
+   "fix" the flying car. The real fixes are already in place: the `NearestLeader`
+   yield + `SpawnSettle` (real cars yield to the player), and the **meshless-spawn
+   guard** in `SpawnCar`/`SpawnDirectedCar` — ambient traffic only streams once a
+   real, meshed `VehicleClass` is assigned, so an unconfigured car class produces
+   *no* cars instead of invisible physics boxes that launch the player. A local dev
+   toggle is fine; **never commit a `bStreamTraffic` override**.
 6. **Do not revert the `NearestLeader` ExternalVehicles yield.** Ambient traffic
    must brake for registered external vehicles.
 7. **The car body mesh + materials are third-party (a CC-BY Porsche model).** Per
