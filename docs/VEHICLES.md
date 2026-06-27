@@ -83,11 +83,13 @@ will be requested-changes / closed in review.
    toggle is fine; **never commit a `bStreamTraffic` override**.
 6. **Do not revert the `NearestLeader` ExternalVehicles yield.** Ambient traffic
    must brake for registered external vehicles.
-7. **The car body mesh + materials are third-party (a CC-BY Porsche model).** Per
-   `docs/ASSETS.md` they live **outside this public repo** (local / private asset
-   submodule) — never commit the car mesh/materials here. The shipped game reskins
-   to a non-branded body. Trademark (Porsche) is separate from the CC-BY model
-   licence; attribution is kept with the asset.
+7. **The car body mesh + materials are third-party (a CC-BY Porsche model).** They
+   are committed in-tree as a **documented exception** (see the "Known exceptions"
+   table in `docs/ASSETS.md`), CC BY 4.0, with attribution in
+   `Content/Assets/PcarGTC/CREDITS.md`. Treat them as **read-only third-party** — do
+   not re-export or relicense. The shipped game reskins to a non-branded body, and
+   the **Porsche trademark/trade-dress is separate from the model licence and remains
+   unresolved** — don't rely on the branded body shipping.
 8. **Changes under `Source/GTC_UE5/Vehicles/` require the vehicle owner's review**
    (`.github/CODEOWNERS`).
 

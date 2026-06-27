@@ -86,20 +86,23 @@ original project work, CC BY 4.0.
 | `Content/Misc/SandboxAnimCurveCompressionSettings.uasset` (1) | Animation curve compression settings asset | project contributors | original | CC BY 4.0 |
 | `Content/Characters/Wooden/*.uasset` (4), `Content/Tripo/{SK_WoodenChar*,M_WoodenChar,T_WoodenChar_BaseColor,IK_WoodenChar,ABP_WoodenChar}.uasset` | AI-generated "Wooden" playable character — skeletal mesh, skeleton, physics asset, material, base-color texture, IK rig and anim blueprint (original-art replacement for licensed humans) | project contributors | AI (Tripo) | CC BY 4.0 |
 | `Content/Tripo/RTG_Soldier_to_WoodenChar.uasset`, `Content/Tripo/Anims/WC_*.uasset` (5) | IK retargeter + clips retargeted from the project's existing library animations onto the Wooden rig | project contributors | original (project retarget) | CC BY 4.0 |
+| `Content/Assets/PcarGTC/BP_VehicleBase.uasset` (1) | Drivable vehicle pawn Blueprint (Chaos `WheeledVehiclePawn`) wiring the car mesh + Enhanced Input + enter/exit + spawn-settle; original project logic built on the third-party car body recorded in the exceptions table below | project contributors | original | CC BY 4.0 |
+| `Content/CARINPUT/*.uasset` (8) | Car Enhanced Input — `IA_THROTTLE`/`IA_STEER`/`IA_BREAK` (Axis1D), `IA_HANDBRAK`/`IA_Interact`/`IA_EXIT`, and the `CAR_INPUT` mapping context | project contributors | original | CC BY 4.0 |
 
 *(Append one row per project-authored asset. Path relative to repo root. "Source"
 is `original` or a URL. License must be CC0, CC-BY-4.0, or CC-BY-4.0-compatible.
 Third-party / licensed packs do NOT go here; they belong in the
 `Content/GTCaliberAssets/` submodule and are tracked in ASSET_HANDLING.md.)*
 
-## Known exception — third-party kept in-tree by project decision
+## Known exceptions — third-party kept in-tree by project decision
 
-The asset below is **not** CC BY 4.0 and, by Rules 1 and 6, would normally live in
-the private `Content/GTCaliberAssets/` submodule rather than in this repository. It
-is retained directly here as a deliberate, documented project decision, governed by
-its upstream license and **not** relicensed by inclusion. It is recorded separately
-so the CC-BY ledger above remains accurate.
+The assets below are **third-party** (not project-authored) and, by Rule 6, would
+normally live in the private `Content/GTCaliberAssets/` submodule rather than in
+this repository. They are retained directly here as deliberate, documented project
+decisions, each governed by its own upstream license and **not** relicensed by
+inclusion. They are recorded separately so the CC-BY ledger above remains accurate.
 
 | Path | Description | Source | License |
 | --- | --- | --- | --- |
 | `Content/Mixamo/SoldierRifle/**` (52) | Adobe Mixamo soldier-rifle character (mesh / skeleton / textures), Mixamo motion clips, project-retargeted `SR_*` clips, retarget + IK rigs, the player anim blueprint `ABP_PlayCharacter`, and the locomotion blendspace | Adobe Mixamo (mixamo.com) | Mixamo License — free use within projects; redistribution of the raw asset files is restricted |
+| `Content/Assets/PcarGTC/` car body — `carGTC1` skeletal mesh, `CarMaterials/` (56 materials incl. `M_ClearGlass`), `carGTC1_Skeleton`, `carGTC1_PhysicsAsset` | "Porsche 911 GT3" model used as the player-vehicle body. Redistributable under CC BY 4.0 with attribution (`Content/Assets/PcarGTC/CREDITS.md`); the **Porsche trademark/trade-dress is separate from the model licence and is unresolved** — the shipping build reskins to a non-branded body. Read-only third-party | ChevroletSS — Sketchfab (see `CREDITS.md`) | CC BY 4.0 (model); trademark unresolved |
