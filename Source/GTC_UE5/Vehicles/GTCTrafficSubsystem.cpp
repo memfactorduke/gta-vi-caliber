@@ -343,6 +343,47 @@ void UGTCTrafficSubsystem::NearestLeader(int32 SelfIndex, double& OutGapM, doubl
             OutLeaderSpeedM = Other.Agent.GetSpeed();
         }
     }
+
+    // Also yield to externally-driven vehicles (the player car, scripted convoys).
+    // Without this, an ambient car sees open road over the player car's spot and
+    // PlaceActor teleports it (bSweep=false) straight INTO the chassis -> Chaos
+    // depenetration launches the player car ("flying car"). Project each registered
+    // external vehicle onto this car's lane: if it sits AHEAD and inside the lane
+    // corridor, feed it to the IDM as the leader so this car brakes/queues behind it.
+    const FLanePath::FPose SelfPose = Self.Agent.Pose();
+    const FVector Heading = SelfPose.Heading;                         // unit, core XZ frame
+    const double CorridorHalfM = (LaneOffset + 250.0) * MetresPerCm;  // ~a lane each side
+    const double PlayerHalfLengthM = 2.3;                            // player car ~ a car length
+    for (const TWeakObjectPtr<AActor>& Weak : ExternalVehicles)
+    {
+        const AActor* Vehicle = Weak.Get();
+        if (!Vehicle)
+        {
+            continue;
+        }
+        const FVector VehicleM = ToNetwork(Vehicle->GetActorLocation()); // planar metres
+        const double DX = VehicleM.X - SelfPose.Pos.X;
+        const double DZ = VehicleM.Z - SelfPose.Pos.Z;
+        const double Forward = DX * Heading.X + DZ * Heading.Z;          // ahead if > 0
+        if (Forward <= 0.0)
+        {
+            continue; // behind us -> not a leader
+        }
+        const double Lateral = FMath::Abs(DX * Heading.Z - DZ * Heading.X);
+        if (Lateral > CorridorHalfM)
+        {
+            continue; // not in our lane corridor
+        }
+        const double Gap = Forward - (Self.HalfLengthM + PlayerHalfLengthM);
+        if (Gap < OutGapM)
+        {
+            OutGapM = Gap;
+            // Leader speed = the external vehicle's speed along our lane (m/s, >= 0).
+            const FVector Vel = Vehicle->GetVelocity(); // world cm/s
+            const double Along = (Vel.X * Heading.X + Vel.Y * Heading.Z) * MetresPerCm;
+            OutLeaderSpeedM = FMath::Max(0.0, Along);
+        }
+    }
 }
 
 void UGTCTrafficSubsystem::PlaceActor(const FCar& Car, double RoadZCm) const
