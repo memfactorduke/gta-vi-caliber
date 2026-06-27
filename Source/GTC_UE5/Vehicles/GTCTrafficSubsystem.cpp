@@ -12,10 +12,13 @@
 void UGTCTrafficSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    if (!VehicleClass)
-    {
-        VehicleClass = AGTCTrafficVehicle::StaticClass();
-    }
+
+    // VehicleClass is intentionally NOT defaulted to AGTCTrafficVehicle::StaticClass().
+    // That base class has no mesh, so ambient traffic would spawn as invisible physics
+    // boxes that collide with -- and launch -- the player car ("flying car"). Ambient
+    // traffic only streams once a real, meshed VehicleClass is assigned; until then the
+    // spawners (SpawnCar / SpawnDirectedCar) bail out. This makes "no junk cars" the safe
+    // shared default WITHOUT globally disabling the traffic feature.
 }
 
 void UGTCTrafficSubsystem::Deinitialize()
@@ -204,11 +207,13 @@ bool UGTCTrafficSubsystem::SpawnCar(const FVector& PlayerCm, FCar& OutCar)
     const double Yaw = FMath::RadiansToDegrees(FMath::Atan2(Pose.Heading.Z, Pose.Heading.X));
     const FTransform Xform(FRotator(0.0, Yaw, 0.0), SpawnPos);
 
-    TSubclassOf<AGTCTrafficVehicle> SpawnClass = VehicleClass;
-    if (!SpawnClass)
+    // No meshed car configured -> don't spawn invisible placeholder boxes that
+    // would collide with and launch the player car. Resumes when VehicleClass is set.
+    if (!VehicleClass)
     {
-        SpawnClass = AGTCTrafficVehicle::StaticClass();
+        return false;
     }
+    const TSubclassOf<AGTCTrafficVehicle> SpawnClass = VehicleClass;
     AGTCTrafficVehicle* Car = World->SpawnActorDeferred<AGTCTrafficVehicle>(
         SpawnClass, Xform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
     if (!Car)
@@ -273,11 +278,13 @@ bool UGTCTrafficSubsystem::SpawnDirectedCar(
     const double Yaw = FMath::RadiansToDegrees(FMath::Atan2(Pose.Heading.Z, Pose.Heading.X));
     const FTransform Xform(FRotator(0.0, Yaw, 0.0), SpawnPos);
 
-    TSubclassOf<AGTCTrafficVehicle> SpawnClass = VehicleClass;
-    if (!SpawnClass)
+    // No meshed car configured -> don't spawn invisible placeholder boxes that
+    // would collide with and launch the player car. Resumes when VehicleClass is set.
+    if (!VehicleClass)
     {
-        SpawnClass = AGTCTrafficVehicle::StaticClass();
+        return false;
     }
+    const TSubclassOf<AGTCTrafficVehicle> SpawnClass = VehicleClass;
     AGTCTrafficVehicle* Actor = World->SpawnActorDeferred<AGTCTrafficVehicle>(
         SpawnClass, Xform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
     if (!Actor)
