@@ -1,0 +1,9 @@
+# Code ownership for the GTC vehicle system. See docs/VEHICLES.md.
+# A PR that touches these paths automatically requests the owner's review.
+# (Enforcement requires branch protection enabled on the repo.)
+
+/Source/GTC_UE5/Vehicles/Entry/      @ItsJazii
+/Source/GTC_UE5/Vehicles/Spawn/      @ItsJazii
+/docs/VEHICLES.md                    @ItsJazii
+/Content/Assets/PcarGTC/             @ItsJazii
+/Content/CARINPUT/                   @ItsJazii
