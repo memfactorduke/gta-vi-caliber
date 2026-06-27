@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GT-Caliber — Enterable Buildings Previz</title>
+<style>
+  :root{ --bg:#0b0e13; --panel:rgba(16,20,28,.86); --line:#1f2733; --t1:#48e08b; --t2:#5aa0ff; --t3:#9aa6b6; --accent:#ffb347; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; background:var(--bg); color:#e7edf5; font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; overflow:hidden; }
+  #app{ position:fixed; inset:0; }
+  canvas{ display:block; }
+  .panel{ position:fixed; background:var(--panel); border:1px solid var(--line); border-radius:12px; backdrop-filter:blur(8px); box-shadow:0 8px 30px rgba(0,0,0,.45); }
+  #title{ left:18px; top:16px; padding:14px 16px; max-width:330px; }
+  #title h1{ margin:0 0 4px; font-size:15px; letter-spacing:.3px; }
+  #title h1 b{ color:var(--accent); }
+  #title p{ margin:0; color:#aab6c6; font-size:12px; }
+  #legend{ left:18px; bottom:16px; padding:12px 14px; width:330px; }
+  #legend .tier{ display:flex; gap:10px; align-items:flex-start; padding:7px 0; border-top:1px solid var(--line); }
+  #legend .tier:first-of-type{ border-top:none; }
+  #legend .dot{ width:11px; height:11px; border-radius:3px; margin-top:3px; flex:0 0 auto; }
+  #legend .tx b{ display:block; font-size:12px; }
+  #legend .tx span{ color:#909cad; font-size:11px; }
+  #legend code{ color:#cdd8e6; background:#0e131b; padding:1px 5px; border-radius:4px; font-size:10.5px; }
+  #hud{ right:18px; top:16px; padding:12px 14px; width:228px; }
+  #hud .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:8px 0; }
+  #hud label{ color:#aab6c6; }
+  #hud input[type=range]{ width:120px; accent-color:var(--accent); }
+  .btn{ width:100%; margin-top:8px; padding:10px; border:1px solid var(--line); border-radius:9px; background:#141b25; color:#e7edf5; font-weight:600; cursor:pointer; transition:.15s; }
+  .btn:hover{ background:#1c2632; border-color:#2d3a4a; }
+  .btn.enter{ background:linear-gradient(180deg,#1d2a1f,#15201a); border-color:#2c5a3a; color:#bff5d2; }
+  .btn.enter:hover{ border-color:var(--t1); }
+  #status{ margin-top:6px; color:#7f8b9b; font-size:11px; text-align:center; }
+  #hint{ position:fixed; left:50%; bottom:20px; transform:translateX(-50%); padding:7px 14px; background:rgba(255,179,71,.12); border:1px solid rgba(255,179,71,.4); border-radius:20px; color:var(--accent); font-size:12px; opacity:0; transition:.3s; pointer-events:none; }
+  #hint.show{ opacity:1; }
+  #fade{ position:fixed; inset:0; background:#000; opacity:0; pointer-events:none; transition:opacity .35s; }
+  .kbd{ color:#7f8b9b; font-size:11px; margin-top:8px; }
+  .kbd b{ color:#aab6c6; background:#0e131b; border:1px solid var(--line); border-radius:4px; padding:0 4px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="title" class="panel">
+  <h1>Enterable Buildings — <b>Previz</b></h1>
+  <p>The 3-tier illusion shipping open-world games actually use. Every effect here maps to assets already in CityBeachStrip. Drag to orbit, scroll to zoom.</p>
+</div>
+
+<div id="hud" class="panel">
+  <div class="row"><label>Time of day</label><input id="time" type="range" min="0" max="100" value="22"></div>
+  <button id="enterBtn" class="btn enter">▶ Enter the lit storefront</button>
+  <button id="resetBtn" class="btn">Reset view</button>
+  <div id="status">Tier-2 parallax rooms live in every window →</div>
+  <div class="kbd">Tip: move close & look along the glass — the rooms shift with parallax. That's <b>0</b> geometry.</div>
+</div>
+
+<div id="legend" class="panel">
+  <div class="tier">
+    <div class="dot" style="background:var(--t1)"></div>
+    <div class="tx"><b>Tier 1 · Real walk-in interiors</b>
+      <span>The room behind the glowing door = <code>BP_GTC_InteriorModule</code> (already placed on 21 buildings). Walk in, NPCs path inside.</span></div>
+  </div>
+  <div class="tier">
+    <div class="dot" style="background:var(--t2)"></div>
+    <div class="tx"><b>Tier 2 · Fake parallax windows</b>
+      <span>Every window is a shader, not a room — <code>M_WindowBox</code> + the 17 room textures already in <code>WindowCubeMaps/</code>. Sells "lived-in" for free.</span></div>
+  </div>
+  <div class="tier">
+    <div class="dot" style="background:var(--t3)"></div>
+    <div class="tx"><b>Tier 3 · Modular facades</b>
+      <span>The shells = CityBeachStrip's 846 modular mesh parts. Unchanged.</span></div>
+  </div>
+</div>
+
+<div id="hint"></div>
+<div id="fade"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+<script>
+// ----------------------------------------------------------------------------
+// GT-Caliber "enterable buildings" previz.
+// Tier 2 (parallax interior windows) is the REAL interior-mapping technique:
+// each window quad ray-marches an imaginary room box in the fragment shader.
+// Tier 1 (walk-in room) is a literal BP_GTC_InteriorModule-style annex you
+// glide into. Tier 3 (facades) are simple modular shells.
+// ----------------------------------------------------------------------------
+const app = document.getElementById('app');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(58, innerWidth/innerHeight, 0.05, 600);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding;
+app.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI*0.52; controls.minDistance = 4; controls.maxDistance = 90;
+
+const STREET_CAM = new THREE.Vector3(0, 6.5, 34);
+const STREET_TGT = new THREE.Vector3(0, 6, 0);
+camera.position.copy(STREET_CAM);
+controls.target.copy(STREET_TGT);
+
+// ---- lighting / sky -------------------------------------------------------
+const hemi = new THREE.HemisphereLight(0xbfd4ff, 0x36302a, 1.0);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff2d6, 1.4);
+sun.position.set(-18, 36, 22);
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x4a6fa5, 0.25); fill.position.set(20,10,-20); scene.add(fill);
+scene.fog = new THREE.Fog(0x0b0e13, 70, 220);
+
+// ---- ground / street ------------------------------------------------------
+const street = new THREE.Mesh(
+  new THREE.PlaneGeometry(220, 70),
+  new THREE.MeshStandardMaterial({ color:0x10141b, roughness:0.95 })
+);
+street.rotation.x = -Math.PI/2; street.position.z = 8; scene.add(street);
+// sidewalk
+const walk = new THREE.Mesh(new THREE.PlaneGeometry(220, 14),
+  new THREE.MeshStandardMaterial({ color:0x2a2f38, roughness:1 }));
+walk.rotation.x = -Math.PI/2; walk.position.set(0,0.02,12); scene.add(walk);
+// lane dashes
+const dashMat = new THREE.MeshStandardMaterial({ color:0x8a8a6a, emissive:0x222216 });
+for(let x=-100;x<=100;x+=8){
+  const d = new THREE.Mesh(new THREE.BoxGeometry(3,0.05,0.4), dashMat);
+  d.position.set(x,0.03,2); scene.add(d);
+}
+
+// ---------------------------------------------------------------------------
+// TIER 2 — interior-mapping window shader
+// ---------------------------------------------------------------------------
+const winVert = `
+  varying vec3 vLocal;
+  void main(){ vLocal = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+`;
+const winFrag = `
+  precision highp float;
+  varying vec3 vLocal;
+  uniform mat4 uModelInv;
+  uniform vec2 uHalf;     // window half-extents (local units)
+  uniform float uDepth;   // room depth
+  uniform float uSeed;
+  uniform float uNight;   // 0 day .. 1 night
+  uniform vec3  uSky;
+
+  float hash(float n){ return fract(sin(n*78.233)*43758.5453); }
+  float rect(vec2 p, vec2 c, vec2 s){ vec2 d = abs(p-c)-s; return (max(d.x,d.y)<0.0)?1.0:0.0; }
+
+  void main(){
+    vec3 camL = (uModelInv * vec4(cameraPosition,1.0)).xyz;
+    vec3 ro = vLocal;                 // on glass plane, z=0
+    vec3 rd = normalize(ro - camL);   // into the surface
+
+    // window frame + mullions read it as glass
+    vec2 uv = (vLocal.xy/uHalf)*0.5+0.5;     // 0..1
+    float frame = max(step(uv.x,0.06)+step(0.94,uv.x), step(uv.y,0.05)+step(0.95,uv.y));
+    float mull  = (abs(uv.x-0.5)<0.012?1.0:0.0) + (abs(uv.y-0.55)<0.012?1.0:0.0);
+
+    vec3 col;
+    if(rd.z > -0.02){
+      col = mix(uSky*0.4, vec3(0.05), 0.5);   // grazing: just glass
+    } else {
+      vec3 inv = 1.0/rd;
+      float tz = (-uDepth - ro.z)*inv.z;
+      float tx = ((rd.x>0.0?uHalf.x:-uHalf.x) - ro.x)*inv.x;
+      float ty = ((rd.y>0.0?uHalf.y:-uHalf.y) - ro.y)*inv.y;
+      float t = min(tz, min(tx,ty));
+      vec3 hit = ro + rd*t;
+
+      // per-room palette
+      float h = hash(uSeed);
+      vec3 wallC = mix(vec3(0.72,0.66,0.58), vec3(0.5,0.52,0.62), hash(uSeed+3.1));
+      vec3 floorC= wallC*mix(0.30,0.45,h);
+      vec3 ceilC = wallC*0.92;
+      float depthF = clamp(-hit.z/uDepth, 0.0, 1.0);
+
+      if(t==tz){                                  // back wall
+        vec2 p = hit.xy/uHalf*0.5+0.5;
+        col = wallC*0.9;
+        col = mix(col, wallC*1.25, rect(p, vec2(0.5,0.62), vec2(0.16,0.12))); // picture
+        float tv = rect(p, vec2(0.5,0.34), vec2(0.20,0.12));                  // tv/headboard
+        col = mix(col, vec3(0.05,0.06,0.08), tv);
+        col += vec3(0.1,0.3,0.6)*tv*(0.5+0.5*hash(uSeed+9.0))*uNight;         // tv glow at night
+      } else if(t==ty){                           // floor or ceiling
+        vec2 p = hit.xz/uHalf*0.5+0.5;
+        if(hit.y>0.0){ col = ceilC; }
+        else{
+          col = floorC;
+          col = mix(col, floorC*1.6, rect(p, vec2(0.5,0.55), vec2(0.30,0.28))); // rug
+          col = mix(col, wallC*0.35, rect(p, vec2(0.5,0.80), vec2(0.34,0.12))); // sofa/bed base
+        }
+      } else {                                    // side walls
+        col = wallC*mix(0.7,0.95,hash(uSeed+5.0));
+      }
+      col *= mix(1.0, 0.45, depthF);              // far = darker => depth read
+
+      // lamp: a fraction of rooms are lit; matters most at night
+      float lit = step(0.45, hash(uSeed+1.7));
+      float lamp = lit*(0.25 + uNight*1.0);
+      vec3 warm = vec3(1.0,0.82,0.5);
+      col = col*(mix(1.0,0.22,uNight)) + warm*lamp*(0.55+0.45*(1.0-depthF));
+    }
+
+    col = mix(col, vec3(0.02,0.025,0.035), frame);          // dark frame
+    col = mix(col, vec3(0.03,0.035,0.05), mull*0.8);        // mullions
+    col += uSky*0.05*(1.0-uNight);                          // faint day reflection
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+const windowMats = [];
+function makeWindow(w, h){
+  const geo = new THREE.PlaneGeometry(w, h);
+  const mat = new THREE.ShaderMaterial({
+    vertexShader: winVert, fragmentShader: winFrag,
+    uniforms:{
+      uModelInv:{ value:new THREE.Matrix4() },
+      uHalf:{ value:new THREE.Vector2(w/2, h/2) },
+      uDepth:{ value: 3.0 + Math.random()*1.5 },
+      uSeed:{ value: Math.random()*40 },
+      uNight:{ value: 0 },
+      uSky:{ value: new THREE.Color(0x9ec3ff) }
+    }
+  });
+  windowMats.push(mat);
+  return new THREE.Mesh(geo, mat);
+}
+
+// ---------------------------------------------------------------------------
+// TIER 3 — modular facades, with a grid of Tier-2 windows on the front
+// ---------------------------------------------------------------------------
+function makeBuilding(x, width, height, depth, color, solid){
+  const g = new THREE.Group(); g.position.set(x,0,0); scene.add(g);
+  const shellMat = new THREE.MeshStandardMaterial({ color, roughness:0.85, metalness:0.05 });
+  if(solid){
+    const box = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), shellMat);
+    box.position.set(0, height/2, -depth/2); g.add(box);
+  } else {
+    // front-wall-only shell so we have open space behind for the walk-in room
+    const front = new THREE.Mesh(new THREE.BoxGeometry(width, height, 0.6), shellMat);
+    front.position.set(0, height/2, 0); g.add(front);
+    const sideL = new THREE.Mesh(new THREE.BoxGeometry(0.6, height, depth), shellMat);
+    sideL.position.set(-width/2, height/2, -depth/2); g.add(sideL);
+    const sideR = sideL.clone(); sideR.position.x = width/2; g.add(sideR);
+    const back = new THREE.Mesh(new THREE.BoxGeometry(width, height, 0.6), shellMat);
+    back.position.set(0, height/2, -depth); g.add(back);
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(width, 0.6, depth), shellMat);
+    roof.position.set(0, height, -depth/2); g.add(roof);
+  }
+  // window grid on the +Z front face
+  const cols = Math.max(3, Math.floor(width/2.6));
+  const rows = Math.max(3, Math.floor((height-3)/3.0));
+  const wW = 1.35, wH = 1.9;
+  const gapX = width/cols, gapY = (height-2.5)/rows;
+  const frontZ = (solid? depth/2*0 : 0) + 0.42;
+  const doorCol = Math.floor(cols/2);
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const px = -width/2 + gapX*(c+0.5);
+      const py = 2.2 + gapY*(r+0.5);
+      if(!solid && r===0 && c===doorCol) continue; // leave a hole for the door
+      const win = makeWindow(wW, wH);
+      win.position.set(px, py, frontZ);
+      g.add(win);
+    }
+  }
+  return { group:g, width, height, depth, frontZ, doorX: -width/2+gapX*(doorCol+0.5) };
+}
+
+const left  = makeBuilding(-15, 11, 17, 9, 0x6c5b4a, true);
+const mid   = makeBuilding(  0, 12, 21, 10, 0x55606e, false);  // has the walk-in room
+const right = makeBuilding( 15, 11, 19, 9, 0x4a5a55, true);
+
+// ---------------------------------------------------------------------------
+// TIER 1 — the walk-in room (BP_GTC_InteriorModule analogue) behind mid door
+// ---------------------------------------------------------------------------
+const room = new THREE.Group();
+mid.group.add(room);
+const DOOR_X = mid.doorX, DOOR_Z = mid.frontZ;
+const RW = 6, RH = 3.2, RD = 5.5;
+room.position.set(DOOR_X, 0, DOOR_Z - 0.4);
+const matWall  = new THREE.MeshStandardMaterial({ color:0x8a8170, roughness:0.9 });
+const matFloor = new THREE.MeshStandardMaterial({ color:0x4f3f30, roughness:0.8 });
+const matWood  = new THREE.MeshStandardMaterial({ color:0x6b4a2f, roughness:0.7 });
+const matMetal = new THREE.MeshStandardMaterial({ color:0x9aa0a6, roughness:0.4, metalness:0.6 });
+function plane(w,h,mat,rx,ry){ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat); m.rotation.x=rx||0; m.rotation.y=ry||0; return m; }
+const flo = plane(RW,RD,matFloor,-Math.PI/2); flo.position.set(0,0.01,-RD/2); room.add(flo);
+const cei = plane(RW,RD,matWall,Math.PI/2); cei.position.set(0,RH,-RD/2); room.add(cei);
+const back = plane(RW,RH,matWall); back.position.set(0,RH/2,-RD); room.add(back);
+const wl = plane(RD,RH,matWall,0,Math.PI/2); wl.position.set(-RW/2,RH/2,-RD/2); room.add(wl);
+const wr = plane(RD,RH,matWall,0,-Math.PI/2); wr.position.set(RW/2,RH/2,-RD/2); room.add(wr);
+// furniture = the actual BP_GTC_InteriorModule components: Counter, BackBar, Table, Stool1/2
+function box(w,h,d,mat,x,y,z){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); m.position.set(x,y,z); room.add(m); return m; }
+box(2.6,1.0,0.7,matWood, 0,0.5,-RD+0.8);          // Counter
+box(2.6,1.6,0.3,matWood, 0,0.8,-RD+0.3);          // BackBar
+box(1.1,0.75,1.1,matWood, 1.4,0.37,-2.2);         // Table
+box(0.4,0.5,0.4,matMetal, 1.0,0.25,-1.6);         // Stool1
+box(0.4,0.5,0.4,matMetal, 1.8,0.25,-1.7);         // Stool2
+const roomLight = new THREE.PointLight(0xffd9a0, 0, 9);    // RoomLight (off until entered)
+roomLight.position.set(0,RH-0.4,-RD/2); room.add(roomLight);
+// glowing door frame at the opening
+const doorFrameMat = new THREE.MeshStandardMaterial({ color:0x14202a, emissive:0x1c6b3a, emissiveIntensity:1.2 });
+const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(2.3,3.0,0.25), doorFrameMat);
+doorFrame.position.set(DOOR_X, 1.5, mid.frontZ+0.05); mid.group.add(doorFrame);
+const doorGlow = new THREE.PointLight(0x39e08b, 1.2, 7); doorGlow.position.set(DOOR_X,1.6,mid.frontZ+1); mid.group.add(doorGlow);
+
+// simple pedestrians for scale
+function ped(x,z,col){ const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.26,1.1,8),new THREE.MeshStandardMaterial({color:col}));
+  body.position.y=0.85; const head=new THREE.Mesh(new THREE.SphereGeometry(0.2,10,10),new THREE.MeshStandardMaterial({color:0xc9a98a})); head.position.y=1.55;
+  g.add(body,head); g.position.set(x,0,z); scene.add(g); return g; }
+ped(2.5,13,0x394b7a); ped(-3,12.5,0x6a3a3a); ped(6,13.5,0x3a5a4a);
+
+// ---------------------------------------------------------------------------
+// Time-of-day + camera state machine
+// ---------------------------------------------------------------------------
+const fadeEl = document.getElementById('fade');
+const hintEl = document.getElementById('hint');
+let night = 0.78;
+function setTime(v){ // v 0..1  (0 noon, 1 midnight)
+  night = v;
+  const dusk = new THREE.Color(0x0b0e13).lerp(new THREE.Color(0x9ec3ff), 1-v);
+  scene.background = dusk; scene.fog.color = dusk;
+  sun.intensity = 1.5*(1-v) + 0.05; hemi.intensity = 1.0*(1-v)+0.12;
+  sun.color.setHSL(0.09, 0.6, 0.5+0.2*(1-v));
+  const sky = new THREE.Color().setHSL(0.6, 0.5, 0.25+0.45*(1-v));
+  windowMats.forEach(m=>{ m.uniforms.uNight.value = v; m.uniforms.uSky.value.copy(sky); });
+  doorGlow.intensity = 0.6 + v*1.4; doorFrameMat.emissiveIntensity = 0.6 + v*1.4;
+}
+document.getElementById('time').addEventListener('input', e=> setTime(e.target.value/100));
+setTime(night);
+
+let state='street', p=0;
+const fromPos=new THREE.Vector3(), fromTgt=new THREE.Vector3(), toPos=new THREE.Vector3(), toTgt=new THREE.Vector3();
+const INSIDE_POS = new THREE.Vector3(DOOR_X, 1.6, mid.frontZ-0.4 - 1.2);
+const INSIDE_TGT = new THREE.Vector3(DOOR_X, 1.4, mid.frontZ-0.4 - RD);
+function beginTween(np, nt, next){
+  fromPos.copy(camera.position); fromTgt.copy(controls.target);
+  toPos.copy(np); toTgt.copy(nt); p=0; state='tween'; nextState=next; controls.enabled=false;
+}
+let nextState='inside';
+function showHint(txt){ hintEl.textContent=txt; hintEl.classList.add('show'); clearTimeout(showHint._t); showHint._t=setTimeout(()=>hintEl.classList.remove('show'),2600); }
+
+document.getElementById('enterBtn').addEventListener('click', ()=>{
+  if(state==='inside'){ exit(); return; }
+  fadeEl.style.opacity=1;
+  setTimeout(()=>{
+    roomLight.intensity = 6; // lights up the moment you cross the threshold
+    beginTween(INSIDE_POS.clone().add(mid.group.position), INSIDE_TGT.clone().add(mid.group.position), 'inside');
+    fadeEl.style.opacity=0;
+  }, 330);
+  document.getElementById('enterBtn').textContent='◀ Exit to street';
+  document.getElementById('status').textContent='Inside BP_GTC_InteriorModule (Tier 1)';
+});
+function exit(){
+  beginTween(STREET_CAM.clone(), STREET_TGT.clone(), 'street');
+  roomLight.intensity = 0;
+  document.getElementById('enterBtn').textContent='▶ Enter the lit storefront';
+  document.getElementById('status').textContent='Tier-2 parallax rooms live in every window →';
+}
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(state==='inside') exit(); else { camera.position.copy(STREET_CAM); controls.target.copy(STREET_TGT); }
+});
+
+// raycast the door to enter by clicking it
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+renderer.domElement.addEventListener('click', e=>{
+  if(state!=='street') return;
+  mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-(e.clientY/innerHeight)*2+1;
+  ray.setFromCamera(mouse,camera);
+  if(ray.intersectObject(doorFrame).length){ document.getElementById('enterBtn').click(); }
+});
+
+addEventListener('resize', ()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+
+// keep each window's inverse-model matrix current (static, but cheap to refresh)
+function refreshWindowMatrices(){
+  scene.updateMatrixWorld(true);
+  windowMats.forEach(m=>{});
+  scene.traverse(o=>{
+    if(o.isMesh && o.material && o.material.uniforms && o.material.uniforms.uModelInv){
+      o.material.uniforms.uModelInv.value.copy(o.matrixWorld).invert();
+    }
+  });
+}
+
+let hinted=false;
+function tick(){
+  requestAnimationFrame(tick);
+  if(state==='tween'){
+    p=Math.min(1,p+0.022); const s=p*p*(3-2*p);
+    camera.position.lerpVectors(fromPos,toPos,s);
+    controls.target.lerpVectors(fromTgt,toTgt,s);
+    if(p>=1){ state=nextState; controls.enabled=true; }
+  }
+  controls.update();
+  refreshWindowMatrices();
+  renderer.render(scene,camera);
+  if(!hinted){ hinted=true; setTimeout(()=>showHint('Drag to orbit · click the green door to walk in'),700); }
+}
+refreshWindowMatrices();
+tick();
+</script>
+</body>
+</html>

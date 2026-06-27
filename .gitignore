@@ -91,6 +91,15 @@ DerivedDataCache/*
 /Fab/**
 /Content/Fab/**
 
+# Third Person Shooter Kit (paid Fab purchase, ~12GB). The source project dropped
+# into the tree AND any assets migrated out of it must NEVER hit this public repo —
+# licensed art belongs in the GTCaliberAssets submodule. See docs/ASSET_HANDLING.md.
+/Content/ThirdPersonShooterKit/**
+/Content/ThirdPersonKit/**
+# GTC integration-layer Blueprints DERIVED from the paid kit (our own gamemode/
+# controller/gamestate/player duplicates). Kit-derived → also kept out of public repo.
+/Content/GTCShooter/**
+
 assets/*
 
 # ── Local-only: vendored / legacy / stranded / tooling / per-user ───────────
