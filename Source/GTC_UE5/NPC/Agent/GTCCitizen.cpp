@@ -44,6 +44,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Engine/SkeletalMesh.h"
 #include "Animation/AnimInstance.h"
 #include "Engine/World.h"
@@ -77,6 +78,16 @@ namespace
     const TCHAR* MannyMeshPath = TEXT("/Game/Mixamo/SoldierRifle/Rifle_Aiming_Idle-3.Rifle_Aiming_Idle-3");
     const TCHAR* QuinnMeshPath = TEXT("/Game/Mixamo/SoldierRifle/Rifle_Aiming_Idle-3.Rifle_Aiming_Idle-3");
     const TCHAR* LocomotionAbpPath = TEXT("/Game/GTCaliberAssets/Content/Characters/Mannequins/Anims/Unarmed/ABP_GTC_Citizen.ABP_GTC_Citizen_C");
+
+    // Flesh physical material so a citizen bleeds when shot. The active weapon is the
+    // TPS kit's BP_WeaponComponent, which resolves its impact FX/sound/decal purely
+    // from the hit's PhysicalMaterial->SurfaceType in DA_WeaponImpactsData — it does
+    // NOT read the GTC Creature tag (that's the project's own SurfaceImpactFX path).
+    // The kit's own AI (BP_AICharacterBase) bleeds by carrying this exact material as
+    // a phys-material override on its body mesh, mapping to the kit's flesh surface
+    // (SurfaceType3 -> blood VFX/decal). Soft path so the headless/editor-closed build
+    // never hard-links a licensed kit asset; LoadObject'd at runtime, guarded if absent.
+    const TCHAR* FleshPhysMaterialPath = TEXT("/Game/ThirdPersonKit/Materials/PM_Flesh.PM_Flesh");
 
     // Candidate head/face meshes, indexed by the citizen's HeadVariant. These are
     // the slots a modular or MetaHuman head drops into: author SK_Head_0N (skinned
@@ -229,6 +240,25 @@ AGTCCitizen::AGTCCitizen()
 void AGTCCitizen::BeginPlay()
 {
     Super::BeginPlay();
+
+    // Make the body read as flesh to the kit weapon, so a shot draws blood. Both the
+    // shootable surfaces get the override: the capsule (the always-hit fallback that
+    // the bullet usually strikes first) and the skeletal body (for per-bone limb/head
+    // hits where the mesh carries a physics asset). The override is a component-level
+    // BodyInstance property, so it persists across the later SetSkeletalMesh swaps in
+    // ApplyIdentity. Soft-loaded + guarded: if the kit material is absent (it lives in
+    // the gitignored TPS kit), citizens simply fall back to the default impact, no crash.
+    if (UPhysicalMaterial* Flesh = LoadObject<UPhysicalMaterial>(nullptr, FleshPhysMaterialPath))
+    {
+        if (UCapsuleComponent* Capsule = GetCapsuleComponent())
+        {
+            Capsule->SetPhysMaterialOverride(Flesh);
+        }
+        if (USkeletalMeshComponent* Body = GetMesh())
+        {
+            Body->SetPhysMaterialOverride(Flesh);
+        }
+    }
 
     if (!bInitialized)
     {

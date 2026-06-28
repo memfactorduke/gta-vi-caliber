@@ -55,6 +55,12 @@ public class GTC_UE5 : ModuleRules
 		// headless build stays clean.
 		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "NavigationSystem" });
 
+		// "PhysicsCore": GTCCitizen loads a flesh UPhysicalMaterial (surface-type lookup for
+		// weapon-impact FX). UE 5.8 no longer pulls PhysicsCore in transitively via Engine, so
+		// the UPhysicalMaterial UClass symbol (Z_Construct_UClass_UPhysicalMaterial) must be
+		// linked explicitly. Private — UPhysicalMaterial is used only inside this module's .cpp.
+		PrivateDependencyModuleNames.AddRange(new string[] { "PhysicsCore" });
+
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		
