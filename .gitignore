@@ -180,3 +180,12 @@ cesium-request-cache.sqlite*
 # Kept LOCAL-ONLY — the player ABP references it, but it is Epic-derived so it must
 # not sit in this (public) repo. Re-build locally via Scripts/gtc_anim if missing.
 /Content/_AnimPipeline/
+
+# --- Merged in from chore/dedup-input-assets (union of leak guards) ---
+# Nested Epic "Game Animation Sample" reference project (its own .uproject + build
+# caches) — a local download, not part of this game's source or content.
+/GameAnimationSample/
+
+# Third-party FPS Weapon Bundle — licensed asset pack, must not be redistributed.
+# Kept locally for the game; scrubbed from history and never committed/pushed.
+/Content/FPS_Weapon_Bundle/
