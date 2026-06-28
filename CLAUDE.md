@@ -32,17 +32,33 @@ the intent above so you never hit it.
 
 Act on the live editor through one of these, in order of preference:
 
-- **Unreal MCP** — the `unreal-mcp` server in `.mcp.json`, served by the
-  in-editor `ModelContextProtocol` plugin at `http://127.0.0.1:8000/mcp`
-  (configured in `Config/DefaultEditorPerProjectUserSettings.ini`:
-  `ServerPortNumber=8000`, `ServerUrlPath=/mcp`). This is the primary control
-  surface — use its tools to inspect/modify the world and run editor actions.
+- **Unreal MCP** (`unreal-mcp`) — **the one and only live control surface.** It is
+  an **HTTP** MCP at `http://127.0.0.1:8000/mcp` (registered in `~/.claude.json`,
+  served by the in-editor `ModelContextProtocol` plugin; port/path in
+  `Config/DefaultEditorPerProjectUserSettings.ini` — `ServerPortNumber=8000`,
+  `ServerUrlPath=/mcp`). Use its tools to inspect/modify the world and run editor
+  actions. Details + call convention below.
 - **Python inside the editor** — `PythonScriptPlugin` /
   `EditorScriptingUtilities` are enabled; run editor Python through the live
-  connection, not a fresh `-run=pythonscript` process.
+  connection, not a fresh `-run=pythonscript` process. Use this **only** for the
+  few things MCP cannot do (see "what MCP can't do" below).
 
-If the MCP server is unreachable, the editor or its plugin may be down — stop
-and ask rather than launching anything.
+If the MCP server is unreachable, the editor or its plugin may be down — run
+`mcp__unreal-mcp__list_toolsets` to probe; if it fails, **stop and ask** rather
+than launching anything.
+
+**`vibe-ue` / VibeUE and `unrealclaude` are legacy — do not use them.** Old
+memories and some `docs/` mention VibeUE (`unreal.WidgetService`,
+`execute_python_code`) and there's a vendored `unrealclaude` bridge in
+`Plugins/UnrealClaude/.mcp.json` (node → `:3000`) — neither is wired up. Always
+drive `unreal-mcp` (:8000); for raw `import unreal` work use the in-editor Python
+console.
+
+**How to call `unreal-mcp` and what each toolset does** — including the
+`list_toolsets`→`describe_toolset`→`call_tool` convention, what MCP can't do
+(import binaries, create widgets, edit `IMC_*`, run console commands), PIE
+control, screen capture, and the gotchas — lives in the **`caliber` skill**
+(`.claude/skills/caliber/editor-mcp.md`). Read it before any editor work.
 
 ## Source layout (`Source/GTC_UE5/`)
 
@@ -122,6 +138,25 @@ rewrites **every** `/Game/Input/...` reference into that submodule path.
   are the **Sandbox/mobile WIP**, not gameplay input, and are currently mis-wired
   by that same redirect (fix in-editor by moving them into the submodule or
   narrowing the redirect — never by duplicating).
+
+## How to code Unreal here — pick the layer
+
+This project is **C++-first** (one runtime module, `GTC_UE5`), with Blueprints as
+the glue/content layer on top. Decision shortcut: *behavior / rules* → **C++**
+(`Source/GTC_UE5/<feature>/`, with a `GTC.*` test) · *composition & tunables* →
+**Blueprint** (thin — call down into C++) · *on-screen display* → **UMG widget**
+(`Content/UI/`) · *how a skeleton moves* → **Anim Blueprint** (never gameplay
+logic; never author animation from scratch — retarget an existing clip).
+
+C++ changes need a build and can't be hot-authored over MCP; on this Mac, when no
+build is available, prefer wiring through an existing C++ surface from a Blueprint.
+
+The full decision guide and the live BP / map / ABP / widget inventory ("which
+GameMode boots the game, which map, which ABP is the player, which HUD widget")
+live in the **`caliber` skill** (`coding-layers.md`, `asset-map.md`). One
+always-on landmine: there is **no shipping map in `Content/Levels/`** — the world
+is `CityBeachStrip` in the `Content/GTCaliberAssets/` submodule, and switching the
+live level via MCP `unreal_open_level` **crashes**.
 
 ## Conventions (see AGENTS.md for the full set)
 

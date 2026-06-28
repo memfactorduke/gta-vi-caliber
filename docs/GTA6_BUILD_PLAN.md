@@ -34,7 +34,7 @@ packs** give *arsenal breadth*. None of them is the game alone.
 Done: kit migrated to `/Game/ThirdPersonKit`, config merged (11 collision channels,
 gameplay tags, legacy input, plugins), leak closed. Now: relaunch into
 `FeaturesMap_v2`, confirm the kit player walks/shoots/takes cover in-project (PIE +
-screenshot via the VibeUE bridge). **Exit test:** kit player is controllable and
+screenshot via the unreal-mcp bridge). **Exit test:** kit player is controllable and
 fires in your build.
 
 ## Phase 1 — Unify the player & control loop  *(the integration spine — do this first)*
@@ -119,8 +119,10 @@ The long tail, parallelizable once the loop is fun.
 
 ## Live integration log (2026-06-25 — `/loop` session)
 
-Ground truth verified against the live VibeUE bridge (editor running in
-CityBeachStrip; `unrealclaude` MCP is down but `vibeue` Python exec works).
+Ground truth verified against the live editor bridge (editor running in
+CityBeachStrip). _[Note: as of 2026-06-27 the live surface is the `unreal-mcp`
+MCP on :8000 — see the `caliber` skill. The VibeUE / `unrealclaude` bridges named
+in this 2026-06-25 entry are legacy and no longer used.]_
 
 **Our own GameMode set already exists** (built a prior session, in `/Game/GTCShooter/`,
 gitignored because it references the paid kit):
@@ -140,8 +142,8 @@ Done this session (all PIE-verified in CityBeachStrip, no crash):
    This brings the in-game phone, Esc pause, **GTA weapon wheel** (slow-mo),
    emote wheel, character creator and Enhanced Input (`IMC_Default`) to the player.
 
-Constraints reconfirmed: VibeUE screenshots are **Windows-only** (verify state via
-Python queries instead); can't build C++ / relaunch the editor on this Mac; the
+Constraints reconfirmed: capture the editor with `unreal-mcp` `CaptureEditorImage`
+(works on this Mac and includes the UMG HUD); can't build C++ / relaunch the editor on this Mac; the
 `/Game/GTCShooter` set + the kit are gitignored, so the public PR carries only
 legal-clean text (a C++ gamemode base, config, docs) — not the paid-derived BPs.
 
@@ -219,7 +221,7 @@ build the kit-damage→wanted bridge, then a content/polish grind.
   block feels like GTA, the rest is replication; if not, fix feel before scaling.
 - **Environment constraints:** licensed packs stay in the submodule / gitignored, never
   the public tree; can't build C++ or relaunch the editor on this Mac (config changes
-  need a user relaunch); editor work goes through the live VibeUE Python bridge;
+  need a user relaunch); editor work goes through the live `unreal-mcp` bridge (:8000);
   `open_level`/live level-switch crashes — always boot/restart INTO the target map.
 - **What off-the-shelf can't buy:** hand-built interiors, mission scripting depth,
   city-scale density, and the Rockstar visual bar. The plan gets the *verbs and the

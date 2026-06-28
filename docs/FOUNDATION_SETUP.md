@@ -39,6 +39,6 @@ sandbox, so these `.uasset`s are not committed):
   `world_wetness` (the two shared globals from Godot `project.godot`).
 - **`/Game/Input/IMC_Default`** — optional starter Enhanced Input mapping context.
 
-Run it, then commit the generated assets. Verify unreal API names via the VibeUE skills/discovery first
-(`UE5_NOTES.md` §0). The `.uproject`/Project Settings/`MPC` together are the bootstrap
+Run it, then commit the generated assets. Verify unreal API names via the `unreal-mcp` toolset
+discovery first (the `caliber` skill, `editor-mcp.md`; `UE5_NOTES.md` §0). The `.uproject`/Project Settings/`MPC` together are the bootstrap
 prerequisite for Wave 1 C++ and all Wave 3 shader/material work.
