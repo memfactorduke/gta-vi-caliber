@@ -12,10 +12,13 @@
 void UGTCTrafficSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    if (!VehicleClass)
-    {
-        VehicleClass = AGTCTrafficVehicle::StaticClass();
-    }
+
+    // VehicleClass is intentionally NOT defaulted to AGTCTrafficVehicle::StaticClass().
+    // That base class has no mesh, so ambient traffic would spawn as invisible physics
+    // boxes that collide with -- and launch -- the player car ("flying car"). Ambient
+    // traffic only streams once a real, meshed VehicleClass is assigned; until then the
+    // spawners (SpawnCar / SpawnDirectedCar) bail out. This makes "no junk cars" the safe
+    // shared default WITHOUT globally disabling the traffic feature.
 }
 
 void UGTCTrafficSubsystem::Deinitialize()
@@ -204,11 +207,13 @@ bool UGTCTrafficSubsystem::SpawnCar(const FVector& PlayerCm, FCar& OutCar)
     const double Yaw = FMath::RadiansToDegrees(FMath::Atan2(Pose.Heading.Z, Pose.Heading.X));
     const FTransform Xform(FRotator(0.0, Yaw, 0.0), SpawnPos);
 
-    TSubclassOf<AGTCTrafficVehicle> SpawnClass = VehicleClass;
-    if (!SpawnClass)
+    // No meshed car configured -> don't spawn invisible placeholder boxes that
+    // would collide with and launch the player car. Resumes when VehicleClass is set.
+    if (!VehicleClass)
     {
-        SpawnClass = AGTCTrafficVehicle::StaticClass();
+        return false;
     }
+    const TSubclassOf<AGTCTrafficVehicle> SpawnClass = VehicleClass;
     AGTCTrafficVehicle* Car = World->SpawnActorDeferred<AGTCTrafficVehicle>(
         SpawnClass, Xform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
     if (!Car)
@@ -273,11 +278,13 @@ bool UGTCTrafficSubsystem::SpawnDirectedCar(
     const double Yaw = FMath::RadiansToDegrees(FMath::Atan2(Pose.Heading.Z, Pose.Heading.X));
     const FTransform Xform(FRotator(0.0, Yaw, 0.0), SpawnPos);
 
-    TSubclassOf<AGTCTrafficVehicle> SpawnClass = VehicleClass;
-    if (!SpawnClass)
+    // No meshed car configured -> don't spawn invisible placeholder boxes that
+    // would collide with and launch the player car. Resumes when VehicleClass is set.
+    if (!VehicleClass)
     {
-        SpawnClass = AGTCTrafficVehicle::StaticClass();
+        return false;
     }
+    const TSubclassOf<AGTCTrafficVehicle> SpawnClass = VehicleClass;
     AGTCTrafficVehicle* Actor = World->SpawnActorDeferred<AGTCTrafficVehicle>(
         SpawnClass, Xform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
     if (!Actor)
@@ -341,6 +348,47 @@ void UGTCTrafficSubsystem::NearestLeader(int32 SelfIndex, double& OutGapM, doubl
         {
             OutGapM = Gap;
             OutLeaderSpeedM = Other.Agent.GetSpeed();
+        }
+    }
+
+    // Also yield to externally-driven vehicles (the player car, scripted convoys).
+    // Without this, an ambient car sees open road over the player car's spot and
+    // PlaceActor teleports it (bSweep=false) straight INTO the chassis -> Chaos
+    // depenetration launches the player car ("flying car"). Project each registered
+    // external vehicle onto this car's lane: if it sits AHEAD and inside the lane
+    // corridor, feed it to the IDM as the leader so this car brakes/queues behind it.
+    const FLanePath::FPose SelfPose = Self.Agent.Pose();
+    const FVector Heading = SelfPose.Heading;                         // unit, core XZ frame
+    const double CorridorHalfM = (LaneOffset + 250.0) * MetresPerCm;  // ~a lane each side
+    const double PlayerHalfLengthM = 2.3;                            // player car ~ a car length
+    for (const TWeakObjectPtr<AActor>& Weak : ExternalVehicles)
+    {
+        const AActor* Vehicle = Weak.Get();
+        if (!Vehicle)
+        {
+            continue;
+        }
+        const FVector VehicleM = ToNetwork(Vehicle->GetActorLocation()); // planar metres
+        const double DX = VehicleM.X - SelfPose.Pos.X;
+        const double DZ = VehicleM.Z - SelfPose.Pos.Z;
+        const double Forward = DX * Heading.X + DZ * Heading.Z;          // ahead if > 0
+        if (Forward <= 0.0)
+        {
+            continue; // behind us -> not a leader
+        }
+        const double Lateral = FMath::Abs(DX * Heading.Z - DZ * Heading.X);
+        if (Lateral > CorridorHalfM)
+        {
+            continue; // not in our lane corridor
+        }
+        const double Gap = Forward - (Self.HalfLengthM + PlayerHalfLengthM);
+        if (Gap < OutGapM)
+        {
+            OutGapM = Gap;
+            // Leader speed = the external vehicle's speed along our lane (m/s, >= 0).
+            const FVector Vel = Vehicle->GetVelocity(); // world cm/s
+            const double Along = (Vel.X * Heading.X + Vel.Y * Heading.Z) * MetresPerCm;
+            OutLeaderSpeedM = FMath::Max(0.0, Along);
         }
     }
 }
