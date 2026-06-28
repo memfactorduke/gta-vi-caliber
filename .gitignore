@@ -149,7 +149,9 @@ cesium-request-cache.sqlite*
 /Assets/
 
 # AI / editor tooling dirs (local agent + IDE config, not project source)
-/.claude/
+# Ignore .claude/ contents EXCEPT the shared project skills (team-tracked).
+/.claude/*
+!/.claude/skills/
 /.codex/
 /.cursor/
 /.gemini/
