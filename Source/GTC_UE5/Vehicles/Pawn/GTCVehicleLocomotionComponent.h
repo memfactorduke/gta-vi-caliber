@@ -41,7 +41,7 @@ struct FVehicleControlState
  * All velocities are Z-up cm/s (no Godot remap — the player cores are already Z-up).
  * Drop a concrete subclass on the pawn Blueprint; the pawn finds it by base class.
  */
-UCLASS(Abstract, ClassGroup = (GTC), meta = (BlueprintSpawnableComponent))
+UCLASS(Abstract, ClassGroup = (GTC))
 class GTC_UE5_API UGTCVehicleLocomotionComponent : public UActorComponent
 {
     GENERATED_BODY()

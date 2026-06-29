@@ -4,5 +4,5 @@
 
 AGTCMarina::AGTCMarina()
 {
-    HubKind = EHubKind::Marina;
+    HubKind = EGTCHubKind::Marina;
 }

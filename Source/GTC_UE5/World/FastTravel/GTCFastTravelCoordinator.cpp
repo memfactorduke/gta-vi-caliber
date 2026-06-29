@@ -126,13 +126,14 @@ bool AGTCFastTravelCoordinator::RequestHopToIndex(int32 HubIndex)
     return true;
 }
 
-bool AGTCFastTravelCoordinator::RequestHopToNearestOfKind(EHubKind Kind)
+bool AGTCFastTravelCoordinator::RequestHopToNearestOfKind(EGTCHubKind Kind)
 {
     if (!CanDepartNow())
     {
         return false;
     }
-    const int32 Index = FFastTravelNetwork::NearestHubOfKind(Network, PlayerLocation(), Kind, 0.0);
+    const int32 Index = FFastTravelNetwork::NearestHubOfKind(
+        Network, PlayerLocation(), static_cast<EHubKind>(Kind), 0.0);
     if (!Network.IsValidIndex(Index))
     {
         return false;

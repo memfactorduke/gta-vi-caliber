@@ -4,5 +4,5 @@
 
 AGTCHelipad::AGTCHelipad()
 {
-    HubKind = EHubKind::Helipad;
+    HubKind = EGTCHubKind::Helipad;
 }

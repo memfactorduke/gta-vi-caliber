@@ -11,6 +11,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
+#include "InputActionValue.h"
 
 #include "../Contact/VehicleImpact.h"
 #include "../Entry/VehicleSeatComponent.h"

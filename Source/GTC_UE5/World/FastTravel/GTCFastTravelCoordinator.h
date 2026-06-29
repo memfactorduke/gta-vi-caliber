@@ -5,9 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "FastTravelNetwork.h"
+#include "GTCFastTravelHub.h" // AGTCFastTravelHub + the reflected EGTCHubKind
 #include "GTCFastTravelCoordinator.generated.h"
-
-class AGTCFastTravelHub;
 
 /**
  * AGTCFastTravelCoordinator — the one actor that turns the placed AGTCFastTravelHub markers
@@ -32,7 +31,7 @@ public:
     /** Fast-travel the player to the hub nearest the cursor/selection of a given kind.
      *  Returns false if departure is blocked (wanted / threat) or no such hub exists. */
     UFUNCTION(BlueprintCallable, Category = "GTC|FastTravel")
-    bool RequestHopToNearestOfKind(EHubKind Kind);
+    bool RequestHopToNearestOfKind(EGTCHubKind Kind);
 
     /** Fast-travel the player to a specific hub by its index in the gathered list. */
     UFUNCTION(BlueprintCallable, Category = "GTC|FastTravel")

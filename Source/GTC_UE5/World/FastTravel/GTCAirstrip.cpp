@@ -4,5 +4,5 @@
 
 AGTCAirstrip::AGTCAirstrip()
 {
-    HubKind = EHubKind::Airstrip;
+    HubKind = EGTCHubKind::Airstrip;
 }
