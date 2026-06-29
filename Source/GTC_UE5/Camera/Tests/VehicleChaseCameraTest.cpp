@@ -57,4 +57,21 @@ bool FVehicleChaseCameraLookBehindTest::RunTest(const FString& Parameters)
     return true;
 }
 
+// The Wings & Waves addition: 3D boom pitch that frames a climbing/diving aircraft.
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FVehicleChaseCameraPitchFollowTest,
+    "GTC.Camera.VehicleChaseCamera.PitchFollow",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FVehicleChaseCameraPitchFollowTest::RunTest(const FString& Parameters)
+{
+    const double Climb = FMath::Atan2(500.0, 1000.0); // ~0.4636
+    TestEqual(TEXT("climb tilts boom up"), (double)FVehicleChaseCamera::PitchFollow(500, 1000, 1, 0.6f), Climb, Eps);
+    TestEqual(TEXT("level -> no boom pitch"), (double)FVehicleChaseCamera::PitchFollow(0, 1000, 1, 0.6f), 0.0, Eps);
+    TestEqual(TEXT("dive tilts boom down"), (double)FVehicleChaseCamera::PitchFollow(-500, 1000, 1, 0.6f), -Climb, Eps);
+    TestEqual(TEXT("straight up clamps to max pitch"), (double)FVehicleChaseCamera::PitchFollow(10000, 1, 1, 0.5f), 0.5, Eps);
+    TestEqual(TEXT("gain scales the boom pitch"), (double)FVehicleChaseCamera::PitchFollow(500, 1000, 2, 2.0f), 2.0 * Climb, Eps);
+    return true;
+}
+
 #endif // WITH_AUTOMATION_TESTS

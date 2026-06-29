@@ -33,3 +33,13 @@ float FVehicleChaseCamera::LookBehindYawOffset(bool bLookBehind)
 {
     return bLookBehind ? PI : 0.0f;
 }
+
+float FVehicleChaseCamera::PitchFollow(float ClimbRateCmS, float HorizSpeedCmS, float Gain, float MaxPitchRad)
+{
+    // atan2 handles a zero horizontal speed (straight up/down) gracefully; the clamp
+    // keeps even a vertical climb from swinging the boom past MaxPitch.
+    const float Horiz = FMath::Max(0.0f, HorizSpeedCmS);
+    const float Pitch = FMath::Atan2(ClimbRateCmS, Horiz) * Gain;
+    const float MaxPitch = FMath::Abs(MaxPitchRad);
+    return FMath::Clamp(Pitch, -MaxPitch, MaxPitch);
+}

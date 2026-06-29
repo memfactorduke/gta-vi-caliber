@@ -45,4 +45,14 @@ struct GTC_UE5_API FVehicleChaseCamera
      * direction: 0 when following normally, PI (180 deg) while looking behind.
      */
     static float LookBehindYawOffset(bool bLookBehind);
+
+    /**
+     * Boom pitch (radians) that frames a climbing/diving aircraft: atan2(climb, horiz)
+     * scaled by Gain and clamped to +/- MaxPitch. Positive (camera tilts up to see
+     * ahead) in a climb, negative in a dive, 0 in level flight. A craft going straight
+     * up clamps to MaxPitch rather than swinging to vertical. Ground vehicles and boats
+     * leave this unused (their vertical is negligible). Reuse FCameraFeel::ExpSmoothed
+     * to ease it frame to frame.
+     */
+    static float PitchFollow(float ClimbRateCmS, float HorizSpeedCmS, float Gain, float MaxPitchRad);
 };
