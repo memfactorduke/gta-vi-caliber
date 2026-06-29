@@ -28,6 +28,53 @@ A PreToolUse hook (`.claude/hooks/protect-unreal-editor.sh`, wired in
 command that would kill or relaunch the editor. The hook is the backstop; follow
 the intent above so you never hit it.
 
+## The canonical base (the boot chain — never deviate)
+
+There is exactly **one** shipping configuration. When adding gameplay, always
+build on top of THIS chain — never spin up a parallel game mode / pawn / map and
+never "fix" things on the wrong asset. This is the recurring source of mistakes.
+
+- **World map:** `/Game/GTCaliberAssets/Content/CityBeachStrip/Maps/CityBeachStrip`
+  — the shipping world, lives in the asset submodule, set as `EditorStartupMap`.
+  ⚠ **Never switch the live level** with MCP `unreal_open_level` to/from this map —
+  it **crashes** the editor. It is already open; work in it.
+- **Game mode (canonical gameplay):** `BP_GTCShooterGameMode`
+  (`/Game/GTCShooter/BP_GTCShooterGameMode`). It is bound via **CityBeachStrip's
+  World Settings → GameMode Override**, NOT via the project default. Edit gameplay
+  rules / class wiring HERE.
+- **Player pawn (`DefaultPawnClass`):**
+  `BP_PlayerCharacterMannequinUE5_MotionMatching`
+  (`/Game/ThirdPersonKit/Blueprints/PlayerCharacters/`), child of
+  **`BP_PlayerCharacterBase`** in that same `PlayerCharacters/` folder — the base
+  class is where the shared player logic and the kit's `AnimBP_Set*` functions
+  live, so player-wide fixes go on the base.
+- **Controller / state:** `BP_TPS_PlayerController`, `BP_TPS_GameState`,
+  `GTCPlayerState` (C++). **GameInstance:** `GTCGameInstance` (C++).
+- **Player animation:** `ABP_MannequinPlayer_UE5Manny` → inherits
+  `ABP_TPSKit_InstanceCustomPlayer`. **Skeleton** `SK_MannyUE5`, **mesh**
+  `SKM_MannyUE5`. (Driving swaps the mesh to the driver anim BP `ABP_DriverIK`,
+  which is **not** a `ABP_TPSKit_InstanceCustomPlayer` — see cast-spam note below.)
+- **NPCs:** `BP_AICharacterMannequinUE5`. **Cops:** `BP_StandingPoliceOfficer`.
+
+**The traps that cause "why is it on the wrong thing?" mistakes:**
+
+- The project's `GlobalDefaultGameMode` in `Config/DefaultEngine.ini` is
+  **`BP_GTCGameMode`** (`/Game/Core/`) — that is the *fallback* for template
+  levels, **NOT** what CityBeachStrip runs. The map's World Settings override wins.
+  Don't put shipping gameplay on `BP_GTCGameMode`.
+- There are **two** `BP_PlayerCharacterBase` assets. The real parent of the
+  player is the one under **`Blueprints/PlayerCharacters/`** — not the loose one
+  at `Blueprints/`.
+- ❌ **Never set the player pawn to a MetaHuman** (e.g.
+  `BP_PlayerCharacterMetahuman_MotionMatching_DynRtg`). On this Mac it triggers a
+  Metal ray-tracing shader fault (`MetalBaseShader.h` SIGSEGV) that **kills the
+  editor**. Player stays on the Manny pawn. (MetaHumans are fine as non-pawn
+  set-dressing only.)
+- The kit's per-tick `AnimBP_Set*` functions cast the anim instance to
+  `ABP_TPSKit_InstanceCustomPlayer`; while **driving** that cast fails (driver
+  rig), which is the "Can't cast to TPS Kit Custom Anim BP" log. The right fix is
+  to gate those calls on an on-foot locomotion state, not to swap the pawn.
+
 ## Connecting to the running editor
 
 Act on the live editor through one of these, in order of preference:

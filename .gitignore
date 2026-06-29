@@ -189,3 +189,8 @@ cesium-request-cache.sqlite*
 # Third-party FPS Weapon Bundle — licensed asset pack, must not be redistributed.
 # Kept locally for the game; scrubbed from history and never committed/pushed.
 /Content/FPS_Weapon_Bundle/
+
+# Commercial/licensed fonts (DIN is a paid Monotype typeface) — never ship the source files
+/Content/UI/Fonts/*.ttf
+/Content/UI/Fonts/*.otf
+/Content/UI/Fonts/DIN*

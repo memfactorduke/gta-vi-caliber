@@ -109,6 +109,27 @@ public:
     int32 Stars() const;
     bool IsWanted() const;
 
+    // --- Blueprint surface (witness / NPC-driven, authored in BP) ----------
+    // The pure crime drivers below are not BlueprintCallable (FCrimeObserver is a
+    // plain struct, and heat is gameplay-critical). These thin wrappers let NPC,
+    // vehicle, and main-character Blueprints read the wanted level and raise it
+    // after an NPC witnesses a crime and finishes a 911 call. Additive only —
+    // requires a (Live Coding) compile before BP can see them.
+
+    /** Current wanted stars (0..MaxStars). For HUD / BP reads. */
+    UFUNCTION(BlueprintPure, Category = "Wanted")
+    int32 GetStars() const { return Stars(); }
+
+    /** True if currently wanted (stars > 0). For BP reads. */
+    UFUNCTION(BlueprintPure, Category = "Wanted")
+    bool GetIsWanted() const { return IsWanted(); }
+
+    /** An NPC witnessed a crime and called it in (911). Lands heat now
+     *  (bKilled = lethal vs wound). Call from the witness BP when the call
+     *  animation/timer completes so the star rises as a result of the call. */
+    UFUNCTION(BlueprintCallable, Category = "Wanted")
+    void NotifyWitnessedCrime(bool bKilled) { ReportCrime(bKilled); }
+
     /** Const access to the owned heat model (ownership stays with the subsystem). */
     const FWantedSystem& GetWantedSystem() const { return _Wanted; }
     /** Const access to the owned evasion state machine. */

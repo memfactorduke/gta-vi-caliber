@@ -1218,6 +1218,13 @@ void AGTCCitizen::EnterDeath(const FVector& BulletTravel, bool bByPlayer)
     {
         Body->SetCollisionProfileName(TEXT("Ragdoll"));
         Body->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+        // A corpse must never shove a vehicle. The Ragdoll profile blocks the
+        // ECC_Vehicle channel by default, so a body that drops in front of (or
+        // under) a moving car collides with it and flips the car — exactly the
+        // "it pushes/flips the car" bug. Ignore vehicles: the body still blocks
+        // the static world, so it falls and lies on the road, but it can't push
+        // the car that hit it (or any other car driving over it).
+        Body->SetCollisionResponseToChannel(ECC_Vehicle, ECR_Ignore);
         Body->SetAllBodiesSimulatePhysics(true);
         Body->SetSimulatePhysics(true);
         Body->WakeAllRigidBodies();
@@ -1312,6 +1319,25 @@ void AGTCCitizen::DetectBodyContact(UGTCCrowdSubsystem* Crowd)
 void AGTCCitizen::ApplyContact(
     double ImpactSpeedMps, bool bStrike, const FVector& PushDir, const FVector& ThreatPos)
 {
+    // Run-over: an auto body-bump this fast can only be a vehicle ploughing into
+    // us — a sprint tops out around 6 m/s — so this is a hit-and-run, not a
+    // shove. Route it straight into the ragdoll/death path: EnterDeath drops the
+    // capsule out of the world and simulates the body, so the car carries through
+    // instead of stalling against a kinematic capsule (the non-lethal shove below
+    // never disables collision, which is why a hit used to stop the car dead).
+    // A deliberate strike (punch/melee) is excluded — only being driven into.
+    constexpr double VehicleRunOverSpeedMps = 8.0;
+    if (!bStrike && ImpactSpeedMps >= VehicleRunOverSpeedMps && !bDead)
+    {
+        FVector Travel = PushDir.GetSafeNormal2D();
+        if (Travel.IsNearlyZero())
+        {
+            Travel = (-GetActorForwardVector()).GetSafeNormal2D();
+        }
+        EnterDeath(Travel, /*bByPlayer*/ true);
+        return;
+    }
+
     const double Sev = FNpcContact::Severity(ImpactSpeedMps, bStrike);
     const ENpcContactReaction R = FNpcContact::Decide(Sev, Bravery, MemoryIntensity);
     if (!FNpcContact::Reacts(R))
