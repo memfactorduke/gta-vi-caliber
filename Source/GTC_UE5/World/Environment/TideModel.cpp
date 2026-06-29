@@ -36,7 +36,10 @@ double FTideModel::LevelAt(double Hours) const
 
 double FTideModel::NormalizedAt(double Hours) const
 {
-    if (Params.PeriodHours <= 0.0 || AmplitudeAt(Hours) <= 0.0)
+    // A fully-cancelled spring-neap envelope cancels to a tiny positive float residual
+    // (~1e-7, not exactly 0), so guard against a small epsilon rather than 0.0 — this
+    // honours the documented "0.5 when the envelope is cancelled" contract.
+    if (Params.PeriodHours <= 0.0 || AmplitudeAt(Hours) <= KINDA_SMALL_NUMBER)
     {
         return 0.5;
     }
