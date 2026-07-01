@@ -28,6 +28,7 @@ build_run() {
 
 build_run lane_path_oracle.cpp World/RoadNetwork/LanePath.cpp
 build_run traffic_lane_oracle.cpp AI/Traffic/TrafficLane.cpp Worldcore/TrafficModel.cpp
+build_run fixedwing_oracle.cpp Vehicles/Aircraft/FixedWingFlightResolver.cpp Vehicles/Aircraft/FixedWingFlight.cpp
 build_run road_route_oracle.cpp World/RoadNetwork/RoadRoute.cpp World/RoadNetwork/LanePath.cpp
 build_run intersection_oracle.cpp AI/Traffic/Intersection.cpp
 build_run reaction_state_oracle.cpp NPC/Decision/ReactionState.cpp

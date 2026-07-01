@@ -27,8 +27,9 @@ void FFixedWingFlight::Update(double Throttle, double Elevator, double Aileron, 
     AirspeedValue -= Elev * FMath::Max(0.0, Params.ClimbAirspeedCost) * Step;
     AirspeedValue = FMath::Max(0.0, AirspeedValue);
 
-    // Control authority needs flow over the surfaces.
-    const double Cruise = FMath::Max(KINDA_SMALL_NUMBER, Params.CruiseSpeed);
+    // Control authority needs flow over the surfaces. Spell the type: KINDA_SMALL_NUMBER is a float
+    // and CruiseSpeed a double, and FMath::Max has no mixed-type overload (a bare call fails UBT).
+    const double Cruise = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.CruiseSpeed);
     const double Authority = FMath::Clamp(AirspeedValue / Cruise, 0.0, 1.0);
 
     if (AirspeedValue < Params.StallSpeed)
