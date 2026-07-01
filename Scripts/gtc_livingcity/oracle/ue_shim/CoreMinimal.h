@@ -36,6 +36,12 @@ struct FVector
     double SizeSquared() const { return X * X + Y * Y + Z * Z; }
     double Size() const { return std::sqrt(SizeSquared()); }
 
+    // Per-component near-zero test (matches UE FVector::IsNearlyZero semantics).
+    bool IsNearlyZero(double Tolerance = 1e-4) const
+    {
+        return std::fabs(X) <= Tolerance && std::fabs(Y) <= Tolerance && std::fabs(Z) <= Tolerance;
+    }
+
     FVector GetSafeNormal(double Tolerance = 1e-8) const
     {
         const double S = SizeSquared();

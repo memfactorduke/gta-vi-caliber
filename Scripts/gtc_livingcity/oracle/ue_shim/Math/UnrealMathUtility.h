@@ -31,6 +31,7 @@ struct FMath
     static T Lerp(const T& A, const T& B, double T01) { return A + (B - A) * T01; }
 
     static double Atan2(double Y, double X) { return std::atan2(Y, X); }
+    static double Acos(double V) { return std::acos(V); }
     static double Cos(double V) { return std::cos(V); }
     static double Sin(double V) { return std::sin(V); }
     static double Sign(double V) { return V > 0.0 ? 1.0 : (V < 0.0 ? -1.0 : 0.0); }
