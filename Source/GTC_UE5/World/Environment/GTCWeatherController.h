@@ -249,6 +249,23 @@ public:
 	UFUNCTION(BlueprintPure, Category = "GTC|Sky")
 	float GetTimeOfDay() const { return (float)TimeOfDay; }
 
+	/**
+	 * Live surface wetness, 0 (bone dry) .. 1 (soaked). This is the same value the
+	 * controller pushes onto the material collection (world_wetness); exposing it is
+	 * the weather-reactive seam gameplay reads to react to the rain — ambient traffic
+	 * driving cautious, vehicle tyres losing grip — without re-deriving the weather.
+	 */
+	UFUNCTION(BlueprintPure, Category = "GTC|Weather")
+	float GetWetness() const { return (float)Weather.Current().Wetness; }
+
+	/**
+	 * Live visibility, 1 (clear) .. 0 (whiteout), derived from the weather's fog. Feeds
+	 * the "drive scared when you can't see" caution (FTrafficWeather) and any other
+	 * system that should ease off in fog.
+	 */
+	UFUNCTION(BlueprintPure, Category = "GTC|Weather")
+	float GetVisibility() const { return (float)FMath::Clamp(1.0 - Weather.Current().FogDensity, 0.0, 1.0); }
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;

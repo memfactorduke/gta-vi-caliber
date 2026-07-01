@@ -4,7 +4,11 @@
 
 #include "GTCTrafficVehicle.h"
 
+#include "../AI/Traffic/TrafficWeather.h"
+#include "../World/Environment/GTCWeatherController.h"
+
 #include "Engine/World.h"
+#include "EngineUtils.h" // TActorIterator
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Math/UnrealMathUtility.h"
@@ -195,6 +199,8 @@ bool UGTCTrafficSubsystem::SpawnCar(const FVector& PlayerCm, FCar& OutCar)
     OutCar = FCar();
     OutCar.Agent.LateralOffset = LaneOffset * MetresPerCm;
     OutCar.Agent.Drive.DesiredSpeed = FMath::RandRange(DesiredSpeedMin, DesiredSpeedMax) * MetresPerCm;
+    OutCar.BaseDesiredSpeed = OutCar.Agent.Drive.DesiredSpeed;
+    OutCar.BaseTimeHeadway = OutCar.Agent.Drive.TimeHeadway;
     if (!OutCar.Agent.StartOnSegment(RoadNet, StartSeg, 0.0, OutCar.Agent.Drive.DesiredSpeed * 0.6))
     {
         return false;
@@ -255,6 +261,8 @@ bool UGTCTrafficSubsystem::SpawnDirectedCar(
     FCar Car;
     Car.Agent.LateralOffset = LaneOffset * MetresPerCm;
     Car.Agent.Drive.DesiredSpeed = FMath::RandRange(DesiredSpeedMin, DesiredSpeedMax) * MetresPerCm;
+    Car.BaseDesiredSpeed = Car.Agent.Drive.DesiredSpeed;
+    Car.BaseTimeHeadway = Car.Agent.Drive.TimeHeadway;
     // Start where the car actually is on its nearest lane, from a standstill.
     if (!Car.Agent.StartOnSegment(RoadNet, StartHit.Seg, StartHit.Offset, 0.0))
     {
@@ -475,6 +483,39 @@ void UGTCTrafficSubsystem::Tick(float DeltaTime)
 
     const double Dt = static_cast<double>(DeltaTime);
     const double RoadZCm = PlayerCm.Z + RoadZOffset;
+
+    // Weather caution: one read of the level's weather director turns the current
+    // wetness/visibility into a cruise-speed factor (<=1) and a headway factor (>=1),
+    // so the whole city slows down and hangs back in a downpour from a single dial.
+    // No director in the level -> clear weather, both factors 1 (no behaviour change).
+    double Wetness = 0.0;
+    double Visibility = 1.0;
+    AGTCWeatherController* Weather = WeatherController.Get();
+    if (!Weather)
+    {
+        // Resolve (and cache) the persistent-level director, but only periodically so
+        // a level without one never pays an actor scan every frame.
+        WeatherResolveAccum += DeltaTime;
+        if (WeatherResolveAccum >= 2.0)
+        {
+            WeatherResolveAccum = 0.0;
+            for (TActorIterator<AGTCWeatherController> It(World); It; ++It)
+            {
+                Weather = *It;
+                WeatherController = Weather;
+                break;
+            }
+        }
+    }
+    if (Weather)
+    {
+        Wetness = Weather->GetWetness();
+        Visibility = Weather->GetVisibility();
+    }
+    const FTrafficWeather::FParams WeatherParams;
+    const double WeatherSpeedFactor = FTrafficWeather::SpeedFactor(Wetness, Visibility, WeatherParams);
+    const double WeatherHeadwayFactor = FTrafficWeather::HeadwayFactor(Wetness, Visibility, WeatherParams);
+
     for (int32 i = 0; i < Cars.Num(); ++i)
     {
         FCar& Car = Cars[i];
@@ -507,6 +548,12 @@ void UGTCTrafficSubsystem::Tick(float DeltaTime)
         double GapM = FTrafficAgent::OpenRoadGap;
         double LeaderSpeedM = 0.0;
         NearestLeader(i, GapM, LeaderSpeedM);
+
+        // Fold the weather caution into this car's IDM from its stored base, so the
+        // factors apply fresh each frame (a clearing storm eases the city back up to
+        // speed) and never compound.
+        Car.Agent.Drive.DesiredSpeed = Car.BaseDesiredSpeed * WeatherSpeedFactor;
+        Car.Agent.Drive.TimeHeadway = Car.BaseTimeHeadway * WeatherHeadwayFactor;
 
         Car.Agent.Step(RoadNet, Dt, GapM, LeaderSpeedM);
         PlaceActor(Car, RoadZCm);

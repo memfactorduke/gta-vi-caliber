@@ -12,6 +12,7 @@
 #include "GTCTrafficSubsystem.generated.h"
 
 class AGTCTrafficVehicle;
+class AGTCWeatherController;
 
 /**
  * UGTCTrafficSubsystem — the cars. It streams moving traffic around the player on
@@ -127,6 +128,11 @@ private:
         FTrafficAgent Agent;
         TWeakObjectPtr<AGTCTrafficVehicle> Actor;
         double HalfLengthM = 2.3; // half body length (m), for bumper-gap math
+        /** Per-car authored cruise (v0, m/s) and time gap (T) BEFORE weather caution.
+         *  The weather adapter scales these into Agent.Drive each tick, so the caution
+         *  is always applied from the base and never compounds frame over frame. */
+        double BaseDesiredSpeed = 0.0;
+        double BaseTimeHeadway = 0.0;
         /** A directed car drives one fixed route then leaves (a citizen driving home),
          *  instead of touring the city forever like ambient traffic. */
         bool bDirected = false;
@@ -166,6 +172,12 @@ private:
 
     TArray<FCar> Cars;
     TArray<TWeakObjectPtr<AActor>> ExternalVehicles;
+
+    /** The level's weather director (if present), resolved lazily and cached; its
+     *  wetness/visibility drive the rain/fog caution folded into every agent's IDM.
+     *  Null -> the city drives in clear weather (caution factors = 1). */
+    TWeakObjectPtr<AGTCWeatherController> WeatherController;
+    double WeatherResolveAccum = 0.0;
 
     double StreamAccum = 0.0;
 
