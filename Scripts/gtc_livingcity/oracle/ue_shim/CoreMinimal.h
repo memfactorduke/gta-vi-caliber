@@ -31,6 +31,8 @@ struct FVector
     FVector operator+(const FVector& O) const { return FVector(X + O.X, Y + O.Y, Z + O.Z); }
     FVector operator-(const FVector& O) const { return FVector(X - O.X, Y - O.Y, Z - O.Z); }
     FVector operator*(double S) const { return FVector(X * S, Y * S, Z * S); }
+    FVector& operator+=(const FVector& O) { X += O.X; Y += O.Y; Z += O.Z; return *this; }
+    FVector& operator-=(const FVector& O) { X -= O.X; Y -= O.Y; Z -= O.Z; return *this; }
     bool operator==(const FVector& O) const { return X == O.X && Y == O.Y && Z == O.Z; }
 
     double SizeSquared() const { return X * X + Y * Y + Z * Z; }

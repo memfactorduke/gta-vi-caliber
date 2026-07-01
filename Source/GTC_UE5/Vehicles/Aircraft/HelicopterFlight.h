@@ -68,6 +68,16 @@ struct FHelicopterFlight
     /** The collective that exactly cancels gravity — the hands-off hover setting, 0..1. */
     double HoverCollective() const;
 
+    /** Kill any descent (called by the adapter on ground contact) so a chopper sitting on the deck
+     *  doesn't wind up downward velocity against the ground clamp and then lift off sluggishly. */
+    void HaltDescent()
+    {
+        if (Vel.Z < 0.0)
+        {
+            Vel.Z = 0.0;
+        }
+    }
+
 private:
     FParams Params;
     FVector Vel = FVector::ZeroVector;

@@ -11,7 +11,9 @@ void FHelicopterFlight::Configure(const FParams& InParams)
 
 double FHelicopterFlight::HoverCollective() const
 {
-    const double MaxLift = FMath::Max(KINDA_SMALL_NUMBER, Params.MaxLiftAccel);
+    // Spell the type: KINDA_SMALL_NUMBER is a float and MaxLiftAccel a double, and FMath::Max has
+    // no mixed-type overload (a bare call fails UBT template deduction).
+    const double MaxLift = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.MaxLiftAccel);
     return FMath::Clamp(FMath::Max(0.0, Params.Gravity) / MaxLift, 0.0, 1.0);
 }
 
