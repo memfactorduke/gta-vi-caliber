@@ -6,6 +6,10 @@
 #include <cmath>
 #include <limits>
 
+#ifndef KINDA_SMALL_NUMBER
+#define KINDA_SMALL_NUMBER (1.e-4)
+#endif
+
 struct FMath
 {
     template <typename T>
