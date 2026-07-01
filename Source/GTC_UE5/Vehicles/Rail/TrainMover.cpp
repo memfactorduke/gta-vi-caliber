@@ -15,7 +15,7 @@ void FTrainMover::Configure(const FParams& InParams, const TArray<double>& InSta
 
 double FTrainMover::ForwardDistanceTo(double TargetPos) const
 {
-    const double Len = FMath::Max(KINDA_SMALL_NUMBER, Params.TrackLength);
+    const double Len = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.TrackLength);
     double D = FMath::Fmod(TargetPos - Pos, Len);
     if (D < 0.0)
     {
@@ -41,7 +41,7 @@ void FTrainMover::Advance(double Dt)
         return;
     }
 
-    const double Len = FMath::Max(KINDA_SMALL_NUMBER, Params.TrackLength);
+    const double Len = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.TrackLength);
 
     // Dwelling at a platform: count down, then pull away to the next station.
     if (bDwelling)

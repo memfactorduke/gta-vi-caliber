@@ -51,7 +51,7 @@ TArray<TArray<FVector>> FCityGrid::Polylines(const FSpec& Spec)
 
 FVector FCityGrid::SnapOriginTo(const FSpec& Spec, const FVector& WorldXZ)
 {
-    const double Block = FMath::Max(KINDA_SMALL_NUMBER, Spec.BlockSize);
+    const double Block = FMath::Max<double>(KINDA_SMALL_NUMBER, Spec.BlockSize);
     const double SnappedX =
         Spec.Origin.X + FMath::RoundToDouble((WorldXZ.X - Spec.Origin.X) / Block) * Block;
     const double SnappedZ =

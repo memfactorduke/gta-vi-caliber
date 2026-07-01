@@ -110,7 +110,7 @@ void FNpcPopulation::Advance(double Hour, double ElapsedHours)
         double Amount = 0.0;
         if (ActivitySatisfies(Rec.CurrentIntent.Activity, Need, Amount))
         {
-            const double Credit = Amount * (ElapsedHours / FMath::Max(ActivityDwellHours, KINDA_SMALL_NUMBER));
+            const double Credit = Amount * (ElapsedHours / FMath::Max<double>(ActivityDwellHours, KINDA_SMALL_NUMBER));
             Rec.Needs.Satisfy(Need, Credit);
         }
     }

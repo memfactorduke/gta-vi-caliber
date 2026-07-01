@@ -28,7 +28,7 @@ void FFixedWingFlight::Update(double Throttle, double Elevator, double Aileron, 
     AirspeedValue = FMath::Max(0.0, AirspeedValue);
 
     // Control authority needs flow over the surfaces.
-    const double Cruise = FMath::Max(KINDA_SMALL_NUMBER, Params.CruiseSpeed);
+    const double Cruise = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.CruiseSpeed);
     const double Authority = FMath::Clamp(AirspeedValue / Cruise, 0.0, 1.0);
 
     if (AirspeedValue < Params.StallSpeed)

@@ -11,7 +11,7 @@ void FHelicopterFlight::Configure(const FParams& InParams)
 
 double FHelicopterFlight::HoverCollective() const
 {
-    const double MaxLift = FMath::Max(KINDA_SMALL_NUMBER, Params.MaxLiftAccel);
+    const double MaxLift = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.MaxLiftAccel);
     return FMath::Clamp(FMath::Max(0.0, Params.Gravity) / MaxLift, 0.0, 1.0);
 }
 

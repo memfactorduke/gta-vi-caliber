@@ -13,7 +13,7 @@ void FLockpick::Configure(const FParams& InParams)
 double FLockpick::AlignmentAt(double Angle) const
 {
     const double A = FMath::Clamp(Angle, 0.0, 1.0);
-    const double Tol = FMath::Max(KINDA_SMALL_NUMBER, Params.Tolerance);
+    const double Tol = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.Tolerance);
     return FMath::Clamp(1.0 - FMath::Abs(A - Params.SweetSpot) / Tol, 0.0, 1.0);
 }
 

@@ -13,7 +13,7 @@ void FTailObjective::Configure(const FParams& InParams)
 
 double FTailObjective::TrackProgress() const
 {
-    const double Required = FMath::Max(KINDA_SMALL_NUMBER, Params.RequiredTrackSeconds);
+    const double Required = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.RequiredTrackSeconds);
     return FMath::Clamp(TrackedTime / Required, 0.0, 1.0);
 }
 
@@ -64,7 +64,7 @@ void FTailObjective::Update(double Distance, bool bInTargetView, double Dt)
 
     // Riding the band counts toward the objective.
     TrackedTime += Step;
-    if (TrackedTime >= FMath::Max(KINDA_SMALL_NUMBER, Params.RequiredTrackSeconds))
+    if (TrackedTime >= FMath::Max<double>(KINDA_SMALL_NUMBER, Params.RequiredTrackSeconds))
     {
         CurrentState = EState::Succeeded;
     }

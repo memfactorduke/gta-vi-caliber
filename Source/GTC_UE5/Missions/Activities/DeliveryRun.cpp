@@ -52,7 +52,7 @@ double FDeliveryRun::PayoutFactor() const
     {
         return 0.0;
     }
-    const double Limit = FMath::Max(KINDA_SMALL_NUMBER, Params.TimeLimitSeconds);
+    const double Limit = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.TimeLimitSeconds);
     const double TimeSpare = FMath::Clamp(TimeLeftValue / Limit, 0.0, 1.0);
     return FMath::Clamp((0.5 + 0.5 * TimeSpare) * CargoValue, 0.0, 1.0);
 }

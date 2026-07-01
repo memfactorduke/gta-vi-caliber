@@ -74,6 +74,6 @@ void FBoatHandling::Update(double Throttle, double Steer, double Dt)
     Vel += Forward * SurgeAccel * Step + Right * SwayAccel * Step;
 
     // The rudder needs flow over it: authority scales with speed.
-    const double Flow = FMath::Clamp(FMath::Abs(SurgeV) / FMath::Max(KINDA_SMALL_NUMBER, Params.RudderFlowSpeed), 0.0, 1.0);
+    const double Flow = FMath::Clamp(FMath::Abs(SurgeV) / FMath::Max<double>(KINDA_SMALL_NUMBER, Params.RudderFlowSpeed), 0.0, 1.0);
     HeadingRad += Str * Params.RudderAuthority * Flow * Step;
 }

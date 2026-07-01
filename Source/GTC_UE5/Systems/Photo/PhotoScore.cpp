@@ -28,14 +28,14 @@ double FPhotoScore::FramingScore(const FVector2D& Subject)
 
 double FPhotoScore::FillScore(double SubjectFill, const FParams& Params)
 {
-    const double Tolerance = FMath::Max(KINDA_SMALL_NUMBER, Params.FillTolerance);
+    const double Tolerance = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.FillTolerance);
     const double Off = FMath::Abs(SubjectFill - Params.IdealFill);
     return FMath::Clamp(1.0 - Off / Tolerance, 0.0, 1.0);
 }
 
 double FPhotoScore::LevelScore(double TiltDegrees, const FParams& Params)
 {
-    const double MaxTilt = FMath::Max(KINDA_SMALL_NUMBER, Params.MaxTilt);
+    const double MaxTilt = FMath::Max<double>(KINDA_SMALL_NUMBER, Params.MaxTilt);
     const double Tilt = FMath::Abs(TiltDegrees);
     return FMath::Clamp(1.0 - Tilt / MaxTilt, 0.0, 1.0);
 }
