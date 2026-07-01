@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <vector>
 #include <initializer_list>
+#include <algorithm>
 
 #include "Math/UnrealMathUtility.h"
 
@@ -35,6 +36,7 @@ struct FVector
 
     double SizeSquared() const { return X * X + Y * Y + Z * Z; }
     double Size() const { return std::sqrt(SizeSquared()); }
+    double Length() const { return Size(); } // UE alias for Size()
 
     FVector GetSafeNormal(double Tolerance = 1e-8) const
     {
@@ -78,6 +80,10 @@ struct TArray
 
     int32 Num() const { return static_cast<int32>(V.size()); }
     bool IsEmpty() const { return V.empty(); }
+    bool IsValidIndex(int32 I) const { return I >= 0 && I < Num(); }
+    // UE TArray::Sort takes a "A before B" predicate; std::sort matches that ordering.
+    template <typename Pred>
+    void Sort(Pred P) { std::sort(V.begin(), V.end(), P); }
     void Add(const T& X) { V.push_back(X); }
     template <typename... Args>
     int32 Emplace(Args&&... A) { V.emplace_back(std::forward<Args>(A)...); return Num() - 1; }
@@ -88,8 +94,10 @@ struct TArray
     void RemoveAtSwap(int32 Index) { V[static_cast<size_t>(Index)] = V.back(); V.pop_back(); }
     T Pop() { T X = V.back(); V.pop_back(); return X; }
 
-    T& operator[](int32 I) { return V[static_cast<size_t>(I)]; }
-    const T& operator[](int32 I) const { return V[static_cast<size_t>(I)]; }
+    // Trailing-return decltype so TArray<bool> returns std::vector<bool>'s proxy reference
+    // (a plain T& cannot bind to it), while every other T still returns a real T&.
+    auto operator[](int32 I) -> decltype(V[static_cast<size_t>(I)]) { return V[static_cast<size_t>(I)]; }
+    auto operator[](int32 I) const -> decltype(V[static_cast<size_t>(I)]) { return V[static_cast<size_t>(I)]; }
     T& Last() { return V.back(); }
     const T& Last() const { return V.back(); }
 
