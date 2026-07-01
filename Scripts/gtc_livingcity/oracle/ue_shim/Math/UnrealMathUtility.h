@@ -6,6 +6,12 @@
 #include <cmath>
 #include <limits>
 
+// Match real UE: KINDA_SMALL_NUMBER is a FLOAT, so a bare FMath::Max(KINDA_SMALL_NUMBER, <double>)
+// fails template deduction here exactly as under UBT (forcing callers to spell the type).
+#ifndef KINDA_SMALL_NUMBER
+#define KINDA_SMALL_NUMBER (1.e-4f)
+#endif
+
 struct FMath
 {
     template <typename T>
@@ -30,6 +36,7 @@ struct FMath
     template <typename T>
     static T Lerp(const T& A, const T& B, double T01) { return A + (B - A) * T01; }
 
+    static double Fmod(double X, double Y) { return std::fmod(X, Y); }
     static double Atan2(double Y, double X) { return std::atan2(Y, X); }
     static double Cos(double V) { return std::cos(V); }
     static double Sin(double V) { return std::sin(V); }

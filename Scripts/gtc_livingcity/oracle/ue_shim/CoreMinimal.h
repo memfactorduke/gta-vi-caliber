@@ -19,6 +19,10 @@
 using int32 = std::int32_t;
 using uint8 = std::uint8_t;
 
+#ifndef INDEX_NONE
+#define INDEX_NONE (-1)
+#endif
+
 struct FVector
 {
     double X = 0.0, Y = 0.0, Z = 0.0;
